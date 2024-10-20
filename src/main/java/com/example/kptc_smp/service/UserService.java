@@ -1,13 +1,13 @@
 package com.example.kptc_smp.service;
 
+
 import com.example.kptc_smp.entitys.User;
 import com.example.kptc_smp.repositories.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,10 +15,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class UserService implements UserDetailsService {
-    private UserRepository userRepository;
-    private RoleService roleService;
-    private PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
 
     public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);
