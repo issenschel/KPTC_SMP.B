@@ -9,10 +9,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
+
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -24,12 +27,13 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final EmailCode emailCode;
     private final AssumptionService assumptionService;
+    private final RegistrationValidatorService registrationValidatorService;
 
 
     public ResponseEntity<?> createAuthToken(@RequestBody JwtRequest authRequest) {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
-        }catch (Exception e) {
+        }catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Неправильный логин или пароль");
         }
         UserDetails userDetails = userService.loadUserByUsername(authRequest.getUsername());
@@ -38,22 +42,12 @@ public class AuthService {
     }
 
     public ResponseEntity<?> createNewUser(@RequestBody RegistrationUserDto registrationUserDto) {
-        if (userDetailsService.findByEmail(registrationUserDto.getEmail()).isPresent()) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Почта уже занята");
+        Map<String, String> validationsErrors = registrationValidatorService.validate(registrationUserDto);
+        if (!validationsErrors.isEmpty()){
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(validationsErrors);
         }
-        if (userService.findByUsername(registrationUserDto.getUsername()).isPresent()) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Логин уже занят");
-        }
-        if (userDetailsService.findByMinecraftName(registrationUserDto.getMinecraftName()).isPresent()) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Никнейм занят");
-        }
-        if (!registrationUserDto.getPassword().equals(registrationUserDto.getConfirmPassword())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Пароли не совпадают");
-        }
-        if (registrationUserDto.getCode().isEmpty()){
-            return registrationWithoutCode(registrationUserDto.getEmail());
-        }
-        return registrationWithCode(registrationUserDto, registrationUserDto.getCode());
+        return registrationUserDto.getCode().isEmpty() ? registrationWithoutCode(registrationUserDto.getEmail())
+                : registrationWithCode(registrationUserDto, registrationUserDto.getCode());
     }
 
     private ResponseEntity<?> registrationWithoutCode(String email){
