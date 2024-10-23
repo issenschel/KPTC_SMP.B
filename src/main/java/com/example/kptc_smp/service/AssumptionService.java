@@ -31,7 +31,11 @@ public class AssumptionService{
 
     }
 
-    public void delete(String email){
-        assumptionRepository.delete(assumptionRepository.findByEmail(email).get());
+    public void delete(Assumption assumption){
+        assumptionRepository.delete(assumption);
+    }
+
+    public Optional<Assumption> findByEmail(String email){
+        return assumptionRepository.findByEmail(email);
     }
 }

@@ -1,6 +1,6 @@
 package com.example.kptc_smp.controllers;
 
-import com.example.kptc_smp.dto.JwtRequest;
+import com.example.kptc_smp.dto.JwtRequestDto;
 import com.example.kptc_smp.dto.RegistrationUserDto;
 import com.example.kptc_smp.service.AuthService;
 import jakarta.validation.Valid;
@@ -19,7 +19,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/auth")
-    public ResponseEntity<?> createAuthToken(@Valid @RequestBody JwtRequest authRequest, BindingResult bindingResult) {
+    public ResponseEntity<?> createAuthToken(@Valid @RequestBody JwtRequestDto authRequest, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
         }

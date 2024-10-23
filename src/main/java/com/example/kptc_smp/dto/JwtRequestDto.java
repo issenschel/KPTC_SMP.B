@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class JwtRequest {
+public class JwtRequestDto {
     @NotBlank(message = "Логин не может быть пустым")
     @Size(min = 3, max = 30, message = "Логин не может быть меньше 3 или больше 30")
     private String username;

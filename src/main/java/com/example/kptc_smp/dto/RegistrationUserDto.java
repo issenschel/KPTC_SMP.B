@@ -24,5 +24,6 @@ public class RegistrationUserDto {
     @Email(message = "Почта должна быть валидной")
     private String email;
     @NotNull
+    @Size(max = 6, message = "Код не может быть больше 6")
     private String code;
 }

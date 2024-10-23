@@ -12,7 +12,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class RegistrationValidatorService {
     private final UserService userService;
-    private final UserDetailsService userDetailsService;
+    private final UserInformationService userInformationService;
 
     private final Map<String, ValidationRule> validationRules = new HashMap<>();
 
@@ -34,7 +34,7 @@ public class RegistrationValidatorService {
     }
 
     private Optional<String> validateEmail(RegistrationUserDto registrationUserDto) {
-        return userDetailsService.findByEmail(registrationUserDto.getEmail())
+        return userInformationService.findByEmail(registrationUserDto.getEmail())
                 .map(user -> "Почта уже занята");
     }
 
@@ -44,7 +44,7 @@ public class RegistrationValidatorService {
     }
 
     private Optional<String> validateMinecraftName(RegistrationUserDto registrationUserDto) {
-        return userDetailsService.findByMinecraftName(registrationUserDto.getMinecraftName())
+        return userInformationService.findByMinecraftName(registrationUserDto.getMinecraftName())
                 .map(user -> "Никнейм занят");
     }
 

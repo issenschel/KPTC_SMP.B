@@ -29,5 +29,5 @@ public class User {
     private Collection<Role> roles;
 
     @OneToOne(mappedBy = "user")
-    private UserDetails userDetails;
+    private UserInformation userInformation;
 }
