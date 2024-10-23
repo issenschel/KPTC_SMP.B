@@ -23,10 +23,11 @@ public class JwtTokenUtils {
     private Duration jwtLifetime;
 
 
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(UserDetails userDetails, String versionId) {
         Map<String,Object> claims = new HashMap<>();
         List<String> rolesList = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
         claims.put("roles", rolesList);
+        claims.put("versionId", versionId);
 
         Date issuedDate = new Date();
         Date expiresDate = new Date(issuedDate.getTime() + jwtLifetime.toMillis());
@@ -46,6 +47,10 @@ public class JwtTokenUtils {
 
     public List<String> getRoles(String token) {
         return getAllClaimsFromToken(token).get("roles", List.class);
+    }
+
+    public String getVersionId(String token) {
+        return getAllClaimsFromToken(token).get("versionId", String.class);
     }
 
     private Claims getAllClaimsFromToken(String token) {

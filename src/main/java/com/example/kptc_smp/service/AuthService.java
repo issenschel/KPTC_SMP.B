@@ -3,6 +3,7 @@ import com.example.kptc_smp.dto.JwtRequestDto;
 import com.example.kptc_smp.dto.JwtResponseDto;
 import com.example.kptc_smp.dto.RegistrationUserDto;
 import com.example.kptc_smp.dto.UserInformationDto;
+import com.example.kptc_smp.entitys.User;
 import com.example.kptc_smp.entitys.UserInformation;
 import com.example.kptc_smp.utils.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -32,12 +34,14 @@ public class AuthService {
     public ResponseEntity<?> createAuthToken(@RequestBody JwtRequestDto authRequest) {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
+            UserDetails userDetails = userService.loadUserByUsername(authRequest.getUsername());
+            Optional<User> user = userService.findByUsername(authRequest.getUsername());
+            String versionId = user.get().getUserInformation().getVersionId();
+            String token = jwtTokenUtils.generateToken(userDetails, versionId);
+            return ResponseEntity.ok(new JwtResponseDto(token));
         }catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Неправильный логин или пароль");
         }
-        UserDetails userDetails = userService.loadUserByUsername(authRequest.getUsername());
-        String token = jwtTokenUtils.generateToken(userDetails);
-        return ResponseEntity.ok(new JwtResponseDto(token));
     }
 
     public ResponseEntity<?> createNewUser(@RequestBody RegistrationUserDto registrationUserDto) {
@@ -51,7 +55,8 @@ public class AuthService {
 
     private ResponseEntity<?> registrationWithCode(RegistrationUserDto registrationUserDto, String code){
         if (emailService.validateCode(registrationUserDto.getEmail(), code)) {
-            UserInformation userInformation = userInformationService.createNewUserDetails(registrationUserDto);
+            User user = userService.createNewUser(registrationUserDto.getUsername(), registrationUserDto.getPassword());
+            UserInformation userInformation = userInformationService.createNewUserDetails(registrationUserDto, user);
             assumptionService.findByEmail(registrationUserDto.getEmail()).ifPresent(assumptionService::delete);
             return ResponseEntity.ok(new UserInformationDto(userInformation.getId(), userInformation.getUser().getUsername(),
                     userInformation.getEmail(), userInformation.getMinecraftName()));
