@@ -32,6 +32,7 @@ public class SecurityConfig {
                         .requestMatchers("/changeLogin").authenticated()
                         .requestMatchers("/changePassword").authenticated()
                         .requestMatchers("/changeEmail").authenticated()
+                        .requestMatchers("/createNewOrder").hasRole("ADMIN")
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().permitAll()).sessionManagement(sessionManagementCustomizer -> sessionManagementCustomizer
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)).exceptionHandling(exceptionHandlingCustomizer ->
