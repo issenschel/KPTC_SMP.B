@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -30,4 +31,18 @@ public class OrderService {
         return ordersPage.getContent();
     }
 
+    public Order changeOrder(Order order,OrderDto orderDto){
+        order.setHeader(orderDto.getHeader());
+        order.setMessage(orderDto.getMessage());
+        order.setPseudonym(orderDto.getPseudonym());
+        return orderRepository.save(order);
+    }
+
+    public void delete(Order order){
+        orderRepository.delete(order);
+    }
+
+    public Optional<Order> findById(int id) {
+        return orderRepository.findById(id);
+    }
 }

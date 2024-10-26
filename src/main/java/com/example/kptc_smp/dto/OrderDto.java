@@ -11,7 +11,7 @@ public class OrderDto {
     private String header;
 
     @NotBlank(message = "Сообщение не может быть пустым")
-    @Size(min = 8, max = 150, message = "Сообщение не может быть меньше 3 или больше 150")
+    @Size(min = 8, max = 150, message = "Сообщение не может быть меньше 8 или больше 150")
     private String message;
 
     @NotBlank(message = "Псевдоним не может быть пустым")

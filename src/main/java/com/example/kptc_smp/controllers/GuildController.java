@@ -28,4 +28,17 @@ public class GuildController {
     public ResponseEntity<?> getOrders(@RequestParam(name = "page") int page) {
         return guildService.getOrders(page);
     }
+
+    @PostMapping("/changeOrder")
+    public ResponseEntity<?> changeOrder(@RequestParam(name = "id") int id, @Valid @RequestBody OrderDto orderDto, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest().body(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
+        }
+        return guildService.changeOrder(orderDto,id);
+    }
+
+    @DeleteMapping("/changeOrder")
+    public ResponseEntity<?> deleteOrder(@RequestParam(name = "id") int id) {
+        return guildService.deleteOrder(id);
+    }
 }
