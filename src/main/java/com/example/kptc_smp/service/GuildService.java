@@ -1,5 +1,6 @@
 package com.example.kptc_smp.service;
 
+import com.example.kptc_smp.dto.ListOrderDto;
 import com.example.kptc_smp.dto.OrderDto;
 import com.example.kptc_smp.entitys.Order;
 import lombok.RequiredArgsConstructor;
@@ -7,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -38,8 +38,7 @@ public class GuildService {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Заказ не найден");
     }
 
-    public ResponseEntity<?> getOrders(int page){
-        List<Order> orders = orderService.getOrders(page);
-        return ResponseEntity.ok(orders);
+    public ListOrderDto getOrders(int page){
+        return orderService.getOrders(page);
     }
 }

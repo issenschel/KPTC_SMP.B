@@ -1,6 +1,7 @@
 package com.example.kptc_smp.service;
 
 
+import com.example.kptc_smp.dto.ListOrderDto;
 import com.example.kptc_smp.dto.OrderDto;
 import com.example.kptc_smp.entitys.Order;
 import com.example.kptc_smp.repositories.OrderRepository;
@@ -9,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -25,10 +25,14 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
-    public List<Order> getOrders(int page) {
+    public ListOrderDto getOrders(int page) {
+        ListOrderDto listOrderDto = new ListOrderDto();
         PageRequest pageRequest = PageRequest.of(page, 6);
         Page<Order> ordersPage = orderRepository.findAll(pageRequest);
-        return ordersPage.getContent();
+        int totalPages = ordersPage.getTotalPages();
+        listOrderDto.setOrders(ordersPage.getContent());
+        listOrderDto.setCount(totalPages);
+        return listOrderDto;
     }
 
     public Order changeOrder(Order order,OrderDto orderDto){

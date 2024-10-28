@@ -26,7 +26,7 @@ public class GuildController {
 
     @GetMapping("/getOrders")
     public ResponseEntity<?> getOrders(@RequestParam(name = "page") int page) {
-        return guildService.getOrders(page);
+        return ResponseEntity.ok(guildService.getOrders(page));
     }
 
     @PostMapping("/changeOrder")
