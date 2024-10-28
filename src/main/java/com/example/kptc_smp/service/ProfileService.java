@@ -37,15 +37,15 @@ public class ProfileService {
     public ResponseEntity<?> changeLogin(LoginChangeDto loginChangeDto) {
         Optional<User> user = userService.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
         return user.map(
-                u -> {
+                us -> {
                     boolean isUsernameAvailable = userService.findByUsername(loginChangeDto.getNewUsername()).isEmpty();
-                    boolean isPasswordValid = passwordEncoder.matches(loginChangeDto.getPassword(), u.getPassword());
+                    boolean isPasswordValid = passwordEncoder.matches(loginChangeDto.getPassword(), us.getPassword());
                     if (isUsernameAvailable && isPasswordValid) {
-                        u.setUsername(loginChangeDto.getNewUsername());
-                        u.getUserInformation().setVersionId(UUID.randomUUID().toString());
-                        userService.saveUser(u);
-                        UserDetails userDetails = userService.loadUserByUsername(u.getUsername());
-                        String versionId = u.getUserInformation().getVersionId();
+                        us.setUsername(loginChangeDto.getNewUsername());
+                        us.getUserInformation().setVersionId(UUID.randomUUID().toString());
+                        userService.saveUser(us);
+                        UserDetails userDetails = userService.loadUserByUsername(us.getUsername());
+                        String versionId = us.getUserInformation().getVersionId();
                         String token = jwtTokenUtils.generateToken(userDetails, versionId);
                         return ResponseEntity.ok(new JwtResponseDto(token));
                     } else {
@@ -57,14 +57,14 @@ public class ProfileService {
     public ResponseEntity<?> changePassword(PasswordChangeDto passwordChangeDto) {
         Optional<User> user = userService.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
         return user.map(
-                u -> {
+                us -> {
                     boolean isPasswordEqual = passwordChangeDto.getPassword().equals(passwordChangeDto.getConfirmPassword());
-                    boolean isPasswordValid = passwordEncoder.matches(passwordChangeDto.getOldPassword(), u.getPassword());
+                    boolean isPasswordValid = passwordEncoder.matches(passwordChangeDto.getOldPassword(), us.getPassword());
                     if (isPasswordEqual && isPasswordValid) {
-                        u.setPassword(passwordEncoder.encode(passwordChangeDto.getPassword()));
-                        userService.saveUser(u);
-                        UserDetails userDetails = userService.loadUserByUsername(u.getUsername());
-                        String versionId = u.getUserInformation().getVersionId();
+                        us.setPassword(passwordEncoder.encode(passwordChangeDto.getPassword()));
+                        userService.saveUser(us);
+                        UserDetails userDetails = userService.loadUserByUsername(us.getUsername());
+                        String versionId = us.getUserInformation().getVersionId();
                         String token = jwtTokenUtils.generateToken(userDetails, versionId);
                         return ResponseEntity.ok(new JwtResponseDto(token));
                     } else {
@@ -78,16 +78,16 @@ public class ProfileService {
         if (emailChangeDto.getCode().isEmpty() && user.isPresent()){
             return emailService.sendCode(user.get().getUserInformation().getEmail());
         }
-        return user.map(u -> {
+        return user.map(us -> {
             boolean emailAvailable = userInformationService.findByEmail(emailChangeDto.getEmail()).isEmpty();
             boolean validateCode = emailService.validateCode(user.get().getUserInformation().getEmail(), emailChangeDto.getCode());
             if(emailAvailable && validateCode) {
-                assumptionService.findByEmail(u.getUserInformation().getEmail()).ifPresent(assumptionService::delete);
-                u.getUserInformation().setEmail(emailChangeDto.getEmail());
-                u.getUserInformation().setVersionId(UUID.randomUUID().toString());
-                userInformationService.save(u.getUserInformation());
-                UserDetails userDetails = userService.loadUserByUsername(u.getUsername());
-                String versionId = u.getUserInformation().getVersionId();
+                assumptionService.findByEmail(us.getUserInformation().getEmail()).ifPresent(assumptionService::delete);
+                us.getUserInformation().setEmail(emailChangeDto.getEmail());
+                us.getUserInformation().setVersionId(UUID.randomUUID().toString());
+                userInformationService.save(us.getUserInformation());
+                UserDetails userDetails = userService.loadUserByUsername(us.getUsername());
+                String versionId = us.getUserInformation().getVersionId();
                 String token = jwtTokenUtils.generateToken(userDetails, versionId);
                 return ResponseEntity.ok(new JwtResponseDto(token));
             }else {
@@ -101,17 +101,17 @@ public class ProfileService {
             Optional<User> user = userService.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
             String uuidFile = UUID.randomUUID().toString();
             String result = uuidFile + "." + photo.getOriginalFilename();
-            return user.map(u -> {
+            return user.map(us -> {
                 try {
-                    if(u.getUserInformation().getPhoto() != null){
-                        Files.delete(Path.of(uploadPath+"/"+u.getUserInformation().getPhoto()));
+                    if(us.getUserInformation().getPhoto() != null){
+                        Files.delete(Path.of(uploadPath+"/"+us.getUserInformation().getPhoto()));
                     }
                     photo.transferTo(new File(uploadPath+"/"+ result));
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-                u.getUserInformation().setPhoto(result);
-                userInformationService.save(u.getUserInformation());
+                us.getUserInformation().setPhoto(result);
+                userInformationService.save(us.getUserInformation());
                 return ResponseEntity.ok().build();
             }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Пользователь не найден"));
         }
@@ -119,9 +119,10 @@ public class ProfileService {
     }
 
     public ResponseEntity<?> getData(){
-        return userService.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
-                user -> ResponseEntity.ok(new UserInformationDto(user.getId(), user.getUsername(), user.getUserInformation().getEmail(),
-                        user.getUserInformation().getMinecraftName()))
+        Optional<User> user = userService.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
+        return user.map(
+                us -> ResponseEntity.ok(new UserInformationDto(us.getId(), us.getUsername(), us.getUserInformation().getEmail(),
+                        us.getUserInformation().getMinecraftName()))
         ).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(null));
 
     }
