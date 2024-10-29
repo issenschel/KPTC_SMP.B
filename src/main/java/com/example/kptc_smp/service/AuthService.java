@@ -14,6 +14,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Map;
@@ -44,6 +45,7 @@ public class AuthService {
         }
     }
 
+    @Transactional
     public ResponseEntity<?> createNewUser(@RequestBody RegistrationUserDto registrationUserDto) {
         Map<String, String> validationsErrors = registrationValidatorService.validate(registrationUserDto);
         if (!validationsErrors.isEmpty()){
@@ -53,7 +55,7 @@ public class AuthService {
                 : registrationWithCode(registrationUserDto, registrationUserDto.getCode());
     }
 
-    private ResponseEntity<?> registrationWithCode(RegistrationUserDto registrationUserDto, String code){
+    public ResponseEntity<?> registrationWithCode(RegistrationUserDto registrationUserDto, String code){
         if (emailService.validateCode(registrationUserDto.getEmail(), code)) {
             User user = userService.createNewUser(registrationUserDto.getUsername(), registrationUserDto.getPassword());
             UserInformation userInformation = userInformationService.createNewUserDetails(registrationUserDto, user);

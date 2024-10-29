@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -17,6 +18,7 @@ import java.util.Optional;
 public class OrderService {
     private final OrderRepository orderRepository;
 
+    @Transactional
     public Order createNewOrder(OrderDto orderDto) {
         Order order = new Order();
         order.setHeader(orderDto.getHeader());
@@ -35,6 +37,7 @@ public class OrderService {
         return listOrderDto;
     }
 
+    @Transactional
     public Order changeOrder(Order order,OrderDto orderDto){
         order.setHeader(orderDto.getHeader());
         order.setMessage(orderDto.getMessage());

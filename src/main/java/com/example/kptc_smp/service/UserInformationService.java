@@ -6,7 +6,6 @@ import com.example.kptc_smp.entitys.UserInformation;
 import com.example.kptc_smp.repositories.UserInformationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -16,7 +15,6 @@ import java.util.UUID;
 public class UserInformationService {
     private final UserInformationRepository userInformationRepository;
 
-    @Transactional
     public UserInformation createNewUserDetails(RegistrationUserDto registrationUserDto, User user){
         UserInformation userInformation = new UserInformation();
         userInformation.setEmail(registrationUserDto.getEmail());
