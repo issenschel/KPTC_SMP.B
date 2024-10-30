@@ -28,8 +28,6 @@ public class ProfileService {
     private final UserInformationService userInformationService;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenUtils jwtTokenUtils;
-    private final EmailService emailService;
-    private final AssumptionService assumptionService;
 
     @Value("${upload.path}")
     private String uploadPath;
@@ -73,28 +71,28 @@ public class ProfileService {
                 }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Пользователь не найден"));
     }
 
-    public ResponseEntity<?> changeEmail(EmailChangeDto emailChangeDto) {
-        Optional<User> user = userService.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
-        if (emailChangeDto.getCode().isEmpty() && user.isPresent()){
-            return emailService.sendCode(user.get().getUserInformation().getEmail());
-        }
-        return user.map(us -> {
-            boolean emailAvailable = userInformationService.findByEmail(emailChangeDto.getEmail()).isEmpty();
-            boolean validateCode = emailService.validateCode(user.get().getUserInformation().getEmail(), emailChangeDto.getCode());
-            if(emailAvailable && validateCode) {
-                assumptionService.findByEmail(us.getUserInformation().getEmail()).ifPresent(assumptionService::delete);
-                us.getUserInformation().setEmail(emailChangeDto.getEmail());
-                us.getUserInformation().setVersionId(UUID.randomUUID().toString());
-                userInformationService.save(us.getUserInformation());
-                UserDetails userDetails = userService.loadUserByUsername(us.getUsername());
-                String versionId = us.getUserInformation().getVersionId();
-                String token = jwtTokenUtils.generateToken(userDetails, versionId);
-                return ResponseEntity.ok(new JwtResponseDto(token));
-            }else {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(emailAvailable ? "Неверный код" : "Новая почта уже занята");
-            }
-        }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Пользователь не найден"));
-    }
+//    public ResponseEntity<?> changeEmail(EmailChangeDto emailChangeDto) {
+//        Optional<User> user = userService.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
+//        if (emailChangeDto.getCode().isEmpty() && user.isPresent()){
+//            return emailService.sendCode(user.get().getUserInformation().getEmail());
+//        }
+//        return user.map(us -> {
+//            boolean emailAvailable = userInformationService.findByEmail(emailChangeDto.getEmail()).isEmpty();
+//            boolean validateCode = emailService.validateCode(user.get().getUserInformation().getEmail(), emailChangeDto.getCode());
+//            if(emailAvailable && validateCode) {
+//                assumptionService.findByEmail(us.getUserInformation().getEmail()).ifPresent(assumptionService::delete);
+//                us.getUserInformation().setEmail(emailChangeDto.getEmail());
+//                us.getUserInformation().setVersionId(UUID.randomUUID().toString());
+//                userInformationService.save(us.getUserInformation());
+//                UserDetails userDetails = userService.loadUserByUsername(us.getUsername());
+//                String versionId = us.getUserInformation().getVersionId();
+//                String token = jwtTokenUtils.generateToken(userDetails, versionId);
+//                return ResponseEntity.ok(new JwtResponseDto(token));
+//            }else {
+//                return ResponseEntity.status(HttpStatus.CONFLICT).body(emailAvailable ? "Неверный код" : "Новая почта уже занята");
+//            }
+//        }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Пользователь не найден"));
+//    }
 
     public ResponseEntity<?> changePhoto(MultipartFile photo) {
         if (photo != null && !photo.getContentType().matches("image/.*")) {

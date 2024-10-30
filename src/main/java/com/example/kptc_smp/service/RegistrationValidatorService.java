@@ -1,5 +1,6 @@
 package com.example.kptc_smp.service;
 
+import com.example.kptc_smp.dto.EmailDto;
 import com.example.kptc_smp.dto.RegistrationUserDto;
 import com.example.kptc_smp.interfaces.ValidationRule;
 import jakarta.annotation.PostConstruct;
@@ -13,15 +14,16 @@ import java.util.*;
 public class RegistrationValidatorService {
     private final UserService userService;
     private final UserInformationService userInformationService;
+    private final EmailService emailService;
 
     private final Map<String, ValidationRule> validationRules = new HashMap<>();
 
     @PostConstruct
     public void init() {
-        validationRules.put("email", this::validateEmail);
         validationRules.put("username", this::validateUsername);
         validationRules.put("minecraftName", this::validateMinecraftName);
         validationRules.put("passwordMatch", this::validatePasswordMatch);
+        validationRules.put("code", this::validateCode);
     }
 
     public Map<String, String> validate(RegistrationUserDto registrationUserDto) {
@@ -33,25 +35,32 @@ public class RegistrationValidatorService {
         return errors;
     }
 
-    private Optional<String> validateEmail(RegistrationUserDto registrationUserDto) {
-        return userInformationService.findByEmail(registrationUserDto.getEmail())
-                .map(user -> "Почта уже занята");
-    }
-
-    private Optional<String> validateUsername(RegistrationUserDto registrationUserDto) {
+    public Optional<String> validateUsername(RegistrationUserDto registrationUserDto) {
         return userService.findByUsername(registrationUserDto.getUsername())
                 .map(user -> "Логин уже занят");
     }
 
-    private Optional<String> validateMinecraftName(RegistrationUserDto registrationUserDto) {
+    public Optional<String> validateMinecraftName(RegistrationUserDto registrationUserDto) {
         return userInformationService.findByMinecraftName(registrationUserDto.getMinecraftName())
                 .map(user -> "Никнейм занят");
     }
 
-    private Optional<String> validatePasswordMatch(RegistrationUserDto registrationUserDto) {
+    public Optional<String> validatePasswordMatch(RegistrationUserDto registrationUserDto) {
         if (!registrationUserDto.getPassword().equals(registrationUserDto.getConfirmPassword())) {
             return Optional.of("Пароли не совпадают");
         }
         return Optional.empty();
+    }
+
+    public Optional<String> validateCode(RegistrationUserDto registrationUserDto){
+        if(!emailService.validateCode(registrationUserDto.getEmail(), registrationUserDto.getCode())){
+            return  Optional.of("Неверный код");
+        }
+        return Optional.empty();
+    }
+
+    public Optional<String> validateEmail(EmailDto emailDto) {
+        return userInformationService.findByEmail(emailDto.getEmail())
+                .map(user -> "Почта уже занята");
     }
 }

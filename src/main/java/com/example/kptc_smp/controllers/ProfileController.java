@@ -1,6 +1,5 @@
 package com.example.kptc_smp.controllers;
 
-import com.example.kptc_smp.dto.EmailChangeDto;
 import com.example.kptc_smp.dto.LoginChangeDto;
 import com.example.kptc_smp.dto.PasswordChangeDto;
 import com.example.kptc_smp.service.ProfileService;
@@ -34,13 +33,13 @@ public class ProfileController {
         return profileService.changePassword(passwordChangeDto);
     }
 
-    @PostMapping("/changeEmail")
-    public ResponseEntity<?> changeEmail(@Valid @RequestBody EmailChangeDto emailChangeDto, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            return ResponseEntity.badRequest().body(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
-        }
-        return profileService.changeEmail(emailChangeDto);
-    }
+//    @PostMapping("/changeEmail")
+//    public ResponseEntity<?> changeEmail(@Valid @RequestBody EmailChangeDto emailChangeDto, BindingResult bindingResult) {
+//        if (bindingResult.hasErrors()) {
+//            return ResponseEntity.badRequest().body(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
+//        }
+//        return profileService.changeEmail(emailChangeDto);
+//    }
 
     @PostMapping("/changePhoto")
     public ResponseEntity<?> changePhoto(@RequestParam("file") MultipartFile photo, BindingResult bindingResult) {
