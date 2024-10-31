@@ -7,7 +7,6 @@ import com.example.kptc_smp.utils.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,11 +27,13 @@ public class ProfileService {
     private final UserInformationService userInformationService;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenUtils jwtTokenUtils;
+    private final EmailService emailService;
+    private final AssumptionService assumptionService;
 
     @Value("${upload.path}")
     private String uploadPath;
 
-    public ResponseEntity<?> changeLogin(LoginChangeDto loginChangeDto) {
+    public StringResponseDto changeLogin(LoginChangeDto loginChangeDto) {
         Optional<User> user = userService.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
         return user.map(
                 us -> {
@@ -45,14 +46,14 @@ public class ProfileService {
                         UserDetails userDetails = userService.loadUserByUsername(us.getUsername());
                         String versionId = us.getUserInformation().getVersionId();
                         String token = jwtTokenUtils.generateToken(userDetails, versionId);
-                        return ResponseEntity.ok(new JwtResponseDto(token));
+                        return new StringResponseDto(token,HttpStatus.OK);
                     } else {
-                        return ResponseEntity.status(HttpStatus.CONFLICT).body(isUsernameAvailable ? "Неверный пароль" : "Логин уже занят");
+                        return new StringResponseDto(isUsernameAvailable ? "Неверный пароль" : "Логин уже занят", HttpStatus.CONFLICT);
                     }
-                }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Пользователь не найден"));
+                }).orElseGet(() -> new StringResponseDto("Пользователь не найден",HttpStatus.NOT_FOUND));
     }
 
-    public ResponseEntity<?> changePassword(PasswordChangeDto passwordChangeDto) {
+    public StringResponseDto changePassword(PasswordChangeDto passwordChangeDto) {
         Optional<User> user = userService.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
         return user.map(
                 us -> {
@@ -64,37 +65,34 @@ public class ProfileService {
                         UserDetails userDetails = userService.loadUserByUsername(us.getUsername());
                         String versionId = us.getUserInformation().getVersionId();
                         String token = jwtTokenUtils.generateToken(userDetails, versionId);
-                        return ResponseEntity.ok(new JwtResponseDto(token));
+                        return new StringResponseDto(token,HttpStatus.OK);
                     } else {
-                        return ResponseEntity.status(HttpStatus.CONFLICT).body(isPasswordValid ? "Пароли не совпадают" : "Неверный пароль");
+                        return new StringResponseDto(isPasswordValid ? "Пароли не совпадают" : "Неверный пароль", HttpStatus.CONFLICT);
                     }
-                }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Пользователь не найден"));
+                }).orElseGet(() -> new StringResponseDto("Пользователь не найден",HttpStatus.NOT_FOUND));
     }
 
-//    public ResponseEntity<?> changeEmail(EmailChangeDto emailChangeDto) {
-//        Optional<User> user = userService.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
-//        if (emailChangeDto.getCode().isEmpty() && user.isPresent()){
-//            return emailService.sendCode(user.get().getUserInformation().getEmail());
-//        }
-//        return user.map(us -> {
-//            boolean emailAvailable = userInformationService.findByEmail(emailChangeDto.getEmail()).isEmpty();
-//            boolean validateCode = emailService.validateCode(user.get().getUserInformation().getEmail(), emailChangeDto.getCode());
-//            if(emailAvailable && validateCode) {
-//                assumptionService.findByEmail(us.getUserInformation().getEmail()).ifPresent(assumptionService::delete);
-//                us.getUserInformation().setEmail(emailChangeDto.getEmail());
-//                us.getUserInformation().setVersionId(UUID.randomUUID().toString());
-//                userInformationService.save(us.getUserInformation());
-//                UserDetails userDetails = userService.loadUserByUsername(us.getUsername());
-//                String versionId = us.getUserInformation().getVersionId();
-//                String token = jwtTokenUtils.generateToken(userDetails, versionId);
-//                return ResponseEntity.ok(new JwtResponseDto(token));
-//            }else {
-//                return ResponseEntity.status(HttpStatus.CONFLICT).body(emailAvailable ? "Неверный код" : "Новая почта уже занята");
-//            }
-//        }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Пользователь не найден"));
-//    }
+    public StringResponseDto changeEmail(EmailChangeDto emailChangeDto) {
+        Optional<User> user = userService.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
+        return user.map(us -> {
+            boolean emailAvailable = userInformationService.findByEmail(emailChangeDto.getEmail()).isEmpty();
+            boolean validateCode = emailService.validateCode(user.get().getUserInformation().getEmail(), emailChangeDto.getCode());
+            if(emailAvailable && validateCode) {
+                assumptionService.findByEmail(us.getUserInformation().getEmail()).ifPresent(assumptionService::delete);
+                us.getUserInformation().setEmail(emailChangeDto.getEmail());
+                us.getUserInformation().setVersionId(UUID.randomUUID().toString());
+                userInformationService.save(us.getUserInformation());
+                UserDetails userDetails = userService.loadUserByUsername(us.getUsername());
+                String versionId = us.getUserInformation().getVersionId();
+                String token = jwtTokenUtils.generateToken(userDetails, versionId);
+                return new StringResponseDto(token,HttpStatus.OK);
+            }else {
+                return new StringResponseDto(emailAvailable ? "Неверный код" : "Новая почта уже занята", HttpStatus.CONFLICT);
+            }
+        }).orElseGet(() -> new StringResponseDto("Пользователь не найден",HttpStatus.NOT_FOUND));
+    }
 
-    public ResponseEntity<?> changePhoto(MultipartFile photo) {
+    public StringResponseDto changePhoto(MultipartFile photo) {
         if (photo != null && !photo.getContentType().matches("image/.*")) {
             Optional<User> user = userService.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
             String uuidFile = UUID.randomUUID().toString();
@@ -106,28 +104,27 @@ public class ProfileService {
                     }
                     photo.transferTo(new File(uploadPath+"/"+ result));
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    return new StringResponseDto("Что-то пошло не так",HttpStatus.CONFLICT);
                 }
                 us.getUserInformation().setPhoto(result);
                 userInformationService.save(us.getUserInformation());
-                return ResponseEntity.ok().build();
-            }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Пользователь не найден"));
+                return new StringResponseDto("Успешное изменение фотографии",HttpStatus.OK);
+            }).orElseGet(() -> new StringResponseDto("Пользователь не найден",HttpStatus.NOT_FOUND));
         }
-        return ResponseEntity.status(HttpStatus.CONFLICT).body("Неверный формат фотографии");
+        return new StringResponseDto("Неверный формат фотографии",HttpStatus.BAD_REQUEST);
     }
 
-    public ResponseEntity<?> getData(){
+    public UserInformationDto getData(){
         Optional<User> user = userService.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
         return user.map(
-                us -> ResponseEntity.ok(new UserInformationDto(us.getId(), us.getUsername(), us.getUserInformation().getEmail(),
-                        us.getUserInformation().getMinecraftName()))
-        ).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(null));
-
+                us -> new UserInformationDto(us.getId(), us.getUsername(), us.getUserInformation().getEmail(),
+                        us.getUserInformation().getMinecraftName())
+        ).orElse(null);
     }
 
-    public ResponseEntity<?> getPhoto(){
+    public String getPhoto(){
         return userService.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
-                user -> ResponseEntity.ok().body(user.getUserInformation().getPhoto())
-        ).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Пользователь не найден"));
+                user -> user.getUserInformation().getPhoto()
+        ).orElse( null);
     }
 }
