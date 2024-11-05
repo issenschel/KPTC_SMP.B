@@ -1,10 +1,10 @@
 package com.example.kptc_smp.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Random;
 
@@ -24,11 +24,12 @@ public class EmailService {
         javaMailSender.send(message);
     }
 
-    public ResponseEntity<?> sendCode(String email){
+    @Transactional
+    public String sendCode(String email){
         String key = generateVerificationCode();
         sendSimpleMessage(email, "Код подтверждения", "Код: " + key);
         assumptionService.saveOrUpdate(email, key);
-        return ResponseEntity.ok().body("Код отправлен");
+        return "Код отправлен";
     }
 
     public String generateVerificationCode() {

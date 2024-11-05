@@ -40,7 +40,6 @@ public class UserService implements UserDetailsService {
         );
     }
 
-    @Transactional
     public User createNewUser(String name,String password) {
         User user = new User();
         user.setUsername(name);

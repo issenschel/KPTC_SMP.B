@@ -1,11 +1,10 @@
 package com.example.kptc_smp.controllers;
 
-import com.example.kptc_smp.dto.EmailChangeDto;
-import com.example.kptc_smp.dto.LoginChangeDto;
-import com.example.kptc_smp.dto.PasswordChangeDto;
+import com.example.kptc_smp.dto.*;
 import com.example.kptc_smp.service.ProfileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +22,8 @@ public class ProfileController {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
         }
-        return profileService.changeLogin(loginChangeDto);
+        StringResponseDto responseDto = profileService.changeLogin(loginChangeDto);
+        return ResponseEntity.status(responseDto.getStatus()).body(new JwtResponseDto(responseDto.getMessage()));
     }
 
     @PostMapping("/changePassword")
@@ -31,7 +31,8 @@ public class ProfileController {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
         }
-        return profileService.changePassword(passwordChangeDto);
+        StringResponseDto responseDto = profileService.changePassword(passwordChangeDto);
+        return ResponseEntity.status(responseDto.getStatus()).body(new JwtResponseDto(responseDto.getMessage()));
     }
 
     @PostMapping("/changeEmail")
@@ -39,7 +40,8 @@ public class ProfileController {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
         }
-        return profileService.changeEmail(emailChangeDto);
+        StringResponseDto responseDto = profileService.changeEmail(emailChangeDto);
+        return ResponseEntity.status(responseDto.getStatus()).body(new JwtResponseDto(responseDto.getMessage()));
     }
 
     @PostMapping("/changePhoto")
@@ -47,17 +49,26 @@ public class ProfileController {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
         }
-        return profileService.changePhoto(photo);
+        StringResponseDto responseDto = profileService.changePhoto(photo);
+        return ResponseEntity.status(responseDto.getStatus()).body(responseDto.getMessage());
     }
 
     @GetMapping("/settings")
     public ResponseEntity<?> getData(){
-        return profileService.getData();
+        UserInformationDto userInformationDto = profileService.getData();
+        if (userInformationDto == null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Пользователь не найден");
+        }
+        return ResponseEntity.ok().body(userInformationDto);
     }
 
     @GetMapping("/photo")
     public ResponseEntity<?> getPhoto(){
-        return profileService.getPhoto();
+        String path = profileService.getPhoto();
+        if (path == null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Пользователь не найден");
+        }
+        return ResponseEntity.ok().body(path);
     }
 
 }
