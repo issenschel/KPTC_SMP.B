@@ -55,8 +55,8 @@ public class AuthController {
             return ResponseEntity.badRequest().body(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
         }
         Optional<String> validate = registrationValidatorService.validateEmail(emailDto);
-        if (validate.isEmpty()){
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Почта занята");
+        if (validate.isPresent()){
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(validate);
         }
         return ResponseEntity.ok().body(emailService.sendCode(emailDto.getEmail()));
     }
