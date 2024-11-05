@@ -31,7 +31,7 @@ public class AuthController {
             return ResponseEntity.badRequest().body(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
         }
         try {
-            return ResponseEntity.ok(new JwtResponseDto(authService.createAuthToken(authRequest)));
+            return ResponseEntity.ok(authService.createAuthToken(authRequest));
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Неверный логин или пароль");
         }
