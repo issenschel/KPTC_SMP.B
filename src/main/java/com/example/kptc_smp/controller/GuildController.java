@@ -33,10 +33,7 @@ public class GuildController {
 
     @DeleteMapping("/deleteOrder")
     public ResponseEntity<?> deleteOrder(@RequestParam(name = "id") int id) {
-        boolean bool = guildService.deleteOrder(id);
-        if (!bool) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Заказ не найден " + id);
-        }
+        guildService.deleteOrder(id);
         return ResponseEntity.ok().build();
     }
 }

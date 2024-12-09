@@ -1,8 +1,7 @@
 package com.example.kptc_smp.exception;
 
-public class OrderChangeException extends RuntimeException {
-
-    public OrderChangeException() {
+public class OrderNotFoundException extends RuntimeException {
+    public OrderNotFoundException() {
         super("Объявление не найдено");
     }
 }
