@@ -32,6 +32,10 @@ public class AssumptionService{
             assumptionRepository.save(assumption);
         }
 
+    public boolean validateCode(String email, String code) {
+        return assumptionRepository.findByEmail(email).filter(assumption -> assumption.getCode().equals(code)).isPresent();
+    }
+
     public void delete(Assumption assumption){
         assumptionRepository.delete(assumption);
     }

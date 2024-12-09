@@ -31,7 +31,6 @@ public class ProfileService {
     private final UserInformationService userInformationService;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenUtils jwtTokenUtils;
-    private final EmailService emailService;
     private final AssumptionService assumptionService;
 
     @Value("${upload.path}")
@@ -81,7 +80,7 @@ public class ProfileService {
         Optional<User> user = userService.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
         return user.map(us -> {
             boolean emailAvailable = userInformationService.findByEmail(emailChangeDto.getEmail()).isEmpty();
-            boolean validateCode = emailService.validateCode(user.get().getUserInformation().getEmail(), emailChangeDto.getCode());
+            boolean validateCode = assumptionService.validateCode(user.get().getUserInformation().getEmail(), emailChangeDto.getCode());
             if(emailAvailable && validateCode) {
                 assumptionService.findByEmail(us.getUserInformation().getEmail()).ifPresent(assumptionService::delete);
                 us.getUserInformation().setEmail(emailChangeDto.getEmail());

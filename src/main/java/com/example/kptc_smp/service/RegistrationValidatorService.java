@@ -14,7 +14,7 @@ import java.util.*;
 public class RegistrationValidatorService {
     private final UserService userService;
     private final UserInformationService userInformationService;
-    private final EmailService emailService;
+    private final AssumptionService assumptionService;
 
     private final Map<String, ValidationRule> validationRules = new HashMap<>();
 
@@ -54,7 +54,7 @@ public class RegistrationValidatorService {
     }
 
     public Optional<String> validateCode(RegistrationUserDto registrationUserDto){
-        if(!emailService.validateCode(registrationUserDto.getEmail(), registrationUserDto.getCode())){
+        if(!assumptionService.validateCode(registrationUserDto.getEmail(), registrationUserDto.getCode())){
             return  Optional.of("Неверный код");
         }
         return Optional.empty();

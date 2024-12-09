@@ -43,8 +43,4 @@ public class EmailService {
         return String.valueOf(new Random().nextInt(899999) + 100000);
     }
 
-    public boolean validateCode(String email, String code) {
-        return assumptionService.findByEmail(email).filter(assumption -> assumption.getCode().equals(code)).isPresent();
-    }
-
 }
