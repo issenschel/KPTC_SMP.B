@@ -2,8 +2,12 @@ package com.example.kptc_smp.service;
 
 
 import com.example.kptc_smp.dto.*;
-import com.example.kptc_smp.entitys.User;
-import com.example.kptc_smp.utils.JwtTokenUtils;
+import com.example.kptc_smp.dto.profile.EmailChangeDto;
+import com.example.kptc_smp.dto.profile.LoginChangeDto;
+import com.example.kptc_smp.dto.profile.PasswordChangeDto;
+import com.example.kptc_smp.dto.profile.UserInformationDto;
+import com.example.kptc_smp.entity.User;
+import com.example.kptc_smp.utility.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -41,10 +45,10 @@ public class ProfileService {
                     boolean isPasswordValid = passwordEncoder.matches(loginChangeDto.getPassword(), us.getPassword());
                     if (isUsernameAvailable && isPasswordValid) {
                         us.setUsername(loginChangeDto.getNewUsername());
-                        us.getUserInformation().setVersionId(UUID.randomUUID().toString());
+                        us.getTokenVersion().setVersion(UUID.randomUUID().toString());
                         userService.saveUser(us);
                         UserDetails userDetails = userService.loadUserByUsername(us.getUsername());
-                        String versionId = us.getUserInformation().getVersionId();
+                        String versionId = us.getTokenVersion().getVersion();
                         String token = jwtTokenUtils.generateToken(userDetails, versionId);
                         return new StringResponseDto(token,HttpStatus.OK);
                     } else {
@@ -61,9 +65,10 @@ public class ProfileService {
                     boolean isPasswordValid = passwordEncoder.matches(passwordChangeDto.getOldPassword(), us.getPassword());
                     if (isPasswordEqual && isPasswordValid) {
                         us.setPassword(passwordEncoder.encode(passwordChangeDto.getPassword()));
+                        us.getTokenVersion().setVersion(UUID.randomUUID().toString());
                         userService.saveUser(us);
                         UserDetails userDetails = userService.loadUserByUsername(us.getUsername());
-                        String versionId = us.getUserInformation().getVersionId();
+                        String versionId = us.getTokenVersion().getVersion();
                         String token = jwtTokenUtils.generateToken(userDetails, versionId);
                         return new StringResponseDto(token,HttpStatus.OK);
                     } else {
@@ -80,10 +85,10 @@ public class ProfileService {
             if(emailAvailable && validateCode) {
                 assumptionService.findByEmail(us.getUserInformation().getEmail()).ifPresent(assumptionService::delete);
                 us.getUserInformation().setEmail(emailChangeDto.getEmail());
-                us.getUserInformation().setVersionId(UUID.randomUUID().toString());
+                us.getTokenVersion().setVersion(UUID.randomUUID().toString());
                 userInformationService.save(us.getUserInformation());
                 UserDetails userDetails = userService.loadUserByUsername(us.getUsername());
-                String versionId = us.getUserInformation().getVersionId();
+                String versionId = us.getTokenVersion().getVersion();
                 String token = jwtTokenUtils.generateToken(userDetails, versionId);
                 return new StringResponseDto(token,HttpStatus.OK);
             }else {
@@ -93,7 +98,7 @@ public class ProfileService {
     }
 
     public StringResponseDto changePhoto(MultipartFile photo) {
-        if (photo != null && !photo.getContentType().matches("image/.*")) {
+        if (photo != null && photo.getContentType() != null && !photo.getContentType().matches("image/.*")) {
             Optional<User> user = userService.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
             String uuidFile = UUID.randomUUID().toString();
             String result = uuidFile + "." + photo.getOriginalFilename();

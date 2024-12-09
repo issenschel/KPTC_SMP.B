@@ -1,10 +1,10 @@
 package com.example.kptc_smp.service;
 
 
-import com.example.kptc_smp.dto.ListOrderDto;
-import com.example.kptc_smp.dto.OrderDto;
-import com.example.kptc_smp.entitys.Order;
-import com.example.kptc_smp.repositories.OrderRepository;
+import com.example.kptc_smp.dto.guild.ListOrderDto;
+import com.example.kptc_smp.dto.guild.OrderDto;
+import com.example.kptc_smp.entity.Order;
+import com.example.kptc_smp.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;

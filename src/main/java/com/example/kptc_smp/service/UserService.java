@@ -1,7 +1,7 @@
 package com.example.kptc_smp.service;
 
-import com.example.kptc_smp.entitys.User;
-import com.example.kptc_smp.repositories.UserRepository;
+import com.example.kptc_smp.entity.User;
+import com.example.kptc_smp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

@@ -1,7 +1,7 @@
 package com.example.kptc_smp.service;
 
-import com.example.kptc_smp.dto.EmailDto;
-import com.example.kptc_smp.dto.RegistrationUserDto;
+import com.example.kptc_smp.dto.registration.EmailDto;
+import com.example.kptc_smp.dto.registration.RegistrationUserDto;
 import com.example.kptc_smp.interfaces.ValidationRule;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +23,7 @@ public class RegistrationValidatorService {
         validationRules.put("username", this::validateUsername);
         validationRules.put("minecraftName", this::validateMinecraftName);
         validationRules.put("passwordMatch", this::validatePasswordMatch);
+        validationRules.put("email", this::validateEmail);
         validationRules.put("code", this::validateCode);
     }
 
@@ -57,6 +58,11 @@ public class RegistrationValidatorService {
             return  Optional.of("Неверный код");
         }
         return Optional.empty();
+    }
+
+    public Optional<String> validateEmail(RegistrationUserDto registrationUserDto) {
+        return userInformationService.findByEmail(registrationUserDto.getEmail())
+                .map(user -> "Почта уже занята");
     }
 
     public Optional<String> validateEmail(EmailDto emailDto) {
