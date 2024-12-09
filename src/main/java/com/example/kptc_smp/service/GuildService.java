@@ -3,6 +3,7 @@ package com.example.kptc_smp.service;
 import com.example.kptc_smp.dto.guild.ListOrderDto;
 import com.example.kptc_smp.dto.guild.OrderDto;
 import com.example.kptc_smp.entity.Order;
+import com.example.kptc_smp.exception.OrderChangeException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,9 +18,9 @@ public class GuildService {
         return orderService.createNewOrder(orderDto);
     }
 
-    public Order changeOrder(OrderDto orderDto, int id) {
+    public void changeOrder(OrderDto orderDto, int id) {
         Optional<Order> order = orderService.findById(id);
-        return order.map(value -> orderService.changeOrder(value, orderDto)).orElse(null);
+        orderService.changeOrder(order.orElseThrow(OrderChangeException::new), orderDto);
     }
 
     public boolean deleteOrder(int id) {

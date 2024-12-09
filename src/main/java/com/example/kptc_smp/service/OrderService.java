@@ -38,11 +38,11 @@ public class OrderService {
     }
 
     @Transactional
-    public Order changeOrder(Order order,OrderDto orderDto){
+    public void changeOrder(Order order,OrderDto orderDto){
         order.setHeader(orderDto.getHeader());
         order.setMessage(orderDto.getMessage());
         order.setPseudonym(orderDto.getPseudonym());
-        return orderRepository.save(order);
+        orderRepository.save(order);
     }
 
     public void delete(Order order){

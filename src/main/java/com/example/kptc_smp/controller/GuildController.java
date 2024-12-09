@@ -27,8 +27,8 @@ public class GuildController {
 
     @PostMapping("/changeOrder")
     public ResponseEntity<?> changeOrder(@RequestParam(name = "id") int id, @Valid @RequestBody OrderDto orderDto) {
-        Order order = guildService.changeOrder(orderDto, id);
-        return ResponseEntity.ok(order);
+        guildService.changeOrder(orderDto, id);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/deleteOrder")

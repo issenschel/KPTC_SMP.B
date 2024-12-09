@@ -1,6 +1,7 @@
 package com.example.kptc_smp.controller;
 
 import com.example.kptc_smp.exception.ChangeEmailException;
+import com.example.kptc_smp.exception.OrderChangeException;
 import com.example.kptc_smp.exception.RegistrationValidationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -39,6 +40,11 @@ public class AdviceController {
 
     @ExceptionHandler(ChangeEmailException.class)
     public ResponseEntity<?> validationException(ChangeEmailException e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
+    }
+
+    @ExceptionHandler(OrderChangeException.class)
+    public ResponseEntity<?> validationException(OrderChangeException e) {
         return ResponseEntity.badRequest().body(e.getMessage());
     }
 }
