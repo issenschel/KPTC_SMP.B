@@ -64,9 +64,4 @@ public class RegistrationValidatorService {
         return userInformationService.findByEmail(registrationUserDto.getEmail())
                 .map(user -> "Почта уже занята");
     }
-
-    public Optional<String> validateEmail(EmailDto emailDto) {
-        return userInformationService.findByEmail(emailDto.getEmail())
-                .map(user -> "Почта уже занята");
-    }
 }

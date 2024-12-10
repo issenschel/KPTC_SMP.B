@@ -1,9 +1,7 @@
 package com.example.kptc_smp.controller;
 
 import com.example.kptc_smp.dto.ResponseDto;
-import com.example.kptc_smp.exception.ChangeEmailException;
-import com.example.kptc_smp.exception.OrderNotFoundException;
-import com.example.kptc_smp.exception.RegistrationValidationException;
+import com.example.kptc_smp.exception.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
@@ -11,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,12 +39,22 @@ public class AdviceController {
     }
 
     @ExceptionHandler(ChangeEmailException.class)
-    public ResponseEntity<?> validationException(ChangeEmailException e) {
+    public ResponseEntity<?> changeEmailException(ChangeEmailException e) {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
     }
 
     @ExceptionHandler(OrderNotFoundException.class)
-    public ResponseEntity<?> validationException(OrderNotFoundException e) {
+    public ResponseEntity<?> orderNotFoundException(OrderNotFoundException e) {
+        return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
+    }
+
+    @ExceptionHandler(UserNotFountException.class)
+    public ResponseEntity<?> userNotFoundException(UserNotFountException e) {
+        return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
+    }
+
+    @ExceptionHandler(PhotoException.class)
+    public ResponseEntity<?> photoException(PhotoException e) {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
     }
 }

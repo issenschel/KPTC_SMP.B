@@ -16,7 +16,7 @@ import java.util.Random;
 public class EmailService {
     private final JavaMailSender javaMailSender;
     private final AssumptionService assumptionService;
-    private final RegistrationValidatorService registrationValidatorService;
+    private final UserInformationService userInformationService;
 
     public void sendSimpleMessage(String to, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();
@@ -29,10 +29,7 @@ public class EmailService {
 
     @Transactional
     public String sendCode(EmailDto emailDto) {
-        Optional<String> validate = registrationValidatorService.validateEmail(emailDto);
-        if (validate.isPresent()) {
-            throw new ChangeEmailException();
-        }
+        userInformationService.findByEmail(emailDto.getEmail()).ifPresent(u -> {throw new ChangeEmailException();});
         String key = generateVerificationCode();
         sendSimpleMessage(emailDto.getEmail(), "Код подтверждения", "Код: " + key);
         assumptionService.saveOrUpdate(emailDto.getEmail(), key);

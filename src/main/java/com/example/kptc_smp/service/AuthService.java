@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -35,8 +36,8 @@ public class AuthService {
 
 
     public AuthTokenDto createAuthToken(@RequestBody JwtRequestDto authRequest) throws BadCredentialsException {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
-            UserDetails userDetails = userService.loadUserByUsername(authRequest.getUsername());
+            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             Optional<User> user = userService.findByUsername(authRequest.getUsername());
             String versionId = user.orElseThrow(() -> new BadCredentialsException("Нет версии токена")).getTokenVersion().getVersion();
             String token = jwtTokenUtils.generateToken(userDetails, versionId);

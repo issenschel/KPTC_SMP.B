@@ -21,44 +21,32 @@ public class ProfileController {
 
     @PostMapping("/changeLogin")
     public ResponseEntity<?> changeLogin(@Valid @RequestBody LoginChangeDto loginChangeDto) {
-        StringResponseDto responseDto = profileService.changeLogin(loginChangeDto);
-        return ResponseEntity.status(responseDto.getStatus()).body(new JwtResponseDto(responseDto.getMessage()));
+        return ResponseEntity.ok().body(profileService.changeLogin(loginChangeDto));
     }
 
     @PostMapping("/changePassword")
     public ResponseEntity<?> changeLogin(@Valid @RequestBody PasswordChangeDto passwordChangeDto) {
-        StringResponseDto responseDto = profileService.changePassword(passwordChangeDto);
-        return ResponseEntity.status(responseDto.getStatus()).body(new JwtResponseDto(responseDto.getMessage()));
+        return ResponseEntity.ok().body(profileService.changePassword(passwordChangeDto));
     }
 
     @PostMapping("/changeEmail")
     public ResponseEntity<?> changeEmail(@Valid @RequestBody EmailChangeDto emailChangeDto) {
-        StringResponseDto responseDto = profileService.changeEmail(emailChangeDto);
-        return ResponseEntity.status(responseDto.getStatus()).body(new JwtResponseDto(responseDto.getMessage()));
+        return ResponseEntity.ok().body(profileService.changeEmail(emailChangeDto));
     }
 
     @PostMapping("/changePhoto")
     public ResponseEntity<?> changePhoto(@RequestParam("file") MultipartFile photo) {
-        StringResponseDto responseDto = profileService.changePhoto(photo);
-        return ResponseEntity.status(responseDto.getStatus()).body(responseDto.getMessage());
+        return ResponseEntity.ok().body(profileService.changePhoto(photo));
     }
 
     @GetMapping("/settings")
     public ResponseEntity<?> getData(){
-        UserInformationDto userInformationDto = profileService.getData();
-        if (userInformationDto == null){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Пользователь не найден");
-        }
-        return ResponseEntity.ok().body(userInformationDto);
+        return ResponseEntity.ok().body(profileService.getData());
     }
 
     @GetMapping("/photo")
     public ResponseEntity<?> getPhoto(){
-        String path = profileService.getPhoto();
-        if (path == null){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Пользователь не найден");
-        }
-        return ResponseEntity.ok().body(path);
+        return ResponseEntity.ok().body(profileService.getPhoto());
     }
 
 }
