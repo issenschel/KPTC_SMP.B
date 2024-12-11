@@ -7,8 +7,8 @@ import com.example.kptc_smp.dto.profile.LoginChangeDto;
 import com.example.kptc_smp.dto.profile.PasswordChangeDto;
 import com.example.kptc_smp.dto.profile.UserInformationDto;
 import com.example.kptc_smp.entity.User;
-import com.example.kptc_smp.exception.PhotoException;
-import com.example.kptc_smp.exception.UserNotFountException;
+import com.example.kptc_smp.exception.profile.*;
+import com.example.kptc_smp.exception.UserNotFoundException;
 import com.example.kptc_smp.utility.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,12 +44,12 @@ public class ProfileService {
         Optional<User> user = userService.findWithTokenVersionByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
         return user.map(
                 us -> {
-                    userService.findByUsername(loginChangeDto.getNewUsername()).ifPresent(u -> {throw new UserNotFountException();});
+                    userService.findByUsername(loginChangeDto.getNewUsername()).ifPresent(u -> {throw new UserFoundException();});
                     checkPassword(loginChangeDto.getPassword(), us.getPassword());
                     us.setUsername(loginChangeDto.getNewUsername());
                     userService.saveUser(us);
                     return updateAndGenerateToken(us);
-                }).orElseThrow(UserNotFountException::new);
+                }).orElseThrow(UserNotFoundException::new);
     }
 
     @Transactional
@@ -58,28 +58,27 @@ public class ProfileService {
         return user.map(
                 us -> {
                     if(!passwordChangeDto.getPassword().equals(passwordChangeDto.getConfirmPassword())){
-                        throw new UserNotFountException();
+                        throw new PasswordValidationException();
                     }
                     checkPassword(passwordChangeDto.getOldPassword(), us.getPassword());
                     us.setPassword(passwordEncoder.encode(passwordChangeDto.getPassword()));
                     userService.saveUser(us);
                     return updateAndGenerateToken(us);
-                }).orElseThrow(UserNotFountException::new);
+                }).orElseThrow(UserNotFoundException::new);
     }
 
     @Transactional
     public ResponseDto changeEmail(EmailChangeDto emailChangeDto) {
         Optional<User> user = userService.findWithUserInformationAndTokenVersionByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
         return user.map(us -> {
-            userInformationService.findByEmail(emailChangeDto.getEmail()).ifPresent(u -> {throw new UserNotFountException();});
             if(assumptionService.validateCode(user.get().getUserInformation().getEmail(), emailChangeDto.getCode())) {
-                throw new UserNotFountException();
+                throw new CodeValidationException();
             }
             assumptionService.findByEmail(us.getUserInformation().getEmail()).ifPresent(assumptionService::delete);
             us.getUserInformation().setEmail(emailChangeDto.getEmail());
             userInformationService.save(us.getUserInformation());
             return updateAndGenerateToken(us);
-        }).orElseThrow(UserNotFountException::new);
+        }).orElseThrow(UserNotFoundException::new);
     }
 
     @Transactional
@@ -100,7 +99,7 @@ public class ProfileService {
                 us.getUserInformation().setPhoto(result);
                 userInformationService.save(us.getUserInformation());
                 return new ResponseDto("Успешное изменение фотографии");
-            }).orElseThrow(UserNotFountException::new);
+            }).orElseThrow(UserNotFoundException::new);
         }
         throw new PhotoException();
     }
@@ -110,13 +109,13 @@ public class ProfileService {
         return user.map(
                 us -> new UserInformationDto(us.getId(), us.getUsername(), us.getUserInformation().getEmail(),
                         us.getUserInformation().getMinecraftName())
-        ).orElseThrow(UserNotFountException::new);
+        ).orElseThrow(UserNotFoundException::new);
     }
 
     public ResponseDto getPhoto(){
         return new ResponseDto(userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
                 user -> user.getUserInformation().getPhoto()
-        ).orElseThrow( UserNotFountException::new));
+        ).orElseThrow( UserNotFoundException::new));
     }
 
     private ResponseDto updateAndGenerateToken(User user) {
@@ -130,7 +129,7 @@ public class ProfileService {
 
     private void checkPassword(String password, String password2) {
         if(!passwordEncoder.matches(password, password2)){
-            throw new UserNotFountException();
+            throw new PasswordValidationException();
         }
     }
 }

@@ -1,6 +1,4 @@
-package com.example.kptc_smp.exception;
-
-import java.io.IOException;
+package com.example.kptc_smp.exception.profile;
 
 public class PhotoException extends RuntimeException {
     public PhotoException() {

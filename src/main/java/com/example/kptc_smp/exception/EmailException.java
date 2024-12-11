@@ -1,8 +1,8 @@
 package com.example.kptc_smp.exception;
 
-public class ChangeEmailException extends RuntimeException {
+public class EmailException extends RuntimeException {
 
-    public ChangeEmailException() {
+    public EmailException() {
         super("Почта уже занята");
     }
 }

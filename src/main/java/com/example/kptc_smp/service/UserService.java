@@ -1,7 +1,7 @@
 package com.example.kptc_smp.service;
 
 import com.example.kptc_smp.entity.User;
-import com.example.kptc_smp.exception.UserNotFountException;
+import com.example.kptc_smp.exception.UserNotFoundException;
 import com.example.kptc_smp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -25,7 +25,7 @@ public class UserService implements UserDetailsService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username){
-        User user = findWithAllDependenciesByUsername(username).orElseThrow(UserNotFountException::new);
+        User user = findWithAllDependenciesByUsername(username).orElseThrow(UserNotFoundException::new);
 
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),

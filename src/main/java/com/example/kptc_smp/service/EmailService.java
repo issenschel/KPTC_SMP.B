@@ -1,14 +1,13 @@
 package com.example.kptc_smp.service;
 
 import com.example.kptc_smp.dto.registration.EmailDto;
-import com.example.kptc_smp.exception.ChangeEmailException;
+import com.example.kptc_smp.exception.EmailException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
 import java.util.Random;
 
 @Service
@@ -29,7 +28,7 @@ public class EmailService {
 
     @Transactional
     public String sendCode(EmailDto emailDto) {
-        userInformationService.findByEmail(emailDto.getEmail()).ifPresent(u -> {throw new ChangeEmailException();});
+        userInformationService.findByEmail(emailDto.getEmail()).ifPresent(u -> {throw new EmailException();});
         String key = generateVerificationCode();
         sendSimpleMessage(emailDto.getEmail(), "Код подтверждения", "Код: " + key);
         assumptionService.saveOrUpdate(emailDto.getEmail(), key);

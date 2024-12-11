@@ -2,6 +2,11 @@ package com.example.kptc_smp.controller;
 
 import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.exception.*;
+import com.example.kptc_smp.exception.EmailException;
+import com.example.kptc_smp.exception.profile.CodeValidationException;
+import com.example.kptc_smp.exception.profile.PasswordValidationException;
+import com.example.kptc_smp.exception.profile.PhotoException;
+import com.example.kptc_smp.exception.profile.UserFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
@@ -9,7 +14,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,12 +38,12 @@ public class AdviceController {
     }
 
     @ExceptionHandler(RegistrationValidationException.class)
-    public ResponseEntity<?> validationException(RegistrationValidationException e) {
+    public ResponseEntity<?> registrationValidationException(RegistrationValidationException e) {
         return ResponseEntity.badRequest().body(e.getValidationErrors());
     }
 
-    @ExceptionHandler(ChangeEmailException.class)
-    public ResponseEntity<?> changeEmailException(ChangeEmailException e) {
+    @ExceptionHandler(EmailException.class)
+    public ResponseEntity<?> emailException(EmailException e) {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
     }
 
@@ -48,8 +52,8 @@ public class AdviceController {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
     }
 
-    @ExceptionHandler(UserNotFountException.class)
-    public ResponseEntity<?> userNotFoundException(UserNotFountException e) {
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<?> userNotFoundException(UserNotFoundException e) {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
     }
 
@@ -57,4 +61,20 @@ public class AdviceController {
     public ResponseEntity<?> photoException(PhotoException e) {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
     }
+
+    @ExceptionHandler(CodeValidationException.class)
+    public ResponseEntity<?> codeValidationException(CodeValidationException e) {
+        return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
+    }
+
+    @ExceptionHandler(PasswordValidationException.class)
+    public ResponseEntity<?> passwordValidationException(PasswordValidationException e) {
+        return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
+    }
+
+    @ExceptionHandler(UserFoundException.class)
+    public ResponseEntity<?> userFoundException(UserFoundException e) {
+        return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
+    }
+
 }

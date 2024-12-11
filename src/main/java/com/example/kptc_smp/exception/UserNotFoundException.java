@@ -1,8 +1,8 @@
 package com.example.kptc_smp.exception;
 
-public class UserNotFountException extends RuntimeException {
+public class UserNotFoundException extends RuntimeException {
 
-    public UserNotFountException() {
+    public UserNotFoundException() {
         super("Пользователь не найден");
     }
 }
