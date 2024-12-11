@@ -13,7 +13,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,14 +33,13 @@ public class AuthService {
     private final AssumptionService assumptionService;
     private final RegistrationValidatorService registrationValidatorService;
 
-
+    @Transactional
     public AuthTokenDto createAuthToken(@RequestBody JwtRequestDto authRequest) throws BadCredentialsException {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            Optional<User> user = userService.findByUsername(authRequest.getUsername());
+            Optional<User> user = userService.findWithTokenVersionByUsername(authRequest.getUsername());
             String versionId = user.orElseThrow(() -> new BadCredentialsException("Нет версии токена")).getTokenVersion().getVersion();
-            String token = jwtTokenUtils.generateToken(userDetails, versionId);
-            List<String> roles = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+            String token = jwtTokenUtils.generateToken(authentication, versionId);
+            List<String> roles = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
             return new AuthTokenDto(token,roles);
     }
 

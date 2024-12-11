@@ -13,7 +13,7 @@ public class UserInformation {
     private Long  id;
 
     @OneToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @MapsId
     private User user;
 
     @Column(name = "email")

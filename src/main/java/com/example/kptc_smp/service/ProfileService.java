@@ -12,8 +12,8 @@ import com.example.kptc_smp.exception.UserNotFountException;
 import com.example.kptc_smp.utility.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,13 +41,11 @@ public class ProfileService {
 
     @Transactional
     public ResponseDto changeLogin(LoginChangeDto loginChangeDto) {
-        Optional<User> user = userService.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
+        Optional<User> user = userService.findWithTokenVersionByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
         return user.map(
                 us -> {
                     userService.findByUsername(loginChangeDto.getNewUsername()).ifPresent(u -> {throw new UserNotFountException();});
-                    if(!passwordEncoder.matches(loginChangeDto.getPassword(), us.getPassword())){
-                        throw new UserNotFountException();
-                    }
+                    checkPassword(loginChangeDto.getPassword(), us.getPassword());
                     us.setUsername(loginChangeDto.getNewUsername());
                     userService.saveUser(us);
                     return updateAndGenerateToken(us);
@@ -56,15 +54,13 @@ public class ProfileService {
 
     @Transactional
     public ResponseDto changePassword(PasswordChangeDto passwordChangeDto) {
-        Optional<User> user = userService.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
+        Optional<User> user = userService.findWithTokenVersionByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
         return user.map(
                 us -> {
                     if(!passwordChangeDto.getPassword().equals(passwordChangeDto.getConfirmPassword())){
                         throw new UserNotFountException();
                     }
-                    if(!passwordEncoder.matches(passwordChangeDto.getOldPassword(), us.getPassword())){
-                        throw new UserNotFountException();
-                    };
+                    checkPassword(passwordChangeDto.getOldPassword(), us.getPassword());
                     us.setPassword(passwordEncoder.encode(passwordChangeDto.getPassword()));
                     userService.saveUser(us);
                     return updateAndGenerateToken(us);
@@ -73,7 +69,7 @@ public class ProfileService {
 
     @Transactional
     public ResponseDto changeEmail(EmailChangeDto emailChangeDto) {
-        Optional<User> user = userService.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
+        Optional<User> user = userService.findWithUserInformationAndTokenVersionByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
         return user.map(us -> {
             userInformationService.findByEmail(emailChangeDto.getEmail()).ifPresent(u -> {throw new UserNotFountException();});
             if(assumptionService.validateCode(user.get().getUserInformation().getEmail(), emailChangeDto.getCode())) {
@@ -89,7 +85,7 @@ public class ProfileService {
     @Transactional
     public ResponseDto changePhoto(MultipartFile photo) {
         if (photo != null && photo.getContentType() != null && !photo.getContentType().matches("image/.*")) {
-            Optional<User> user = userService.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
+            Optional<User> user = userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
             return user.map(us -> {
                 String uuidFile = UUID.randomUUID().toString();
                 String result = uuidFile + "." + photo.getOriginalFilename();
@@ -110,7 +106,7 @@ public class ProfileService {
     }
 
     public UserInformationDto getData(){
-        Optional<User> user = userService.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
+        Optional<User> user = userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
         return user.map(
                 us -> new UserInformationDto(us.getId(), us.getUsername(), us.getUserInformation().getEmail(),
                         us.getUserInformation().getMinecraftName())
@@ -118,7 +114,7 @@ public class ProfileService {
     }
 
     public ResponseDto getPhoto(){
-        return new ResponseDto(userService.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
+        return new ResponseDto(userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
                 user -> user.getUserInformation().getPhoto()
         ).orElseThrow( UserNotFountException::new));
     }
@@ -127,8 +123,14 @@ public class ProfileService {
         String versionId = UUID.randomUUID().toString();
         user.getTokenVersion().setVersion(versionId);
         tokenVersionService.save(user.getTokenVersion());
-        UserDetails userDetails = userService.loadUserByUsername(user.getUsername());
-        String token = jwtTokenUtils.generateToken(userDetails, versionId);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String token = jwtTokenUtils.generateToken(authentication, versionId);
         return new ResponseDto(token);
+    }
+
+    private void checkPassword(String password, String password2) {
+        if(!passwordEncoder.matches(password, password2)){
+            throw new UserNotFountException();
+        }
     }
 }
