@@ -2,15 +2,21 @@ package com.example.kptc_smp.service;
 
 
 import com.example.kptc_smp.dto.*;
-import com.example.kptc_smp.entitys.User;
-import com.example.kptc_smp.utils.JwtTokenUtils;
+import com.example.kptc_smp.dto.profile.EmailChangeDto;
+import com.example.kptc_smp.dto.profile.LoginChangeDto;
+import com.example.kptc_smp.dto.profile.PasswordChangeDto;
+import com.example.kptc_smp.dto.profile.UserInformationDto;
+import com.example.kptc_smp.entity.User;
+import com.example.kptc_smp.exception.profile.*;
+import com.example.kptc_smp.exception.UserNotFoundException;
+import com.example.kptc_smp.utility.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -27,104 +33,103 @@ public class ProfileService {
     private final UserInformationService userInformationService;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenUtils jwtTokenUtils;
-    private final EmailService emailService;
     private final AssumptionService assumptionService;
+    private final TokenVersionService tokenVersionService;
 
     @Value("${upload.path}")
     private String uploadPath;
 
-    public StringResponseDto changeLogin(LoginChangeDto loginChangeDto) {
-        Optional<User> user = userService.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
+    @Transactional
+    public ResponseDto changeLogin(LoginChangeDto loginChangeDto) {
+        Optional<User> user = userService.findWithTokenVersionByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
         return user.map(
                 us -> {
-                    boolean isUsernameAvailable = userService.findByUsername(loginChangeDto.getNewUsername()).isEmpty();
-                    boolean isPasswordValid = passwordEncoder.matches(loginChangeDto.getPassword(), us.getPassword());
-                    if (isUsernameAvailable && isPasswordValid) {
-                        us.setUsername(loginChangeDto.getNewUsername());
-                        us.getUserInformation().setVersionId(UUID.randomUUID().toString());
-                        userService.saveUser(us);
-                        UserDetails userDetails = userService.loadUserByUsername(us.getUsername());
-                        String versionId = us.getUserInformation().getVersionId();
-                        String token = jwtTokenUtils.generateToken(userDetails, versionId);
-                        return new StringResponseDto(token,HttpStatus.OK);
-                    } else {
-                        return new StringResponseDto(isUsernameAvailable ? "Неверный пароль" : "Логин уже занят", HttpStatus.CONFLICT);
-                    }
-                }).orElseGet(() -> new StringResponseDto("Пользователь не найден",HttpStatus.NOT_FOUND));
+                    userService.findByUsername(loginChangeDto.getNewUsername()).ifPresent(u -> {throw new UserFoundException();});
+                    checkPassword(loginChangeDto.getPassword(), us.getPassword());
+                    us.setUsername(loginChangeDto.getNewUsername());
+                    userService.saveUser(us);
+                    return updateAndGenerateToken(us);
+                }).orElseThrow(UserNotFoundException::new);
     }
 
-    public StringResponseDto changePassword(PasswordChangeDto passwordChangeDto) {
-        Optional<User> user = userService.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
+    @Transactional
+    public ResponseDto changePassword(PasswordChangeDto passwordChangeDto) {
+        Optional<User> user = userService.findWithTokenVersionByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
         return user.map(
                 us -> {
-                    boolean isPasswordEqual = passwordChangeDto.getPassword().equals(passwordChangeDto.getConfirmPassword());
-                    boolean isPasswordValid = passwordEncoder.matches(passwordChangeDto.getOldPassword(), us.getPassword());
-                    if (isPasswordEqual && isPasswordValid) {
-                        us.setPassword(passwordEncoder.encode(passwordChangeDto.getPassword()));
-                        userService.saveUser(us);
-                        UserDetails userDetails = userService.loadUserByUsername(us.getUsername());
-                        String versionId = us.getUserInformation().getVersionId();
-                        String token = jwtTokenUtils.generateToken(userDetails, versionId);
-                        return new StringResponseDto(token,HttpStatus.OK);
-                    } else {
-                        return new StringResponseDto(isPasswordValid ? "Пароли не совпадают" : "Неверный пароль", HttpStatus.CONFLICT);
+                    if(!passwordChangeDto.getPassword().equals(passwordChangeDto.getConfirmPassword())){
+                        throw new PasswordValidationException();
                     }
-                }).orElseGet(() -> new StringResponseDto("Пользователь не найден",HttpStatus.NOT_FOUND));
+                    checkPassword(passwordChangeDto.getOldPassword(), us.getPassword());
+                    us.setPassword(passwordEncoder.encode(passwordChangeDto.getPassword()));
+                    userService.saveUser(us);
+                    return updateAndGenerateToken(us);
+                }).orElseThrow(UserNotFoundException::new);
     }
 
-    public StringResponseDto changeEmail(EmailChangeDto emailChangeDto) {
-        Optional<User> user = userService.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
+    @Transactional
+    public ResponseDto changeEmail(EmailChangeDto emailChangeDto) {
+        Optional<User> user = userService.findWithUserInformationAndTokenVersionByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
         return user.map(us -> {
-            boolean emailAvailable = userInformationService.findByEmail(emailChangeDto.getEmail()).isEmpty();
-            boolean validateCode = emailService.validateCode(user.get().getUserInformation().getEmail(), emailChangeDto.getCode());
-            if(emailAvailable && validateCode) {
-                assumptionService.findByEmail(us.getUserInformation().getEmail()).ifPresent(assumptionService::delete);
-                us.getUserInformation().setEmail(emailChangeDto.getEmail());
-                us.getUserInformation().setVersionId(UUID.randomUUID().toString());
-                userInformationService.save(us.getUserInformation());
-                UserDetails userDetails = userService.loadUserByUsername(us.getUsername());
-                String versionId = us.getUserInformation().getVersionId();
-                String token = jwtTokenUtils.generateToken(userDetails, versionId);
-                return new StringResponseDto(token,HttpStatus.OK);
-            }else {
-                return new StringResponseDto(emailAvailable ? "Неверный код" : "Новая почта уже занята", HttpStatus.CONFLICT);
+            if(assumptionService.validateCode(user.get().getUserInformation().getEmail(), emailChangeDto.getCode())) {
+                throw new CodeValidationException();
             }
-        }).orElseGet(() -> new StringResponseDto("Пользователь не найден",HttpStatus.NOT_FOUND));
+            assumptionService.findByEmail(us.getUserInformation().getEmail()).ifPresent(assumptionService::delete);
+            us.getUserInformation().setEmail(emailChangeDto.getEmail());
+            userInformationService.save(us.getUserInformation());
+            return updateAndGenerateToken(us);
+        }).orElseThrow(UserNotFoundException::new);
     }
 
-    public StringResponseDto changePhoto(MultipartFile photo) {
-        if (photo != null && !photo.getContentType().matches("image/.*")) {
-            Optional<User> user = userService.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
-            String uuidFile = UUID.randomUUID().toString();
-            String result = uuidFile + "." + photo.getOriginalFilename();
+    @Transactional
+    public ResponseDto changePhoto(MultipartFile photo) {
+        if (photo != null && photo.getContentType() != null && !photo.getContentType().matches("image/.*")) {
+            Optional<User> user = userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
             return user.map(us -> {
+                String uuidFile = UUID.randomUUID().toString();
+                String result = uuidFile + "." + photo.getOriginalFilename();
                 try {
                     if(us.getUserInformation().getPhoto() != null){
                         Files.delete(Path.of(uploadPath+"/"+us.getUserInformation().getPhoto()));
                     }
                     photo.transferTo(new File(uploadPath+"/"+ result));
                 } catch (IOException e) {
-                    return new StringResponseDto("Что-то пошло не так",HttpStatus.CONFLICT);
+                    throw new PhotoException();
                 }
                 us.getUserInformation().setPhoto(result);
                 userInformationService.save(us.getUserInformation());
-                return new StringResponseDto("Успешное изменение фотографии",HttpStatus.OK);
-            }).orElseGet(() -> new StringResponseDto("Пользователь не найден",HttpStatus.NOT_FOUND));
+                return new ResponseDto("Успешное изменение фотографии");
+            }).orElseThrow(UserNotFoundException::new);
         }
-        return new StringResponseDto("Неверный формат фотографии",HttpStatus.BAD_REQUEST);
+        throw new PhotoException();
     }
 
     public UserInformationDto getData(){
-        Optional<User> user = userService.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
+        Optional<User> user = userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
         return user.map(
                 us -> new UserInformationDto(us.getId(), us.getUsername(), us.getUserInformation().getEmail(),
                         us.getUserInformation().getMinecraftName())
-        ).orElse(null);
+        ).orElseThrow(UserNotFoundException::new);
     }
 
-    public String getPhoto(){
-        return userService.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
+    public ResponseDto getPhoto(){
+        return new ResponseDto(userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
                 user -> user.getUserInformation().getPhoto()
-        ).orElse( null);
+        ).orElseThrow( UserNotFoundException::new));
+    }
+
+    private ResponseDto updateAndGenerateToken(User user) {
+        String versionId = UUID.randomUUID().toString();
+        user.getTokenVersion().setVersion(versionId);
+        tokenVersionService.save(user.getTokenVersion());
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String token = jwtTokenUtils.generateToken(authentication, versionId);
+        return new ResponseDto(token);
+    }
+
+    private void checkPassword(String password, String password2) {
+        if(!passwordEncoder.matches(password, password2)){
+            throw new PasswordValidationException();
+        }
     }
 }

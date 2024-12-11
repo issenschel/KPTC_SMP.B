@@ -1,5 +1,7 @@
 package com.example.kptc_smp.service;
 
+import com.example.kptc_smp.dto.registration.EmailDto;
+import com.example.kptc_smp.exception.EmailException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -11,9 +13,9 @@ import java.util.Random;
 @Service
 @RequiredArgsConstructor
 public class EmailService {
-
     private final JavaMailSender javaMailSender;
     private final AssumptionService assumptionService;
+    private final UserInformationService userInformationService;
 
     public void sendSimpleMessage(String to, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();
@@ -25,19 +27,16 @@ public class EmailService {
     }
 
     @Transactional
-    public String sendCode(String email){
+    public String sendCode(EmailDto emailDto) {
+        userInformationService.findByEmail(emailDto.getEmail()).ifPresent(u -> {throw new EmailException();});
         String key = generateVerificationCode();
-        sendSimpleMessage(email, "Код подтверждения", "Код: " + key);
-        assumptionService.saveOrUpdate(email, key);
+        sendSimpleMessage(emailDto.getEmail(), "Код подтверждения", "Код: " + key);
+        assumptionService.saveOrUpdate(emailDto.getEmail(), key);
         return "Код отправлен";
     }
 
     public String generateVerificationCode() {
-        return String.valueOf(new Random().nextInt(900000) + 100000);
-    }
-
-    public boolean validateCode(String email, String code) {
-        return assumptionService.findByEmail(email).filter(assumption -> assumption.getCode().equals(code)).isPresent();
+        return String.valueOf(new Random().nextInt(899999) + 100000);
     }
 
 }

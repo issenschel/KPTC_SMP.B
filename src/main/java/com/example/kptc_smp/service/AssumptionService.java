@@ -1,7 +1,7 @@
 package com.example.kptc_smp.service;
 
-import com.example.kptc_smp.entitys.Assumption;
-import com.example.kptc_smp.repositories.AssumptionRepository;
+import com.example.kptc_smp.entity.Assumption;
+import com.example.kptc_smp.repository.AssumptionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +31,10 @@ public class AssumptionService{
             assumption.setCode(code);
             assumptionRepository.save(assumption);
         }
+
+    public boolean validateCode(String email, String code) {
+        return assumptionRepository.findByEmail(email).filter(assumption -> assumption.getCode().equals(code)).isPresent();
+    }
 
     public void delete(Assumption assumption){
         assumptionRepository.delete(assumption);

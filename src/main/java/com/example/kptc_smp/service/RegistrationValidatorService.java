@@ -1,7 +1,6 @@
 package com.example.kptc_smp.service;
 
-import com.example.kptc_smp.dto.EmailDto;
-import com.example.kptc_smp.dto.RegistrationUserDto;
+import com.example.kptc_smp.dto.registration.RegistrationUserDto;
 import com.example.kptc_smp.interfaces.ValidationRule;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +13,7 @@ import java.util.*;
 public class RegistrationValidatorService {
     private final UserService userService;
     private final UserInformationService userInformationService;
-    private final EmailService emailService;
+    private final AssumptionService assumptionService;
 
     private final Map<String, ValidationRule> validationRules = new HashMap<>();
 
@@ -23,6 +22,7 @@ public class RegistrationValidatorService {
         validationRules.put("username", this::validateUsername);
         validationRules.put("minecraftName", this::validateMinecraftName);
         validationRules.put("passwordMatch", this::validatePasswordMatch);
+        validationRules.put("email", this::validateEmail);
         validationRules.put("code", this::validateCode);
     }
 
@@ -53,14 +53,14 @@ public class RegistrationValidatorService {
     }
 
     public Optional<String> validateCode(RegistrationUserDto registrationUserDto){
-        if(!emailService.validateCode(registrationUserDto.getEmail(), registrationUserDto.getCode())){
+        if(!assumptionService.validateCode(registrationUserDto.getEmail(), registrationUserDto.getCode())){
             return  Optional.of("Неверный код");
         }
         return Optional.empty();
     }
 
-    public Optional<String> validateEmail(EmailDto emailDto) {
-        return userInformationService.findByEmail(emailDto.getEmail())
+    public Optional<String> validateEmail(RegistrationUserDto registrationUserDto) {
+        return userInformationService.findByEmail(registrationUserDto.getEmail())
                 .map(user -> "Почта уже занята");
     }
 }

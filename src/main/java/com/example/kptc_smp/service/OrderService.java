@@ -1,10 +1,10 @@
 package com.example.kptc_smp.service;
 
 
-import com.example.kptc_smp.dto.ListOrderDto;
-import com.example.kptc_smp.dto.OrderDto;
-import com.example.kptc_smp.entitys.Order;
-import com.example.kptc_smp.repositories.OrderRepository;
+import com.example.kptc_smp.dto.guild.ListOrderDto;
+import com.example.kptc_smp.dto.guild.OrderDto;
+import com.example.kptc_smp.entity.Order;
+import com.example.kptc_smp.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
@@ -38,11 +38,11 @@ public class OrderService {
     }
 
     @Transactional
-    public Order changeOrder(Order order,OrderDto orderDto){
+    public void changeOrder(Order order,OrderDto orderDto){
         order.setHeader(orderDto.getHeader());
         order.setMessage(orderDto.getMessage());
         order.setPseudonym(orderDto.getPseudonym());
-        return orderRepository.save(order);
+        orderRepository.save(order);
     }
 
     public void delete(Order order){

@@ -1,6 +1,6 @@
 package com.example.kptc_smp.interfaces;
 
-import com.example.kptc_smp.dto.RegistrationUserDto;
+import com.example.kptc_smp.dto.registration.RegistrationUserDto;
 
 import java.util.Optional;
 

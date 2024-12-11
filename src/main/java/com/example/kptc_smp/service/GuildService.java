@@ -1,8 +1,9 @@
 package com.example.kptc_smp.service;
 
-import com.example.kptc_smp.dto.ListOrderDto;
-import com.example.kptc_smp.dto.OrderDto;
-import com.example.kptc_smp.entitys.Order;
+import com.example.kptc_smp.dto.guild.ListOrderDto;
+import com.example.kptc_smp.dto.guild.OrderDto;
+import com.example.kptc_smp.entity.Order;
+import com.example.kptc_smp.exception.OrderNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,18 +18,14 @@ public class GuildService {
         return orderService.createNewOrder(orderDto);
     }
 
-    public Order changeOrder(OrderDto orderDto, int id) {
+    public void changeOrder(OrderDto orderDto, int id) {
         Optional<Order> order = orderService.findById(id);
-        return order.map(value -> orderService.changeOrder(value, orderDto)).orElse(null);
+        orderService.changeOrder(order.orElseThrow(OrderNotFoundException::new), orderDto);
     }
 
-    public boolean deleteOrder(int id) {
+    public void deleteOrder(int id) {
         Optional<Order> order = orderService.findById(id);
-        if (order.isPresent()) {
-            orderService.delete(order.get());
-            return true;
-        }
-        return false;
+        orderService.delete(order.orElseThrow(OrderNotFoundException::new));
     }
 
     public ListOrderDto getOrders(int page){
