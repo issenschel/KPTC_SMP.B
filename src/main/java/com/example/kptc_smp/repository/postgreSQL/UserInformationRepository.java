@@ -9,5 +9,4 @@ import java.util.Optional;
 @Repository
 public interface UserInformationRepository extends CrudRepository<UserInformation, Integer> {
     Optional<UserInformation> findByEmail(String email);
-    Optional<UserInformation> findByMinecraftName(String minecraftName);
 }

@@ -9,5 +9,4 @@ public class UserInformationDto {
     private Integer id;
     private String username;
     private String email;
-    private String minecraftName;
 }

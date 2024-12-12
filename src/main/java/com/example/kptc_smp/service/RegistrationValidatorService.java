@@ -20,7 +20,6 @@ public class RegistrationValidatorService {
     @PostConstruct
     public void init() {
         validationRules.put("username", this::validateUsername);
-        validationRules.put("minecraftName", this::validateMinecraftName);
         validationRules.put("passwordMatch", this::validatePasswordMatch);
         validationRules.put("email", this::validateEmail);
         validationRules.put("code", this::validateCode);
@@ -38,11 +37,6 @@ public class RegistrationValidatorService {
     public Optional<String> validateUsername(RegistrationUserDto registrationUserDto) {
         return userService.findByUsername(registrationUserDto.getUsername())
                 .map(user -> "Логин уже занят");
-    }
-
-    public Optional<String> validateMinecraftName(RegistrationUserDto registrationUserDto) {
-        return userInformationService.findByMinecraftName(registrationUserDto.getMinecraftName())
-                .map(user -> "Никнейм занят");
     }
 
     public Optional<String> validatePasswordMatch(RegistrationUserDto registrationUserDto) {

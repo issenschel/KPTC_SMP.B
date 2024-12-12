@@ -17,17 +17,12 @@ public class UserInformationService {
     public UserInformation createNewUserInformation(RegistrationUserDto registrationUserDto, User user) {
         UserInformation userInformation = new UserInformation();
         userInformation.setEmail(registrationUserDto.getEmail());
-        userInformation.setMinecraftName(registrationUserDto.getMinecraftName());
         userInformation.setUser(user);
         return userInformationRepository.save(userInformation);
     }
 
     public Optional<UserInformation> findByEmail(String email) {
         return userInformationRepository.findByEmail(email);
-    }
-
-    public Optional<UserInformation> findByMinecraftName(String minecraftName) {
-        return userInformationRepository.findByMinecraftName(minecraftName);
     }
 
     public void save(UserInformation userInformation) {

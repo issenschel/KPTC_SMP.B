@@ -19,9 +19,6 @@ public class UserInformation {
     @Column(name = "email")
     private String email;
 
-    @Column(name = "minecraftname")
-    private String minecraftName;
-
     @Column(name = "photo")
     private String photo;
 }

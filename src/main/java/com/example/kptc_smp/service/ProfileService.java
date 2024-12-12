@@ -107,8 +107,7 @@ public class ProfileService {
     public UserInformationDto getData(){
         Optional<User> user = userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
         return user.map(
-                us -> new UserInformationDto(us.getId(), us.getUsername(), us.getUserInformation().getEmail(),
-                        us.getUserInformation().getMinecraftName())
+                us -> new UserInformationDto(us.getId(), us.getUsername(), us.getUserInformation().getEmail())
         ).orElseThrow(UserNotFoundException::new);
     }
 

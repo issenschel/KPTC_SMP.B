@@ -6,6 +6,8 @@ import com.example.kptc_smp.dto.registration.RegistrationUserDto;
 import com.example.kptc_smp.entity.postgreSQL.User;
 import com.example.kptc_smp.entity.postgreSQL.UserInformation;
 import com.example.kptc_smp.exception.RegistrationValidationException;
+import com.example.kptc_smp.service.minecraft.AuthMeService;
+import com.example.kptc_smp.service.minecraft.WhitelistService;
 import com.example.kptc_smp.utility.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -32,6 +34,8 @@ public class AuthService {
     private final TokenVersionService tokenVersionService;
     private final AssumptionService assumptionService;
     private final RegistrationValidatorService registrationValidatorService;
+    private final WhitelistService whitelistService;
+    private final AuthMeService authMeService;
 
     @Transactional
     public AuthTokenDto createAuthToken(@RequestBody JwtRequestDto authRequest) throws BadCredentialsException {
@@ -51,11 +55,13 @@ public class AuthService {
             }
             User user = userService.createNewUser(registrationUserDto.getUsername(), registrationUserDto.getPassword());
             UserInformation userInformation = userInformationService.createNewUserInformation(registrationUserDto, user);
+            authMeService.createAuthMe(user);
+            whitelistService.createWhitelist(user.getUsername());
             String token = UUID.randomUUID().toString();
             tokenVersionService.createNewTokenVersion(user,token);
             assumptionService.findByEmail(registrationUserDto.getEmail()).ifPresent(assumptionService::delete);
             return new UserInformationDto(userInformation.getId(), userInformation.getUser().getUsername(),
-                    userInformation.getEmail(), userInformation.getMinecraftName());
+                    userInformation.getEmail());
     }
-
+    
 }

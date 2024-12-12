@@ -17,9 +17,6 @@ public class RegistrationUserDto {
     @NotBlank(message = "Подтверждение пароля не может быть пустым")
     @Size(min = 8, max = 30, message = "Подтверждение пароля не может быть меньше 8 или больше 30")
     private String confirmPassword;
-    @NotBlank(message = "Майнкрафт ник не может быть пустым")
-    @Size(min = 3, max = 30, message = "Майнкрафт ник не может быть меньше 3 или больше 30")
-    private String minecraftName;
     @NotBlank(message = "Почта не может быть пустой")
     @Email(message = "Почта должна быть валидной")
     private String email;
