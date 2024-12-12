@@ -1,9 +1,9 @@
 package com.example.kptc_smp.service;
 
 import com.example.kptc_smp.dto.registration.RegistrationUserDto;
-import com.example.kptc_smp.entity.User;
-import com.example.kptc_smp.entity.UserInformation;
-import com.example.kptc_smp.repository.UserInformationRepository;
+import com.example.kptc_smp.entity.postgreSQL.User;
+import com.example.kptc_smp.entity.postgreSQL.UserInformation;
+import com.example.kptc_smp.repository.postgreSQL.UserInformationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

@@ -1,4 +1,4 @@
-package com.example.kptc_smp.entity;
+package com.example.kptc_smp.entity.postgreSQL;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -10,7 +10,7 @@ public class Assumption {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private Long id;
+    private Integer id;
 
     @Column(name = "email")
     private String email;

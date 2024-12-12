@@ -1,6 +1,6 @@
-package com.example.kptc_smp.repository;
+package com.example.kptc_smp.repository.postgreSQL;
 
-import com.example.kptc_smp.entity.User;
+import com.example.kptc_smp.entity.postgreSQL.User;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends CrudRepository<User, Long> {
+public interface UserRepository extends CrudRepository<User, Integer> {
 
     @EntityGraph(attributePaths = {"roles","userInformation","tokenVersion"})
     @Query("SELECT u FROM User u WHERE u.username = :username")

@@ -1,8 +1,8 @@
 package com.example.kptc_smp.service;
 
-import com.example.kptc_smp.entity.TokenVersion;
-import com.example.kptc_smp.entity.User;
-import com.example.kptc_smp.repository.TokenVersionRepository;
+import com.example.kptc_smp.entity.postgreSQL.TokenVersion;
+import com.example.kptc_smp.entity.postgreSQL.User;
+import com.example.kptc_smp.repository.postgreSQL.TokenVersionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

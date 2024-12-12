@@ -1,6 +1,6 @@
 package com.example.kptc_smp.dto.guild;
 
-import com.example.kptc_smp.entity.Order;
+import com.example.kptc_smp.entity.postgreSQL.Order;
 import lombok.Data;
 
 import java.util.List;

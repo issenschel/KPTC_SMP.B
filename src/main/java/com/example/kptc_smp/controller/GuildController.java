@@ -1,11 +1,9 @@
 package com.example.kptc_smp.controller;
 
 import com.example.kptc_smp.dto.guild.OrderDto;
-import com.example.kptc_smp.entity.Order;
 import com.example.kptc_smp.service.GuildService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

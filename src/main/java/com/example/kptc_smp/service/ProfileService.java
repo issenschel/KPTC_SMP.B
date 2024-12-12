@@ -6,7 +6,7 @@ import com.example.kptc_smp.dto.profile.EmailChangeDto;
 import com.example.kptc_smp.dto.profile.LoginChangeDto;
 import com.example.kptc_smp.dto.profile.PasswordChangeDto;
 import com.example.kptc_smp.dto.profile.UserInformationDto;
-import com.example.kptc_smp.entity.User;
+import com.example.kptc_smp.entity.postgreSQL.User;
 import com.example.kptc_smp.exception.profile.*;
 import com.example.kptc_smp.exception.UserNotFoundException;
 import com.example.kptc_smp.utility.JwtTokenUtils;
