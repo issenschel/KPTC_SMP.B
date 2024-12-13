@@ -1,7 +1,7 @@
 package com.example.kptc_smp.service;
 
-import com.example.kptc_smp.entity.Assumption;
-import com.example.kptc_smp.repository.AssumptionRepository;
+import com.example.kptc_smp.entity.postgreSQL.Assumption;
+import com.example.kptc_smp.repository.postgreSQL.AssumptionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +38,10 @@ public class AssumptionService{
 
     public void delete(Assumption assumption){
         assumptionRepository.delete(assumption);
+    }
+
+    public void deleteByEmail(String email) {
+            assumptionRepository.deleteByEmail(email);
     }
 
     public Optional<Assumption> findByEmail(String email){

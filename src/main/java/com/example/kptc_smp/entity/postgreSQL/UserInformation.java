@@ -1,4 +1,4 @@
-package com.example.kptc_smp.entity;
+package com.example.kptc_smp.entity.postgreSQL;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -10,7 +10,7 @@ public class UserInformation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private Long  id;
+    private Integer  id;
 
     @OneToOne
     @MapsId
@@ -18,9 +18,6 @@ public class UserInformation {
 
     @Column(name = "email")
     private String email;
-
-    @Column(name = "minecraftname")
-    private String minecraftName;
 
     @Column(name = "photo")
     private String photo;

@@ -2,7 +2,7 @@ package com.example.kptc_smp.service;
 
 import com.example.kptc_smp.dto.guild.ListOrderDto;
 import com.example.kptc_smp.dto.guild.OrderDto;
-import com.example.kptc_smp.entity.Order;
+import com.example.kptc_smp.entity.postgreSQL.Order;
 import com.example.kptc_smp.exception.OrderNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

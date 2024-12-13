@@ -1,8 +1,8 @@
 package com.example.kptc_smp.service;
 
-import com.example.kptc_smp.entity.TokenVersion;
-import com.example.kptc_smp.entity.User;
-import com.example.kptc_smp.repository.TokenVersionRepository;
+import com.example.kptc_smp.entity.postgreSQL.TokenVersion;
+import com.example.kptc_smp.entity.postgreSQL.User;
+import com.example.kptc_smp.repository.postgreSQL.TokenVersionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,10 +17,10 @@ public class TokenVersionService {
         return tokenVersionRepository.findByVersion(token);
     }
 
-    public void createNewTokenVersion(User user, String token){
+    public void createNewTokenVersion(User user, String version){
         TokenVersion tokenVersion = new TokenVersion();
         tokenVersion.setUser(user);
-        tokenVersion.setVersion(token);
+        tokenVersion.setVersion(version);
         tokenVersionRepository.save(tokenVersion);
     }
 

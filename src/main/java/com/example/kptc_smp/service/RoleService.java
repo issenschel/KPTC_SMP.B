@@ -1,7 +1,7 @@
 package com.example.kptc_smp.service;
 
-import com.example.kptc_smp.entity.Role;
-import com.example.kptc_smp.repository.RoleRepository;
+import com.example.kptc_smp.entity.postgreSQL.Role;
+import com.example.kptc_smp.repository.postgreSQL.RoleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

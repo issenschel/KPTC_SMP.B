@@ -1,4 +1,4 @@
-package com.example.kptc_smp.entity;
+package com.example.kptc_smp.entity.postgreSQL;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -12,7 +12,7 @@ public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private Integer id;
+    private Byte id;
 
     @Column(name = "name")
     private String name;

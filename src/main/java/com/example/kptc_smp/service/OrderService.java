@@ -3,8 +3,8 @@ package com.example.kptc_smp.service;
 
 import com.example.kptc_smp.dto.guild.ListOrderDto;
 import com.example.kptc_smp.dto.guild.OrderDto;
-import com.example.kptc_smp.entity.Order;
-import com.example.kptc_smp.repository.OrderRepository;
+import com.example.kptc_smp.entity.postgreSQL.Order;
+import com.example.kptc_smp.repository.postgreSQL.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;

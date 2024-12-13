@@ -1,4 +1,4 @@
-package com.example.kptc_smp.entity;
+package com.example.kptc_smp.entity.postgreSQL;
 
 import jakarta.persistence.*;
 import lombok.Data;

@@ -5,13 +5,10 @@ import com.example.kptc_smp.dto.registration.EmailDto;
 import com.example.kptc_smp.dto.registration.RegistrationUserDto;
 import com.example.kptc_smp.service.AuthService;
 import com.example.kptc_smp.service.EmailService;
-import com.example.kptc_smp.service.RegistrationValidatorService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
