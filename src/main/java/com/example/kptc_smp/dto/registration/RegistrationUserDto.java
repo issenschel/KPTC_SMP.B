@@ -20,7 +20,7 @@ public class RegistrationUserDto {
     @NotBlank(message = "Почта не может быть пустой")
     @Email(message = "Почта должна быть валидной")
     private String email;
-    @NotNull
+    @NotNull(message = "Код не может быть пустым")
     @Size(max = 6, message = "Код не может быть больше 6")
     private String code;
 }

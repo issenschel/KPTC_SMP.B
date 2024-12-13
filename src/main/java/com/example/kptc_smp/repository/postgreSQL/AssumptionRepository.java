@@ -9,4 +9,6 @@ import java.util.Optional;
 @Repository
 public interface AssumptionRepository extends CrudRepository<Assumption, Integer> {
     Optional<Assumption> findByEmail(String email);
+
+    void deleteByEmail(String email);
 }

@@ -17,10 +17,10 @@ public class TokenVersionService {
         return tokenVersionRepository.findByVersion(token);
     }
 
-    public void createNewTokenVersion(User user, String token){
+    public void createNewTokenVersion(User user, String version){
         TokenVersion tokenVersion = new TokenVersion();
         tokenVersion.setUser(user);
-        tokenVersion.setVersion(token);
+        tokenVersion.setVersion(version);
         tokenVersionRepository.save(tokenVersion);
     }
 

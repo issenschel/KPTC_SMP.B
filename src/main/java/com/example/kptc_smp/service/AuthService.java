@@ -57,9 +57,9 @@ public class AuthService {
             UserInformation userInformation = userInformationService.createNewUserInformation(registrationUserDto, user);
             authMeService.createAuthMe(user);
             whitelistService.createWhitelist(user.getUsername());
-            String token = UUID.randomUUID().toString();
-            tokenVersionService.createNewTokenVersion(user,token);
-            assumptionService.findByEmail(registrationUserDto.getEmail()).ifPresent(assumptionService::delete);
+            String version = UUID.randomUUID().toString();
+            tokenVersionService.createNewTokenVersion(user,version);
+            assumptionService.deleteByEmail(registrationUserDto.getEmail());
             return new UserInformationDto(userInformation.getId(), userInformation.getUser().getUsername(),
                     userInformation.getEmail());
     }
