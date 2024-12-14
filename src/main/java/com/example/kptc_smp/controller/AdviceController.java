@@ -7,6 +7,7 @@ import com.example.kptc_smp.exception.profile.CodeValidationException;
 import com.example.kptc_smp.exception.profile.PasswordValidationException;
 import com.example.kptc_smp.exception.profile.PhotoException;
 import com.example.kptc_smp.exception.profile.UserFoundException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
@@ -34,27 +35,27 @@ public class AdviceController {
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ResponseDto> authException() {
-        return ResponseEntity.badRequest().body(new ResponseDto("Неверный логин или пароль"));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ResponseDto("Неверный логин или пароль"));
     }
 
     @ExceptionHandler(RegistrationValidationException.class)
     public ResponseEntity<?> registrationValidationException(RegistrationValidationException e) {
-        return ResponseEntity.badRequest().body(e.getValidationErrors());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getValidationErrors());
     }
 
     @ExceptionHandler(EmailException.class)
     public ResponseEntity<?> emailException(EmailException e) {
-        return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ResponseDto(e.getMessage()));
     }
 
     @ExceptionHandler(OrderNotFoundException.class)
     public ResponseEntity<?> orderNotFoundException(OrderNotFoundException e) {
-        return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDto(e.getMessage()));
     }
 
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<?> userNotFoundException(UserNotFoundException e) {
-        return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDto(e.getMessage()));
     }
 
     @ExceptionHandler(PhotoException.class)
