@@ -17,10 +17,11 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Profile")
+@RequestMapping("/profile")
 public class ProfileController {
     private final ProfileService profileService;
 
-    @PutMapping("/changePassword")
+    @PutMapping("/password")
     @Operation(summary = "Смена пароля пользователя")
     @ApiResponses({
             @ApiResponse(
@@ -56,7 +57,7 @@ public class ProfileController {
         return ResponseEntity.ok().body(profileService.changePassword(passwordChangeDto));
     }
 
-    @PutMapping("/changeEmail")
+    @PutMapping("/email")
     @Operation(summary = "Смена почты пользователя")
     @ApiResponses({
             @ApiResponse(
@@ -99,7 +100,7 @@ public class ProfileController {
         return ResponseEntity.ok().body(profileService.changeEmail(emailChangeDto));
     }
 
-    @PutMapping("/changePhoto")
+    @PutMapping("/photo")
     @Operation(summary = "Смена фотографии пользователя")
     @ApiResponses({
             @ApiResponse(

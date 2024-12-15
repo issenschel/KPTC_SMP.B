@@ -15,11 +15,12 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Guild")
+@RequestMapping("/guild")
 public class GuildController {
     private final GuildService guildService;
 
 
-    @PostMapping("/createNewOrder")
+    @PostMapping("/order")
     @Operation(summary = "Создание заказов")
     @ApiResponses(
             {
@@ -56,7 +57,7 @@ public class GuildController {
         return ResponseEntity.ok(guildService.createNewOrder(orderDto));
     }
 
-    @GetMapping("/getOrders")
+    @GetMapping("/orders")
     @Operation(summary = "Получение заказов")
     @ApiResponses(
             {
@@ -79,7 +80,7 @@ public class GuildController {
         return ResponseEntity.ok(guildService.getOrders(page));
     }
 
-    @PutMapping("/changeOrder")
+    @PutMapping("/order")
     @Operation(summary = "Изменений заказа")
     @ApiResponses(
             {
@@ -124,7 +125,7 @@ public class GuildController {
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/deleteOrder")
+    @DeleteMapping("/order")
     @Operation(summary = "Удаление заказа")
     @ApiResponses({
             @ApiResponse(
