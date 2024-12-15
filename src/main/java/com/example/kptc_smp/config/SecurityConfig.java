@@ -29,12 +29,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable).authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/changeLogin").authenticated()
-                        .requestMatchers("/changePassword").authenticated()
-                        .requestMatchers("/changeEmail").authenticated()
-                        .requestMatchers("/createNewOrder").hasRole("ADMIN")
-                        .requestMatchers("/changeOrder").hasRole("ADMIN")
-                        .requestMatchers("/deleteOrder").hasRole("ADMIN")
+                        .requestMatchers("/profile/**").authenticated()
+                        .requestMatchers("/guild/order").hasRole("ADMIN")
                         .anyRequest().permitAll()).sessionManagement(sessionManagementCustomizer -> sessionManagementCustomizer
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)).exceptionHandling(exceptionHandlingCustomizer ->
                         exceptionHandlingCustomizer.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)
