@@ -14,6 +14,8 @@ import com.example.kptc_smp.service.minecraft.AuthMeService;
 import com.example.kptc_smp.utility.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,8 +25,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -103,9 +107,17 @@ public class ProfileService {
         ).orElseThrow(UserNotFoundException::new);
     }
 
-    public ResponseDto getPhoto() {
-        return new ResponseDto(userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
-                user -> user.getUserInformation().getPhoto()
+    public Resource getPhoto() {
+        return (userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
+                user -> {
+                    String photo = user.getUserInformation().getPhoto();
+                    Path path = Paths.get("/userPhoto/" + photo);
+                    try {
+                        return new UrlResource(path.toUri());
+                    } catch (MalformedURLException e) {
+                        throw new PhotoException();
+                    }
+                }
         ).orElseThrow(UserNotFoundException::new));
     }
 

@@ -14,6 +14,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.multipart.MultipartException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -75,6 +76,11 @@ public class AdviceController {
 
     @ExceptionHandler(UserFoundException.class)
     public ResponseEntity<?> userFoundException(UserFoundException e) {
+        return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
+    }
+
+    @ExceptionHandler(MultipartException.class)
+    public ResponseEntity<?> userFoundException(MultipartException e) {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
     }
 
