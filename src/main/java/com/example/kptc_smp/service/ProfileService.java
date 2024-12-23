@@ -67,7 +67,7 @@ public class ProfileService {
     public ResponseDto changeEmail(EmailChangeDto emailChangeDto) {
         Optional<User> user = userService.findWithUserInformationAndTokenVersionByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
         return user.map(us -> {
-            if (assumptionService.validateCode(user.get().getUserInformation().getEmail(), emailChangeDto.getCode())) {
+            if (!assumptionService.validateCode(user.get().getUserInformation().getEmail(), emailChangeDto.getCode())) {
                 throw new CodeValidationException();
             }
             assumptionService.findByEmail(us.getUserInformation().getEmail()).ifPresent(assumptionService::delete);
@@ -111,7 +111,7 @@ public class ProfileService {
         return (userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
                 user -> {
                     String photo = user.getUserInformation().getPhoto();
-                    Path path = Paths.get("/userPhoto/" + photo);
+                    Path path = Paths.get(uploadPath+ "/" + photo);
                     try {
                         return new UrlResource(path.toUri());
                     } catch (MalformedURLException e) {

@@ -84,4 +84,9 @@ public class AdviceController {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
     }
 
+    @ExceptionHandler(NewsNotFoundException.class)
+    public ResponseEntity<?> newsFoundException(NewsNotFoundException e) {
+        return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
+    }
+
 }
