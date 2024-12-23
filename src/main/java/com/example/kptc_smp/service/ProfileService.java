@@ -23,10 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
@@ -42,6 +39,7 @@ public class ProfileService {
     private final AssumptionService assumptionService;
     private final TokenVersionService tokenVersionService;
     private final AuthMeService authMeService;
+    private final FileService fileService;
 
     @Value("${upload.path}")
     private String uploadPath;
@@ -82,17 +80,7 @@ public class ProfileService {
         if (photo != null && photo.getContentType() != null && photo.getContentType().matches("image/.*")) {
             Optional<User> user = userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
             return user.map(us -> {
-                String uuidFile = UUID.randomUUID().toString();
-                String result = uuidFile + "." + photo.getOriginalFilename();
-                try {
-                    if (us.getUserInformation().getPhoto() != null) {
-                        Files.delete(Path.of(uploadPath + "/" + us.getUserInformation().getPhoto()));
-                    }
-                    photo.transferTo(new File(uploadPath + "/" + result));
-                } catch (IOException e) {
-                    throw new PhotoException();
-                }
-                us.getUserInformation().setPhoto(result);
+                us.getUserInformation().setPhoto(fileService.updatePhoto(photo, us.getUserInformation().getPhoto()));
                 userInformationService.save(us.getUserInformation());
                 return new ResponseDto("Успешное изменение фотографии");
             }).orElseThrow(UserNotFoundException::new);
@@ -111,7 +99,7 @@ public class ProfileService {
         return (userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
                 user -> {
                     String photo = user.getUserInformation().getPhoto();
-                    Path path = Paths.get(uploadPath+ "/" + photo);
+                    Path path = Paths.get(uploadPath + "/" + photo);
                     try {
                         return new UrlResource(path.toUri());
                     } catch (MalformedURLException e) {

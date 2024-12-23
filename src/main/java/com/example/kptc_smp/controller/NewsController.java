@@ -1,11 +1,12 @@
 package com.example.kptc_smp.controller;
 
-import com.example.kptc_smp.dto.news.NewsDto;
+import com.example.kptc_smp.dto.news.NewsRequestDto;
 import com.example.kptc_smp.service.NewsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,10 +15,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "News")
+@RequestMapping("/news")
 public class NewsController {
     private final NewsService newsService;
 
-    @PostMapping("/news")
+    @PostMapping
     @Operation(summary = "Создание новости")
     @ApiResponses(
             {
@@ -50,13 +53,13 @@ public class NewsController {
                             }
                     )
             })
-    public ResponseEntity<?> createNews(@Valid @ModelAttribute NewsDto newsDto,
+    public ResponseEntity<?> createNews(@Valid @ModelAttribute NewsRequestDto newsRequestDto,
                                         @RequestParam(value = "file", required = false) MultipartFile photo) {
-        newsService.createNews(newsDto,photo);
+        newsService.createNews(newsRequestDto,photo);
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/news")
+    @PutMapping
     @Operation(summary = "Изменение новости")
     @ApiResponses(
             {
@@ -97,14 +100,14 @@ public class NewsController {
                     ),
             })
     public ResponseEntity<?> changeNews(@RequestParam(name = "id") int id,
-                                        @Valid @ModelAttribute NewsDto newsDto,
+                                        @Valid @ModelAttribute NewsRequestDto newsRequestDto,
                                         @RequestParam(value = "file", required = false) MultipartFile photo) {
-        newsService.changeNews(newsDto,photo,id);
+        newsService.changeNews(newsRequestDto,photo,id);
         return ResponseEntity.ok().build();
     }
 
 
-    @GetMapping("/news")
+    @GetMapping
     @Operation(summary = "Получение новостей")
     @ApiResponses(
             {
@@ -127,7 +130,7 @@ public class NewsController {
         return ResponseEntity.ok(newsService.getNews(page));
     }
 
-    @DeleteMapping("/news")
+    @DeleteMapping
     @Operation(summary = "Удаление новости")
     @ApiResponses({
             @ApiResponse(
