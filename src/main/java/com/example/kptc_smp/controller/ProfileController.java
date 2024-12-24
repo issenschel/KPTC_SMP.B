@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -176,6 +177,13 @@ public class ProfileController {
                     }
             ),
             @ApiResponse(
+                    responseCode = "400",
+                    description = "Что-то не так с фото",
+                    content = {
+                            @Content(mediaType = "application/json")
+                    }
+            ),
+            @ApiResponse(
                     responseCode = "401",
                     description = "Вы не авторизованы",
                     content = {
@@ -191,7 +199,7 @@ public class ProfileController {
             )
     })
     public ResponseEntity<?> getPhoto() {
-        return ResponseEntity.ok().body(profileService.getPhoto());
+        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(profileService.getPhoto());
     }
 
 }
