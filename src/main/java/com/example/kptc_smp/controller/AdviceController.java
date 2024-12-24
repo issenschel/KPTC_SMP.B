@@ -3,9 +3,10 @@ package com.example.kptc_smp.controller;
 import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.exception.*;
 import com.example.kptc_smp.exception.EmailException;
+import com.example.kptc_smp.exception.image.OldImageNotFoundException;
 import com.example.kptc_smp.exception.profile.CodeValidationException;
 import com.example.kptc_smp.exception.profile.PasswordValidationException;
-import com.example.kptc_smp.exception.profile.PhotoException;
+import com.example.kptc_smp.exception.image.ImageException;
 import com.example.kptc_smp.exception.profile.UserFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -59,8 +60,8 @@ public class AdviceController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDto(e.getMessage()));
     }
 
-    @ExceptionHandler(PhotoException.class)
-    public ResponseEntity<?> photoException(PhotoException e) {
+    @ExceptionHandler(ImageException.class)
+    public ResponseEntity<?> photoException(ImageException e) {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
     }
 
@@ -86,6 +87,11 @@ public class AdviceController {
 
     @ExceptionHandler(NewsNotFoundException.class)
     public ResponseEntity<?> newsFoundException(NewsNotFoundException e) {
+        return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
+    }
+
+    @ExceptionHandler(OldImageNotFoundException.class)
+    public ResponseEntity<?> OldImageNotFoundException(OldImageNotFoundException e) {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
     }
 

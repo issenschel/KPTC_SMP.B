@@ -19,6 +19,6 @@ public class UserInformation {
     @Column(name = "email")
     private String email;
 
-    @Column(name = "photo")
-    private String photo;
+    @Column(name = "image_name")
+    private String imageName;
 }

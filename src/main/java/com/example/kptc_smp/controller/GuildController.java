@@ -1,6 +1,8 @@
 package com.example.kptc_smp.controller;
 
+import com.example.kptc_smp.dto.guild.ListOrderDto;
 import com.example.kptc_smp.dto.guild.OrderDto;
+import com.example.kptc_smp.entity.postgreSQL.Order;
 import com.example.kptc_smp.service.GuildService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -53,8 +55,8 @@ public class GuildController {
                             }
                     )
             })
-    public ResponseEntity<?> createNewOrder(@Valid @RequestBody OrderDto orderDto) {
-        return ResponseEntity.ok(guildService.createNewOrder(orderDto));
+    public Order createNewOrder(@Valid @RequestBody OrderDto orderDto) {
+        return guildService.createNewOrder(orderDto);
     }
 
     @GetMapping("/orders")
@@ -76,8 +78,8 @@ public class GuildController {
                     }
             )
     })
-    public ResponseEntity<?> getOrders(@RequestParam(name = "page") int page) {
-        return ResponseEntity.ok(guildService.getOrders(page));
+    public ListOrderDto getOrders(@RequestParam(name = "page") int page) {
+        return guildService.getOrders(page);
     }
 
     @PutMapping("/order")
@@ -120,9 +122,8 @@ public class GuildController {
                             }
                     ),
             })
-    public ResponseEntity<?> changeOrder(@RequestParam(name = "id") int id, @Valid @RequestBody OrderDto orderDto) {
-        guildService.changeOrder(orderDto, id);
-        return ResponseEntity.ok().build();
+    public Order changeOrder(@RequestParam(name = "id") int id, @Valid @RequestBody OrderDto orderDto) {
+        return guildService.changeOrder(orderDto, id);
     }
 
     @DeleteMapping("/order")

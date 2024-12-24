@@ -1,6 +1,9 @@
 package com.example.kptc_smp.controller;
 
+import com.example.kptc_smp.dto.ResponseDto;
+import com.example.kptc_smp.dto.auth.AuthTokenDto;
 import com.example.kptc_smp.dto.auth.JwtRequestDto;
+import com.example.kptc_smp.dto.profile.UserInformationDto;
 import com.example.kptc_smp.dto.registration.EmailDto;
 import com.example.kptc_smp.dto.registration.RegistrationUserDto;
 import com.example.kptc_smp.service.AuthService;
@@ -12,8 +15,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
@@ -47,8 +51,8 @@ public class AuthController {
                     }
             )
     })
-    public ResponseEntity<?> createAuthToken(@Valid @RequestBody JwtRequestDto authRequest) {
-        return ResponseEntity.ok(authService.createAuthToken(authRequest));
+    public AuthTokenDto createAuthToken(@Valid @RequestBody JwtRequestDto authRequest) {
+        return authService.createAuthToken(authRequest);
     }
 
     @PostMapping("/registration")
@@ -76,8 +80,8 @@ public class AuthController {
                     }
             )
     })
-    public ResponseEntity<?> createNewUser(@Valid @RequestBody RegistrationUserDto registrationUserDto) {
-        return ResponseEntity.ok(authService.createNewUser(registrationUserDto));
+    public UserInformationDto createNewUser(@Valid @RequestBody RegistrationUserDto registrationUserDto) {
+        return authService.createNewUser(registrationUserDto);
     }
 
     @PostMapping("/sendCode")
@@ -105,7 +109,7 @@ public class AuthController {
                     }
             )
     })
-    public ResponseEntity<?> sendCode(@Valid @RequestBody EmailDto emailDto) {
-        return ResponseEntity.ok().body(emailService.sendCode(emailDto));
+    public ResponseDto sendCode(@Valid @RequestBody EmailDto emailDto) {
+        return emailService.sendCode(emailDto);
     }
 }

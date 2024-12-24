@@ -16,9 +16,10 @@ public class GuildService {
         return orderService.createNewOrder(orderDto);
     }
 
-    public void changeOrder(OrderDto orderDto, int id) {
+    public Order changeOrder(OrderDto orderDto, int id) {
         Order order = orderService.findById(id).orElseThrow(OrderNotFoundException::new);
         orderService.changeOrder(order, orderDto);
+        return order;
     }
 
     public void deleteOrder(int id) {
