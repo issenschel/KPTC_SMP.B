@@ -3,10 +3,12 @@ package com.example.kptc_smp.entity.postgreSQL;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.UUID;
+
 @Entity
 @Data
-@Table(name = "tokens_version")
-public class TokenVersion {
+@Table(name = "token")
+public class Token {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -16,7 +18,7 @@ public class TokenVersion {
     @MapsId
     private User user;
 
-    @Column(name = "version")
-    private String version;
+    @Column(name = "UUID")
+    private UUID tokenUUID;
 
 }

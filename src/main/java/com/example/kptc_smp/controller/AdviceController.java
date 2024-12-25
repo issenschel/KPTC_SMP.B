@@ -3,11 +3,10 @@ package com.example.kptc_smp.controller;
 import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.exception.*;
 import com.example.kptc_smp.exception.EmailException;
-import com.example.kptc_smp.exception.image.OldImageNotFoundException;
+import com.example.kptc_smp.exception.image.ImageNotFoundException;
 import com.example.kptc_smp.exception.profile.CodeValidationException;
 import com.example.kptc_smp.exception.profile.PasswordValidationException;
 import com.example.kptc_smp.exception.image.ImageException;
-import com.example.kptc_smp.exception.profile.UserFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -41,57 +40,52 @@ public class AdviceController {
     }
 
     @ExceptionHandler(RegistrationValidationException.class)
-    public ResponseEntity<?> registrationValidationException(RegistrationValidationException e) {
+    public ResponseEntity<Map<String, String>> registrationValidationException(RegistrationValidationException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getValidationErrors());
     }
 
     @ExceptionHandler(EmailException.class)
-    public ResponseEntity<?> emailException(EmailException e) {
+    public ResponseEntity<ResponseDto> emailException(EmailException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ResponseDto(e.getMessage()));
     }
 
     @ExceptionHandler(OrderNotFoundException.class)
-    public ResponseEntity<?> orderNotFoundException(OrderNotFoundException e) {
+    public ResponseEntity<ResponseDto> orderNotFoundException(OrderNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDto(e.getMessage()));
     }
 
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<?> userNotFoundException(UserNotFoundException e) {
+    public ResponseEntity<ResponseDto> userNotFoundException(UserNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDto(e.getMessage()));
     }
 
     @ExceptionHandler(ImageException.class)
-    public ResponseEntity<?> photoException(ImageException e) {
+    public ResponseEntity<ResponseDto> photoException(ImageException e) {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
     }
 
     @ExceptionHandler(CodeValidationException.class)
-    public ResponseEntity<?> codeValidationException(CodeValidationException e) {
+    public ResponseEntity<ResponseDto> codeValidationException(CodeValidationException e) {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
     }
 
     @ExceptionHandler(PasswordValidationException.class)
-    public ResponseEntity<?> passwordValidationException(PasswordValidationException e) {
-        return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
-    }
-
-    @ExceptionHandler(UserFoundException.class)
-    public ResponseEntity<?> userFoundException(UserFoundException e) {
+    public ResponseEntity<ResponseDto> passwordValidationException(PasswordValidationException e) {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
     }
 
     @ExceptionHandler(MultipartException.class)
-    public ResponseEntity<?> userFoundException(MultipartException e) {
+    public ResponseEntity<ResponseDto> multipartException(MultipartException e) {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
     }
 
     @ExceptionHandler(NewsNotFoundException.class)
-    public ResponseEntity<?> newsFoundException(NewsNotFoundException e) {
+    public ResponseEntity<ResponseDto> newsNotFoundException(NewsNotFoundException e) {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
     }
 
-    @ExceptionHandler(OldImageNotFoundException.class)
-    public ResponseEntity<?> OldImageNotFoundException(OldImageNotFoundException e) {
+    @ExceptionHandler(ImageNotFoundException.class)
+    public ResponseEntity<ResponseDto> imageNotFoundException(ImageNotFoundException e) {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
     }
 

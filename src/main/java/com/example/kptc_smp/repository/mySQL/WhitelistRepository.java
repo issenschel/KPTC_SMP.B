@@ -1,8 +1,7 @@
 package com.example.kptc_smp.repository.mySQL;
 
-import com.example.kptc_smp.entity.mySQL.Whitelist;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.example.kptc_smp.entity.mySQL.ExternalWhitelist;
 import org.springframework.data.repository.CrudRepository;
 
-public interface WhitelistRepository extends CrudRepository<Whitelist, Integer> {
+public interface WhitelistRepository extends CrudRepository<ExternalWhitelist, Integer> {
 }

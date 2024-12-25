@@ -9,7 +9,7 @@ public class RegistrationValidationException extends RuntimeException {
     private final Map<String, String> validationErrors;
 
     public RegistrationValidationException(Map<String, String> map) {
-        super("Validation Failed");
+        super();
         this.validationErrors = map;
     }
 

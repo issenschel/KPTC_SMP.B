@@ -28,7 +28,7 @@ public class NewsService {
     @Value("${upload.path}")
     private String uploadPath;
 
-    public News createNews(NewsRequestDto newsRequestDto, MultipartFile image){
+    public News createNews(NewsRequestDto newsRequestDto, MultipartFile image) {
         News news = new News();
         news.setTitle(newsRequestDto.getTitle());
         news.setContent(newsRequestDto.getContent());
@@ -39,12 +39,12 @@ public class NewsService {
         return news;
     }
 
-    public News changeNews(NewsRequestDto newsRequestDto, MultipartFile image, int id){
+    public News changeNews(NewsRequestDto newsRequestDto, MultipartFile image, int id) {
         News news = newsRepository.findById(id).orElseThrow(NewsNotFoundException::new);
         news.setTitle(newsRequestDto.getTitle());
         news.setContent(newsRequestDto.getContent());
-        if(image.getContentType() != null && image.getContentType().matches("image/.*")){
-            news.setImageName(imageService.updateImage(image,news.getImageName()));
+        if (image.getContentType() != null && image.getContentType().matches("image/.*")) {
+            news.setImageName(imageService.updateImage(image, news.getImageName()));
         }
         newsRepository.save(news);
         return news;
@@ -61,12 +61,12 @@ public class NewsService {
                     newsResponseDto.setId(news.getId());
                     newsResponseDto.setTitle(news.getTitle());
                     newsResponseDto.setContent(news.getContent());
-                    if(news.getImageName() != null){
+                    if (news.getImageName() != null) {
                         try {
                             File photo = new File(uploadPath + "/" + news.getImageName());
                             newsResponseDto.setPhoto(Files.readAllBytes(photo.toPath()));
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
+                        } catch (IOException ignored) {
+
                         }
                     }
                     return newsResponseDto;

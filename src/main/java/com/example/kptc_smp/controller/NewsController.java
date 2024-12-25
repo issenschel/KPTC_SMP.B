@@ -18,36 +18,17 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "News")
-@ApiResponse(responseCode = "400", description = "Неверные данные", content = {@Content(mediaType = "application/json")})
+@ApiResponse(responseCode = "400", description = "Неверно заполнены данные | поля", content = {@Content(mediaType = "application/json")})
 @RequestMapping("/news")
 public class NewsController {
     private final NewsService newsService;
 
     @PostMapping
     @Operation(summary = "Создание новости")
-    @ApiResponses(
-            {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "Новость добавлена",
-                            content = {
-                                    @Content(mediaType = "application/json")
-                            }
-                    ),
-                    @ApiResponse(
-                            responseCode = "401",
-                            description = "Вы не авторизованы",
-                            content = {
-                                    @Content(mediaType = "application/json")
-                            }
-                    ),
-                    @ApiResponse(
-                            responseCode = "403",
-                            description = "Недостаточно прав",
-                            content = {
-                                    @Content(mediaType = "application/json")
-                            }
-                    )
+    @ApiResponses({
+                    @ApiResponse(responseCode = "200", description = "Новость добавлена", content = {@Content(mediaType = "application/json")}),
+                    @ApiResponse(responseCode = "401", description = "Вы не авторизованы", content = {@Content(mediaType = "application/json")}),
+                    @ApiResponse(responseCode = "403", description = "Недостаточно прав", content = {@Content(mediaType = "application/json")})
             })
     public News createNews(@Valid @ModelAttribute NewsRequestDto newsRequestDto,
                            @RequestParam(value = "file", required = false) MultipartFile photo) {
@@ -56,43 +37,30 @@ public class NewsController {
 
     @PutMapping
     @Operation(summary = "Изменение новости")
-    @ApiResponses(
-            {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "Новость изменена",
-                            content = {
-                                    @Content(mediaType = "application/json")
-                            }
-                    ),
-                    @ApiResponse(
-                            responseCode = "401",
-                            description = "Вы не авторизованы",
-                            content = {
-                                    @Content(mediaType = "application/json")
-                            }
-                    ),
-                    @ApiResponse(
-                            responseCode = "403",
-                            description = "Недостаточно прав",
-                            content = {
-                                    @Content(mediaType = "application/json")
-                            }
-                    ),
-                    @ApiResponse(
-                            responseCode = "404",
-                            description = "Новость не найдена",
-                            content = {
-                                    @Content(mediaType = "application/json")
-                            }
-                    ),
-            })
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Новость изменена", content = {@Content(mediaType = "application/json")}),
+            @ApiResponse(responseCode = "401", description = "Вы не авторизованы", content = {@Content(mediaType = "application/json")}),
+            @ApiResponse(responseCode = "403", description = "Недостаточно прав", content = {@Content(mediaType = "application/json")}),
+            @ApiResponse(responseCode = "404", description = "Новость не найдена", content = {@Content(mediaType = "application/json")})
+    })
     public News changeNews(@RequestParam(name = "id") int id,
                            @Valid @ModelAttribute NewsRequestDto newsRequestDto,
                            @RequestParam(value = "file", required = false) MultipartFile photo) {
         return newsService.changeNews(newsRequestDto,photo,id);
     }
 
+    @DeleteMapping
+    @Operation(summary = "Удаление новости")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Новость удалена", content = {@Content(mediaType = "application/json")}),
+            @ApiResponse(responseCode = "401", description = "Вы не авторизованы", content = {@Content(mediaType = "application/json")}),
+            @ApiResponse(responseCode = "403", description = "Недостаточно прав", content = {@Content(mediaType = "application/json")}),
+            @ApiResponse(responseCode = "404", description = "Новость не найдена", content = {@Content(mediaType = "application/json")})
+    })
+    public ResponseEntity<?> deleteNews(@RequestParam(name = "id") int id) {
+        newsService.deleteNews(id);
+        return ResponseEntity.ok().build();
+    }
 
     @GetMapping
     @Operation(summary = "Получение новостей")
@@ -100,42 +68,4 @@ public class NewsController {
     public ListNewsDto getNews(@RequestParam(name = "page") int page) {
         return newsService.getNews(page);
     }
-
-    @DeleteMapping
-    @Operation(summary = "Удаление новости")
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Новость удалена",
-                    content = {
-                            @Content(mediaType = "application/json")
-                    }
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "Вы не авторизованы",
-                    content = {
-                            @Content(mediaType = "application/json")
-                    }
-            ),
-            @ApiResponse(
-                    responseCode = "403",
-                    description = "Недостаточно прав",
-                    content = {
-                            @Content(mediaType = "application/json")
-                    }
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Новость не найдена",
-                    content = {
-                            @Content(mediaType = "application/json")
-                    }
-            )
-    })
-    public ResponseEntity<?> deleteNews(@RequestParam(name = "id") int id) {
-        newsService.deleteNews(id);
-        return ResponseEntity.ok().build();
-    }
-
 }

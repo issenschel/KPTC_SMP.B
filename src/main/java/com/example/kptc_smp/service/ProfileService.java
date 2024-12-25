@@ -7,6 +7,7 @@ import com.example.kptc_smp.dto.profile.PasswordChangeDto;
 import com.example.kptc_smp.dto.profile.UserInformationDto;
 import com.example.kptc_smp.entity.postgreSQL.User;
 import com.example.kptc_smp.exception.UserNotFoundException;
+import com.example.kptc_smp.exception.image.ImageNotFoundException;
 import com.example.kptc_smp.exception.profile.CodeValidationException;
 import com.example.kptc_smp.exception.profile.PasswordValidationException;
 import com.example.kptc_smp.exception.image.ImageException;
@@ -37,7 +38,7 @@ public class ProfileService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenUtils jwtTokenUtils;
     private final AssumptionService assumptionService;
-    private final TokenVersionService tokenVersionService;
+    private final TokenService tokenService;
     private final AuthMeService authMeService;
     private final ImageService imageService;
 
@@ -109,18 +110,18 @@ public class ProfileService {
                     try {
                         return new UrlResource(path.toUri());
                     } catch (MalformedURLException e) {
-                        throw new ImageException();
+                        throw new ImageNotFoundException();
                     }
                 }
         ).orElseThrow(UserNotFoundException::new));
     }
 
     private ResponseDto updateAndGenerateToken(User user) {
-        String versionId = UUID.randomUUID().toString();
-        user.getTokenVersion().setVersion(versionId);
-        tokenVersionService.save(user.getTokenVersion());
+        UUID tokenUUID = UUID.randomUUID();
+        user.getToken().setTokenUUID(tokenUUID);
+        tokenService.save(user.getToken());
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String token = jwtTokenUtils.generateToken(authentication, versionId);
+        String token = jwtTokenUtils.generateToken(authentication, tokenUUID);
         return new ResponseDto(token);
     }
 

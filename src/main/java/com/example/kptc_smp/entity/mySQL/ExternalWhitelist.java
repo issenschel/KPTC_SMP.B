@@ -6,14 +6,14 @@ import lombok.Data;
 @Entity
 @Data
 @Table(name = "mysql_whitelist")
-public class Whitelist {
+public class ExternalWhitelist {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Integer id;
 
     @Column(name = "UUID")
-    private String UUID;
+    private String minecraftUUID;
 
     @Column(name = "user")
     private String user;

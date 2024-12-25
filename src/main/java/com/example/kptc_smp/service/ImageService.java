@@ -1,6 +1,5 @@
 package com.example.kptc_smp.service;
 
-import com.example.kptc_smp.exception.image.OldImageNotFoundException;
 import com.example.kptc_smp.exception.image.ImageException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -18,11 +17,11 @@ public class ImageService {
     @Value("${upload.path}")
     private String uploadPath;
 
-    public void deleteOldImage(String oldImageName) throws IOException {
+    public void deleteOldImage(String oldImageName){
         try {
             Files.delete(Path.of(uploadPath + "/" + oldImageName));
-        } catch (IOException e) {
-            throw new OldImageNotFoundException();
+        } catch (IOException ignored) {
+
         }
 
     }
@@ -39,12 +38,8 @@ public class ImageService {
     }
 
     public String updateImage(MultipartFile image, String oldImageName) {
-        try {
-            deleteOldImage(oldImageName);
-            return uploadImage(image);
-        } catch (IOException e) {
-            throw new ImageException();
-        }
+        deleteOldImage(oldImageName);
+        return uploadImage(image);
     }
 
 }

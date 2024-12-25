@@ -31,7 +31,7 @@ public class AuthService {
     private final UserInformationService userInformationService;
     private final JwtTokenUtils jwtTokenUtils;
     private final AuthenticationManager authenticationManager;
-    private final TokenVersionService tokenVersionService;
+    private final TokenService tokenService;
     private final AssumptionService assumptionService;
     private final RegistrationValidatorService registrationValidatorService;
     private final WhitelistService whitelistService;
@@ -41,8 +41,8 @@ public class AuthService {
     public AuthTokenDto createAuthToken(@RequestBody JwtRequestDto authRequest) throws BadCredentialsException {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
             Optional<User> user = userService.findWithTokenVersionByUsername(authRequest.getUsername());
-            String versionId = user.orElseThrow(() -> new BadCredentialsException("Нет версии токена")).getTokenVersion().getVersion();
-            String token = jwtTokenUtils.generateToken(authentication, versionId);
+            UUID tokenUUID = user.orElseThrow(() -> new BadCredentialsException("")).getToken().getTokenUUID();
+            String token = jwtTokenUtils.generateToken(authentication, tokenUUID);
             List<String> roles = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
             return new AuthTokenDto(token,roles);
     }
@@ -57,8 +57,8 @@ public class AuthService {
             UserInformation userInformation = userInformationService.createNewUserInformation(registrationUserDto, user);
             authMeService.createAuthMe(user);
             whitelistService.createWhitelist(user.getUsername());
-            String version = UUID.randomUUID().toString();
-            tokenVersionService.createNewTokenVersion(user,version);
+            UUID tokenUUID = UUID.randomUUID();
+            tokenService.createNewTokenVersion(user,tokenUUID);
             assumptionService.deleteByEmail(registrationUserDto.getEmail());
             return new UserInformationDto(userInformation.getId(), userInformation.getUser().getUsername(),
                     userInformation.getEmail());

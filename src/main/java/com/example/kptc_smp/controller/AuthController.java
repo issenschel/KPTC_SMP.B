@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Auth")
+@ApiResponse(responseCode = "400", description = "Неверно заполнены данные | поля", content = {@Content(mediaType = "application/json")})
 public class AuthController {
     private final AuthService authService;
     private final EmailService emailService;
@@ -29,27 +30,9 @@ public class AuthController {
     @PostMapping("/auth")
     @Operation(summary = "Авторизация")
     @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Токен получен",
-                    content = {
-                            @Content(mediaType = "application/json")
-                    }
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "Неверный логин или пароль",
-                    content = {
-                            @Content(mediaType = "application/json")
-                    }
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Пользователь не найден",
-                    content = {
-                            @Content(mediaType = "application/json")
-                    }
-            )
+            @ApiResponse(responseCode = "200", description = "Токен получен", content = {@Content(mediaType = "application/json")}),
+            @ApiResponse(responseCode = "401", description = "Неверный логин или пароль", content = {@Content(mediaType = "application/json")}),
+            @ApiResponse(responseCode = "404", description = "Пользователь не найден", content = {@Content(mediaType = "application/json")})
     })
     public AuthTokenDto createAuthToken(@Valid @RequestBody JwtRequestDto authRequest) {
         return authService.createAuthToken(authRequest);
@@ -58,27 +41,8 @@ public class AuthController {
     @PostMapping("/registration")
     @Operation(summary = "Регистрация")
     @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Пользователь создан",
-                    content = {
-                            @Content(mediaType = "application/json")
-                    }
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Неверно заполнены данные",
-                    content = {
-                            @Content(mediaType = "application/json")
-                    }
-            ),
-            @ApiResponse(
-                    responseCode = "409",
-                    description = "Данные уже заняты",
-                    content = {
-                            @Content(mediaType = "application/json")
-                    }
-            )
+            @ApiResponse(responseCode = "200", description = "Пользователь создан", content = {@Content(mediaType = "application/json")}),
+            @ApiResponse(responseCode = "409", description = "Данные уже заняты", content = {@Content(mediaType = "application/json")})
     })
     public UserInformationDto createNewUser(@Valid @RequestBody RegistrationUserDto registrationUserDto) {
         return authService.createNewUser(registrationUserDto);
@@ -87,29 +51,10 @@ public class AuthController {
     @PostMapping("/sendCode")
     @Operation(summary = "Отправка кода по почте")
     @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Письмо отправлено",
-                    content = {
-                            @Content(mediaType = "application/json")
-                    }
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Неверно заполнена почта",
-                    content = {
-                            @Content(mediaType = "application/json")
-                    }
-            ),
-            @ApiResponse(
-                    responseCode = "409",
-                    description = "Почта уже занята",
-                    content = {
-                            @Content(mediaType = "application/json")
-                    }
-            )
+            @ApiResponse(responseCode = "200", description = "Письмо отправлено", content = {@Content(mediaType = "application/json")}),
+            @ApiResponse(responseCode = "409", description = "Почта уже занята", content = {@Content(mediaType = "application/json")})
     })
     public ResponseDto sendCode(@Valid @RequestBody EmailDto emailDto) {
-        return emailService.sendCode(emailDto);
+        return emailService.sendRegistrationCode(emailDto);
     }
 }

@@ -6,7 +6,7 @@ import lombok.Data;
 @Entity
 @Data
 @Table(name = "authme")
-public class AuthMe {
+public class ExternalAuthMe {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -40,7 +40,7 @@ public class AuthMe {
     private String world;
 
     @Column(name = "regdate")
-    private Long regDate;
+    private Long registrationDate;
 
     @Column(name = "regip")
     private String regIP;
