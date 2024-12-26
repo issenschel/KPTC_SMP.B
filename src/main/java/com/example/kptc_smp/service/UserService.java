@@ -26,7 +26,6 @@ public class UserService implements UserDetailsService {
     @Transactional
     public UserDetails loadUserByUsername(String username){
         User user = findWithAllDependenciesByUsername(username).orElseThrow(UserNotFoundException::new);
-
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),

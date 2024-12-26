@@ -7,7 +7,7 @@ import java.util.Collection;
 
 @Entity
 @Data
-@Table(name = "users")
+@Table(name = "auth_user")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,7 +22,7 @@ public class User {
 
     @ManyToMany
     @JoinTable(
-            name = "users_roles",
+            name = "user_role",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
@@ -32,5 +32,5 @@ public class User {
     private UserInformation userInformation;
 
     @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, optional = false)
-    private TokenVersion tokenVersion;
+    private Token token;
 }

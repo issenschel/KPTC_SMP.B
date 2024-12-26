@@ -18,6 +18,6 @@ public class News {
     @Column(name = "content")
     private String content;
 
-    @Column(name = "photo")
-    private String photo;
+    @Column(name = "image_name")
+    private String imageName;
 }

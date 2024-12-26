@@ -9,10 +9,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class JwtTokenUtils {
@@ -23,11 +20,11 @@ public class JwtTokenUtils {
     private Duration jwtLifetime;
 
 
-    public String generateToken(Authentication authentication, String versionId) {
+    public String generateToken(Authentication authentication, UUID tokenUUID) {
         Map<String, Object> claims = new HashMap<>();
         List<String> rolesList = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
         claims.put("roles", rolesList);
-        claims.put("versionId", versionId);
+        claims.put("tokenUUID", tokenUUID);
 
         Date issuedDate = new Date();
         Date expiresDate = new Date(issuedDate.getTime() + jwtLifetime.toMillis());
@@ -49,8 +46,9 @@ public class JwtTokenUtils {
         return getAllClaimsFromToken(token).get("roles", List.class);
     }
 
-    public String getVersionId(String token) {
-        return getAllClaimsFromToken(token).get("versionId", String.class);
+    public UUID getTokenUUID(String token) {
+        String tokenUUIDString = getAllClaimsFromToken(token).get("tokenUUID", String.class);
+        return UUID.fromString(tokenUUIDString);
     }
 
     private Claims getAllClaimsFromToken(String token) {

@@ -23,29 +23,31 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class NewsService {
     private final NewsRepository newsRepository;
-    private final FileService fileService;
+    private final ImageService imageService;
 
     @Value("${upload.path}")
     private String uploadPath;
 
-    public void createNews(NewsRequestDto newsRequestDto, MultipartFile photo){
+    public News createNews(NewsRequestDto newsRequestDto, MultipartFile image) {
         News news = new News();
         news.setTitle(newsRequestDto.getTitle());
         news.setContent(newsRequestDto.getContent());
-        if (photo != null) {
-            news.setPhoto(fileService.updatePhoto(photo,null));
+        if (image.getContentType() != null && image.getContentType().matches("image/.*")) {
+            news.setImageName(imageService.uploadImage(image));
         }
         newsRepository.save(news);
+        return news;
     }
 
-    public void changeNews(NewsRequestDto newsRequestDto, MultipartFile photo, int id){
+    public News changeNews(NewsRequestDto newsRequestDto, MultipartFile image, int id) {
         News news = newsRepository.findById(id).orElseThrow(NewsNotFoundException::new);
         news.setTitle(newsRequestDto.getTitle());
         news.setContent(newsRequestDto.getContent());
-        if(photo != null){
-            news.setPhoto(fileService.updatePhoto(photo,news.getPhoto()));
+        if (image.getContentType() != null && image.getContentType().matches("image/.*")) {
+            news.setImageName(imageService.updateImage(image, news.getImageName()));
         }
         newsRepository.save(news);
+        return news;
     }
 
     public ListNewsDto getNews(int page) {
@@ -59,12 +61,12 @@ public class NewsService {
                     newsResponseDto.setId(news.getId());
                     newsResponseDto.setTitle(news.getTitle());
                     newsResponseDto.setContent(news.getContent());
-                    if(news.getPhoto() != null){
+                    if (news.getImageName() != null) {
                         try {
-                            File arr = new File(uploadPath + "/" + news.getPhoto());
-                            newsResponseDto.setPhoto(Files.readAllBytes(arr.toPath()));
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
+                            File photo = new File(uploadPath + "/" + news.getImageName());
+                            newsResponseDto.setPhoto(Files.readAllBytes(photo.toPath()));
+                        } catch (IOException ignored) {
+
                         }
                     }
                     return newsResponseDto;

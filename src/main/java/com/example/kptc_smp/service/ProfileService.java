@@ -7,9 +7,10 @@ import com.example.kptc_smp.dto.profile.PasswordChangeDto;
 import com.example.kptc_smp.dto.profile.UserInformationDto;
 import com.example.kptc_smp.entity.postgreSQL.User;
 import com.example.kptc_smp.exception.UserNotFoundException;
+import com.example.kptc_smp.exception.image.ImageNotFoundException;
 import com.example.kptc_smp.exception.profile.CodeValidationException;
 import com.example.kptc_smp.exception.profile.PasswordValidationException;
-import com.example.kptc_smp.exception.profile.PhotoException;
+import com.example.kptc_smp.exception.image.ImageException;
 import com.example.kptc_smp.service.minecraft.AuthMeService;
 import com.example.kptc_smp.utility.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
@@ -37,9 +38,9 @@ public class ProfileService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenUtils jwtTokenUtils;
     private final AssumptionService assumptionService;
-    private final TokenVersionService tokenVersionService;
+    private final TokenService tokenService;
     private final AuthMeService authMeService;
-    private final FileService fileService;
+    private final ImageService imageService;
 
     @Value("${upload.path}")
     private String uploadPath;
@@ -76,16 +77,22 @@ public class ProfileService {
     }
 
     @Transactional
-    public ResponseDto changePhoto(MultipartFile photo) {
-        if (photo != null && photo.getContentType() != null && photo.getContentType().matches("image/.*")) {
+    public ResponseDto changeImage(MultipartFile image) {
+        if (image != null && image.getContentType() != null && image.getContentType().matches("image/.*")) {
             Optional<User> user = userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
             return user.map(us -> {
-                us.getUserInformation().setPhoto(fileService.updatePhoto(photo, us.getUserInformation().getPhoto()));
+                String imageName;
+                if(us.getUserInformation().getImageName() == null){
+                    imageName = imageService.uploadImage(image);
+                }else{
+                    imageName = imageService.updateImage(image, us.getUserInformation().getImageName());
+                }
+                us.getUserInformation().setImageName(imageName);
                 userInformationService.save(us.getUserInformation());
                 return new ResponseDto("Успешное изменение фотографии");
             }).orElseThrow(UserNotFoundException::new);
         }
-        throw new PhotoException();
+        throw new ImageException();
     }
 
     public UserInformationDto getData() {
@@ -95,26 +102,26 @@ public class ProfileService {
         ).orElseThrow(UserNotFoundException::new);
     }
 
-    public Resource getPhoto() {
+    public Resource getImage() {
         return (userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
                 user -> {
-                    String photo = user.getUserInformation().getPhoto();
-                    Path path = Paths.get(uploadPath + "/" + photo);
+                    String imageName = user.getUserInformation().getImageName();
+                    Path path = Paths.get(uploadPath + "/" + imageName);
                     try {
                         return new UrlResource(path.toUri());
                     } catch (MalformedURLException e) {
-                        throw new PhotoException();
+                        throw new ImageNotFoundException();
                     }
                 }
         ).orElseThrow(UserNotFoundException::new));
     }
 
     private ResponseDto updateAndGenerateToken(User user) {
-        String versionId = UUID.randomUUID().toString();
-        user.getTokenVersion().setVersion(versionId);
-        tokenVersionService.save(user.getTokenVersion());
+        UUID tokenUUID = UUID.randomUUID();
+        user.getToken().setTokenUUID(tokenUUID);
+        tokenService.save(user.getToken());
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String token = jwtTokenUtils.generateToken(authentication, versionId);
+        String token = jwtTokenUtils.generateToken(authentication, tokenUUID);
         return new ResponseDto(token);
     }
 
