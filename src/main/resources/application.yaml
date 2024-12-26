@@ -1,0 +1,10 @@
+server:
+  port: 5174
+  servlet:
+    context-path:
+jwt:
+  secret: 984
+  lifetime: 1200d
+spring:
+  flyway:
+    enabled: false

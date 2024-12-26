@@ -1,5 +1,6 @@
 package com.example.kptc_smp.service;
 
+import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.dto.news.ListNewsDto;
 import com.example.kptc_smp.dto.news.NewsRequestDto;
 import com.example.kptc_smp.dto.news.NewsResponseDto;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -52,7 +54,7 @@ public class NewsService {
 
     public ListNewsDto getNews(int page) {
         ListNewsDto listNewsDto = new ListNewsDto();
-        PageRequest pageRequest = PageRequest.of(page, 10);
+        PageRequest pageRequest = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "id"));
         Page<News> newsPage = newsRepository.findAll(pageRequest);
         int totalPages = newsPage.getTotalPages();
         List<NewsResponseDto> newsDtoList = newsPage.getContent().stream().map(
@@ -63,8 +65,8 @@ public class NewsService {
                     newsResponseDto.setContent(news.getContent());
                     if (news.getImageName() != null) {
                         try {
-                            File photo = new File(uploadPath + "/" + news.getImageName());
-                            newsResponseDto.setPhoto(Files.readAllBytes(photo.toPath()));
+                            File image = new File(uploadPath + "/" + news.getImageName());
+                            newsResponseDto.setPhoto(Files.readAllBytes(image.toPath()));
                         } catch (IOException ignored) {
 
                         }
@@ -76,9 +78,10 @@ public class NewsService {
         return listNewsDto;
     }
 
-    public void deleteNews(int id) {
+    public ResponseDto deleteNews(int id) {
         News news = newsRepository.findById(id).orElseThrow(NewsNotFoundException::new);
         newsRepository.delete(news);
+        return new ResponseDto("Новость удалена");
     }
 
 }

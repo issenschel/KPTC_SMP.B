@@ -1,5 +1,6 @@
 package com.example.kptc_smp.service;
 
+import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.dto.guild.GuildOrdersDto;
 import com.example.kptc_smp.dto.guild.GuildOrderDto;
 import com.example.kptc_smp.entity.postgreSQL.GuildOrder;
@@ -32,9 +33,10 @@ public class GuildOrderService {
         return guildOrder;
     }
 
-    public void deleteOrder(int id) {
+    public ResponseDto deleteOrder(int id) {
         GuildOrder guildOrder = guildOrderRepository.findById(id).orElseThrow(OrderNotFoundException::new);
         guildOrderRepository.delete(guildOrder);
+        return new ResponseDto("Заказ удален");
     }
 
     public GuildOrdersDto getOrders(int page) {
