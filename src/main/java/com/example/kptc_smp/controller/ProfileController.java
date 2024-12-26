@@ -8,12 +8,15 @@ import com.example.kptc_smp.service.EmailService;
 import com.example.kptc_smp.service.ProfileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,7 +35,8 @@ public class ProfileController {
     @PutMapping("/password")
     @Operation(summary = "Смена пароля пользователя")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Пароль изменен", content = {@Content(mediaType = "application/json")}),
+            @ApiResponse(responseCode = "200", description = "Пароль изменен", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
             @ApiResponse(responseCode = "400", description = "Неверно заполнены данные | поля", content = {@Content(mediaType = "application/json")}),
     })
     public ResponseDto changePassword(@Valid @RequestBody PasswordChangeDto passwordChangeDto) {
@@ -42,7 +46,8 @@ public class ProfileController {
     @PutMapping("/email")
     @Operation(summary = "Смена почты пользователя")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Почта изменена", content = {@Content(mediaType = "application/json")}),
+            @ApiResponse(responseCode = "200", description = "Почта изменена", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
             @ApiResponse(responseCode = "400", description = "Неверно заполнены данные | поля", content = {@Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "409", description = "Почта занята", content = {@Content(mediaType = "application/json")}),
     })
@@ -50,19 +55,21 @@ public class ProfileController {
         return profileService.changeEmail(emailChangeDto);
     }
 
-    @PutMapping("/photo")
+    @PutMapping(path = "/image", consumes = "multipart/*")
     @Operation(summary = "Смена фотографии пользователя")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Фото изменено", content = {@Content(mediaType = "application/json")}),
+            @ApiResponse(responseCode = "200", description = "Фото изменено", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
             @ApiResponse(responseCode = "400", description = "С фото что-то не так", content = {@Content(mediaType = "application/json")}),
     })
-    public ResponseDto changePhoto(@RequestParam("file") MultipartFile photo) {
-        return profileService.changeImage(photo);
+    public ResponseDto changeImage(@RequestParam("image") MultipartFile image) {
+        return profileService.changeImage(image);
     }
 
     @GetMapping("/information")
     @Operation(summary = "Получение данных пользователя")
-    @ApiResponse(responseCode = "200", description = "Данные получены", content = {@Content(mediaType = "application/json")})
+    @ApiResponse(responseCode = "200", description = "Данные получены", content = {
+            @Content(mediaType = "application/json", schema = @Schema(implementation = UserInformationDto.class))})
     public UserInformationDto getData() {
         return profileService.getData();
     }
@@ -73,13 +80,14 @@ public class ProfileController {
             @ApiResponse(responseCode = "200", description = "Фото отправлено", content = {@Content(mediaType = "multipart/form-data")}),
             @ApiResponse(responseCode = "404", description = "Фото не найдено", content = {@Content(mediaType = "application/json")})
     })
-    public Resource getImage() {
-        return profileService.getImage();
+    public ResponseEntity<Resource> getImage() {
+        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(profileService.getImage());
     }
 
     @PostMapping("/sendCode")
-    @Operation(summary = "Отправка кода по почте")
-    @ApiResponse(responseCode = "200", description = "Письмо отправлено", content = {@Content(mediaType = "application/json")})
+    @Operation(summary = "Отправка кода на текущую почту")
+    @ApiResponse(responseCode = "200", description = "Письмо отправлено", content = {
+            @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))})
     public ResponseDto sendChangeEmailCode() {
         return emailService.sendChangeEmailCode();
     }

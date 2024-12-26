@@ -27,10 +27,11 @@ public class ImageService {
     }
 
     public String uploadImage(MultipartFile image){
+        String uuidFile = UUID.randomUUID().toString();
+        String result = uuidFile + "." + image.getOriginalFilename();
+        File file = new File(uploadPath + File.separator + result);
         try {
-            String uuidFile = UUID.randomUUID().toString();
-            String result = uuidFile + "." + image.getOriginalFilename();
-            image.transferTo(new File(uploadPath + "/" + result));
+            image.transferTo(file);
             return result;
         } catch (IOException e) {
             throw new ImageException();

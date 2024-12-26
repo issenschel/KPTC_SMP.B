@@ -10,6 +10,7 @@ import com.example.kptc_smp.service.AuthService;
 import com.example.kptc_smp.service.EmailService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,7 +31,8 @@ public class AuthController {
     @PostMapping("/auth")
     @Operation(summary = "Авторизация")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Токен получен", content = {@Content(mediaType = "application/json")}),
+            @ApiResponse(responseCode = "200", description = "Токен получен", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = AuthTokenDto.class))}),
             @ApiResponse(responseCode = "401", description = "Неверный логин или пароль", content = {@Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "404", description = "Пользователь не найден", content = {@Content(mediaType = "application/json")})
     })
@@ -41,7 +43,8 @@ public class AuthController {
     @PostMapping("/registration")
     @Operation(summary = "Регистрация")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Пользователь создан", content = {@Content(mediaType = "application/json")}),
+            @ApiResponse(responseCode = "200", description = "Пользователь создан", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = UserInformationDto.class))}),
             @ApiResponse(responseCode = "409", description = "Данные уже заняты", content = {@Content(mediaType = "application/json")})
     })
     public UserInformationDto createNewUser(@Valid @RequestBody RegistrationUserDto registrationUserDto) {
@@ -51,7 +54,8 @@ public class AuthController {
     @PostMapping("/sendCode")
     @Operation(summary = "Отправка кода по почте")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Письмо отправлено", content = {@Content(mediaType = "application/json")}),
+            @ApiResponse(responseCode = "200", description = "Письмо отправлено", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
             @ApiResponse(responseCode = "409", description = "Почта уже занята", content = {@Content(mediaType = "application/json")})
     })
     public ResponseDto sendCode(@Valid @RequestBody EmailDto emailDto) {

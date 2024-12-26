@@ -6,6 +6,7 @@ import com.example.kptc_smp.dto.profile.EmailChangeDto;
 import com.example.kptc_smp.dto.profile.PasswordChangeDto;
 import com.example.kptc_smp.dto.profile.UserInformationDto;
 import com.example.kptc_smp.entity.postgreSQL.User;
+import com.example.kptc_smp.exception.EmailException;
 import com.example.kptc_smp.exception.UserNotFoundException;
 import com.example.kptc_smp.exception.image.ImageNotFoundException;
 import com.example.kptc_smp.exception.profile.CodeValidationException;
@@ -51,7 +52,7 @@ public class ProfileService {
         return user.map(
                 us -> {
                     if (!passwordChangeDto.getPassword().equals(passwordChangeDto.getConfirmPassword())) {
-                        throw new PasswordValidationException();
+                        throw new PasswordValidationException("Новый пароль и подтверждение пароля не совпадают");
                     }
                     checkPassword(passwordChangeDto.getOldPassword(), us.getPassword());
                     String password = passwordEncoder.encode(passwordChangeDto.getPassword());
@@ -69,6 +70,7 @@ public class ProfileService {
             if (!assumptionService.validateCode(user.get().getUserInformation().getEmail(), emailChangeDto.getCode())) {
                 throw new CodeValidationException();
             }
+            userInformationService.findByEmail(emailChangeDto.getEmail()).ifPresent(t -> {throw new EmailException();});
             assumptionService.findByEmail(us.getUserInformation().getEmail()).ifPresent(assumptionService::delete);
             us.getUserInformation().setEmail(emailChangeDto.getEmail());
             userInformationService.save(us.getUserInformation());
@@ -125,8 +127,8 @@ public class ProfileService {
         return new ResponseDto(token);
     }
 
-    private void checkPassword(String password, String password2) {
-        if (!passwordEncoder.matches(password, password2)) {
+    private void checkPassword(String currentPassword, String inputAtPassword) {
+        if (!passwordEncoder.matches(currentPassword, inputAtPassword)) {
             throw new PasswordValidationException();
         }
     }
