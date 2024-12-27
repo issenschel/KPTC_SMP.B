@@ -1,7 +1,7 @@
 package com.example.kptc_smp.config;
 
 import jakarta.persistence.EntityManagerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,9 +23,10 @@ import java.util.Map;
 @EnableTransactionManagement
 @EnableJpaRepositories(entityManagerFactoryRef = "mySQLEntityMangerFactoryBean", basePackages = {
         "com.example.kptc_smp.repository.minecraft"}, transactionManagerRef = "mySQLTransactionManager")
+@RequiredArgsConstructor
 public class MySQLConfig {
-    @Autowired
-    private Environment environment;
+
+    private final Environment environment;
 
     @Bean(name = "mySQLDataSource")
     public DataSource dataSource() {
@@ -54,9 +55,9 @@ public class MySQLConfig {
 
         return bean;
     }
-    
+
     @Bean(name = "mySQLTransactionManager")
-    public PlatformTransactionManager transactionManager(@Qualifier("mySQLEntityMangerFactoryBean") EntityManagerFactory entityManagerFactory ) {
+    public PlatformTransactionManager transactionManager(@Qualifier("mySQLEntityMangerFactoryBean") EntityManagerFactory entityManagerFactory) {
         return new JpaTransactionManager(entityManagerFactory);
     }
 }

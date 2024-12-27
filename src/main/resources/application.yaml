@@ -3,8 +3,5 @@ server:
   servlet:
     context-path:
 jwt:
-  secret: 984
+  secret: bemsik
   lifetime: 1200d
-spring:
-  flyway:
-    enabled: false

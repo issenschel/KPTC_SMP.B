@@ -4,6 +4,7 @@ import com.example.kptc_smp.dto.ImageDto;
 import com.example.kptc_smp.service.main.ImageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,7 +27,7 @@ public class ImageController {
     @GetMapping("/resource")
     @Operation(summary = "Получение фото пользователя")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Фото отправлено", content = {@Content(mediaType = "application/json")}),
+            @ApiResponse(responseCode = "200", description = "Фото отправлено", content = {@Content(mediaType = "image/jpeg")}),
             @ApiResponse(responseCode = "404", description = "Фото не найдено", content = {@Content(mediaType = "application/json")})
     })
     public ResponseEntity<Resource> getImageAsResource(@RequestParam(name = "imageName") String imageName) {
@@ -36,7 +37,8 @@ public class ImageController {
     @GetMapping("/byte")
     @Operation(summary = "Получение фото пользователя")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Фото отправлено", content = {@Content(mediaType = "application/json")}),
+            @ApiResponse(responseCode = "200", description = "Фото отправлено", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ImageDto.class))}),
             @ApiResponse(responseCode = "404", description = "Фото не найдено", content = {@Content(mediaType = "application/json")})
     })
     public ImageDto getImageAsBytes(@RequestParam(name = "imageName") String imageName) {
