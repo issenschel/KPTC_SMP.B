@@ -24,7 +24,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(entityManagerFactoryRef = "postgreSQLEntityMangerFactoryBean", basePackages = {
-        "com.example.kptc_smp.repository.postgreSQL" }, transactionManagerRef = "postgreSQLTransactionManager")
+        "com.example.kptc_smp.repository.main"}, transactionManagerRef = "postgreSQLTransactionManager")
 public class PostgreSQLConfig {
 
     @Autowired
@@ -46,7 +46,7 @@ public class PostgreSQLConfig {
     public LocalContainerEntityManagerFactoryBean entityManagerFactoryBean() {
         LocalContainerEntityManagerFactoryBean bean = new LocalContainerEntityManagerFactoryBean();
         bean.setDataSource(dataSource());
-        bean.setPackagesToScan("com.example.kptc_smp.entity.postgreSQL");
+        bean.setPackagesToScan("com.example.kptc_smp.entity.main");
 
         JpaVendorAdapter adapter = new HibernateJpaVendorAdapter();
         bean.setJpaVendorAdapter(adapter);
@@ -54,7 +54,7 @@ public class PostgreSQLConfig {
         Map<String, String> props = new HashMap<>();
         props.put("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
         props.put("hibernate.show_sql", "true");
-        props.put("hibernate.hbm2ddl.auto", "update");
+        props.put("hibernate.hbm2ddl.auto", "none");
         bean.setJpaPropertyMap(props);
 
         return bean;

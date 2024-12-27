@@ -1,9 +1,9 @@
 package com.example.kptc_smp.service.minecraft;
 
-import com.example.kptc_smp.entity.mySQL.ExternalAuthMe;
-import com.example.kptc_smp.entity.postgreSQL.User;
+import com.example.kptc_smp.entity.minecraft.AuthMe;
+import com.example.kptc_smp.entity.main.User;
 import com.example.kptc_smp.exception.UserNotFoundException;
-import com.example.kptc_smp.repository.mySQL.AuthMeRepository;
+import com.example.kptc_smp.repository.minecraft.AuthMeRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,7 +17,7 @@ public class AuthMeService {
 
     @Transactional(transactionManager = "mySQLTransactionManager")
     public void createAuthMe(User user){
-        ExternalAuthMe authMe = new ExternalAuthMe();
+        AuthMe authMe = new AuthMe();
         authMe.setUsername(user.getUsername());
         authMe.setRealName(user.getUsername());
         authMe.setPassword(user.getPassword());
@@ -28,7 +28,7 @@ public class AuthMeService {
 
     @Transactional(transactionManager = "mySQLTransactionManager")
     public void updatePassword(String username,String password){
-        ExternalAuthMe authMe = authMeRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
+        AuthMe authMe = authMeRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
         authMe.setPassword(password);
         authMeRepository.save(authMe);
     }

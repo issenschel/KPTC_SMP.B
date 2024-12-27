@@ -1,10 +1,10 @@
 package com.example.kptc_smp.controller;
 
 import com.example.kptc_smp.dto.ResponseDto;
-import com.example.kptc_smp.dto.news.ListNewsDto;
+import com.example.kptc_smp.dto.news.ListHeadlineNewsDto;
 import com.example.kptc_smp.dto.news.NewsRequestDto;
-import com.example.kptc_smp.entity.postgreSQL.News;
-import com.example.kptc_smp.service.NewsService;
+import com.example.kptc_smp.entity.main.News;
+import com.example.kptc_smp.service.main.NewsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -65,11 +65,23 @@ public class NewsController {
         return newsService.deleteNews(id);
     }
 
-    @GetMapping
-    @Operation(summary = "Получение новостей")
+    @GetMapping("-headline")
+    @Operation(summary = "Получение списка новостей")
     @ApiResponse(responseCode = "200", description = "Список новостей получен", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = ListNewsDto.class))})
-    public ListNewsDto getNews(@RequestParam(name = "page") int page) {
-        return newsService.getNews(page);
+            @Content(mediaType = "application/json", schema = @Schema(implementation = ListHeadlineNewsDto.class))})
+    public ListHeadlineNewsDto getHeadlineNews(@RequestParam(name = "page") int page) {
+        return newsService.getHeadlineNews(page);
+    }
+
+    @GetMapping("/{newsId}")
+    @Operation(summary = "Получение списка новостей")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Новости получены", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = News.class))}),
+            @ApiResponse(responseCode = "404", description = "Новость не найдена", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = News.class))}),
+    })
+    public News getNews(@PathVariable int newsId) {
+        return newsService.getNews(newsId);
     }
 }

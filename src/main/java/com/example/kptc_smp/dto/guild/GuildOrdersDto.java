@@ -1,6 +1,6 @@
 package com.example.kptc_smp.dto.guild;
 
-import com.example.kptc_smp.entity.postgreSQL.GuildOrder;
+import com.example.kptc_smp.entity.main.GuildOrder;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
