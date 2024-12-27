@@ -18,9 +18,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "News")
 @ApiResponse(responseCode = "400", description = "Неверно заполнены данные | поля", content = {@Content(mediaType = "application/json")})
 @RequestMapping("/news")
+@Tag(name = "News")
 public class NewsController {
     private final NewsService newsService;
 
@@ -65,7 +65,7 @@ public class NewsController {
         return newsService.deleteNews(id);
     }
 
-    @GetMapping("-headline")
+    @GetMapping()
     @Operation(summary = "Получение списка новостей")
     @ApiResponse(responseCode = "200", description = "Список новостей получен", content = {
             @Content(mediaType = "application/json", schema = @Schema(implementation = ListHeadlineNewsDto.class))})

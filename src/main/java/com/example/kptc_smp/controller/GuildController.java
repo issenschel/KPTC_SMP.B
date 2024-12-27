@@ -17,9 +17,9 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "Guild")
 @ApiResponse(responseCode = "400", description = "Неверно заполнены данные | поля", content = {@Content(mediaType = "application/json")})
 @RequestMapping("/guild")
+@Tag(name = "Guild")
 public class GuildController {
     private final GuildOrderService guildOrderService;
 

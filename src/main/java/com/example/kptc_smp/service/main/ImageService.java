@@ -43,7 +43,9 @@ public class ImageService {
 
     public String uploadImage(MultipartFile image){
         String uuidFile = UUID.randomUUID().toString();
-        String result = uuidFile + "." + image.getOriginalFilename();
+        String originalFilename = image.getOriginalFilename();
+        String extension = originalFilename.substring(originalFilename.lastIndexOf('.') + 1);
+        String result = uuidFile + "." + extension;
         File file = new File(uploadPath + File.separator + result);
         try {
             image.transferTo(file);

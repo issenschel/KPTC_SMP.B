@@ -22,13 +22,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "Auth")
 @ApiResponse(responseCode = "400", description = "Неверно заполнены данные | поля", content = {@Content(mediaType = "application/json")})
+@Tag(name = "Auth")
 public class AuthController {
     private final AuthService authService;
     private final EmailService emailService;
 
-    @PostMapping("/auth")
+    @PostMapping("/login")
     @Operation(summary = "Авторизация")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Токен получен", content = {
@@ -51,8 +51,8 @@ public class AuthController {
         return authService.createNewUser(registrationUserDto);
     }
 
-    @PostMapping("/sendCode")
-    @Operation(summary = "Отправка кода по почте")
+    @PostMapping("/registration/confirmation-code")
+    @Operation(summary = "Отправка кода на почту")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Письмо отправлено", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
