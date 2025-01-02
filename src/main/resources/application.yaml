@@ -1,0 +1,7 @@
+server:
+  port: 5174
+  servlet:
+    context-path:
+jwt:
+  secret: bemsik
+  lifetime: 1200d
