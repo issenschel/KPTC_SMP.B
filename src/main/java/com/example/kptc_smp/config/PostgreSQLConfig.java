@@ -1,12 +1,7 @@
 package com.example.kptc_smp.config;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.sql.DataSource;
-
 import jakarta.persistence.EntityManagerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,14 +16,18 @@ import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import javax.sql.DataSource;
+import java.util.HashMap;
+import java.util.Map;
+
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(entityManagerFactoryRef = "postgreSQLEntityMangerFactoryBean", basePackages = {
-        "com.example.kptc_smp.repository.postgreSQL" }, transactionManagerRef = "postgreSQLTransactionManager")
+        "com.example.kptc_smp.repository.main"}, transactionManagerRef = "postgreSQLTransactionManager")
+@RequiredArgsConstructor
 public class PostgreSQLConfig {
 
-    @Autowired
-    private Environment environment;
+    private final Environment environment;
 
     @Bean(name = "postgreSQLDataSource")
     @Primary
@@ -46,7 +45,7 @@ public class PostgreSQLConfig {
     public LocalContainerEntityManagerFactoryBean entityManagerFactoryBean() {
         LocalContainerEntityManagerFactoryBean bean = new LocalContainerEntityManagerFactoryBean();
         bean.setDataSource(dataSource());
-        bean.setPackagesToScan("com.example.kptc_smp.entity.postgreSQL");
+        bean.setPackagesToScan("com.example.kptc_smp.entity.main");
 
         JpaVendorAdapter adapter = new HibernateJpaVendorAdapter();
         bean.setJpaVendorAdapter(adapter);
@@ -54,7 +53,7 @@ public class PostgreSQLConfig {
         Map<String, String> props = new HashMap<>();
         props.put("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
         props.put("hibernate.show_sql", "true");
-        props.put("hibernate.hbm2ddl.auto", "update");
+        props.put("hibernate.hbm2ddl.auto", "none");
         bean.setJpaPropertyMap(props);
 
         return bean;
@@ -62,7 +61,7 @@ public class PostgreSQLConfig {
 
     @Primary
     @Bean(name = "postgreSQLTransactionManager")
-    public PlatformTransactionManager transactionManager(@Qualifier("postgreSQLEntityMangerFactoryBean") EntityManagerFactory entityManagerFactory ) {
+    public PlatformTransactionManager transactionManager(@Qualifier("postgreSQLEntityMangerFactoryBean") EntityManagerFactory entityManagerFactory) {
         return new JpaTransactionManager(entityManagerFactory);
     }
 }

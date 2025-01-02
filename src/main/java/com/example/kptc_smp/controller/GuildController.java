@@ -3,8 +3,8 @@ package com.example.kptc_smp.controller;
 import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.dto.guild.GuildOrderDto;
 import com.example.kptc_smp.dto.guild.GuildOrdersDto;
-import com.example.kptc_smp.entity.postgreSQL.GuildOrder;
-import com.example.kptc_smp.service.GuildOrderService;
+import com.example.kptc_smp.entity.main.GuildOrder;
+import com.example.kptc_smp.service.main.GuildOrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -17,9 +17,9 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "Guild")
 @ApiResponse(responseCode = "400", description = "Неверно заполнены данные | поля", content = {@Content(mediaType = "application/json")})
 @RequestMapping("/guild")
+@Tag(name = "Guild")
 public class GuildController {
     private final GuildOrderService guildOrderService;
 

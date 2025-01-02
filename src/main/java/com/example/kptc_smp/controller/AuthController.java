@@ -6,8 +6,8 @@ import com.example.kptc_smp.dto.auth.JwtRequestDto;
 import com.example.kptc_smp.dto.profile.UserInformationDto;
 import com.example.kptc_smp.dto.registration.EmailDto;
 import com.example.kptc_smp.dto.registration.RegistrationUserDto;
-import com.example.kptc_smp.service.AuthService;
-import com.example.kptc_smp.service.EmailService;
+import com.example.kptc_smp.service.main.AuthService;
+import com.example.kptc_smp.service.main.EmailService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -22,13 +22,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "Auth")
 @ApiResponse(responseCode = "400", description = "Неверно заполнены данные | поля", content = {@Content(mediaType = "application/json")})
+@Tag(name = "Auth")
 public class AuthController {
     private final AuthService authService;
     private final EmailService emailService;
 
-    @PostMapping("/auth")
+    @PostMapping("/login")
     @Operation(summary = "Авторизация")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Токен получен", content = {
@@ -51,8 +51,8 @@ public class AuthController {
         return authService.createNewUser(registrationUserDto);
     }
 
-    @PostMapping("/sendCode")
-    @Operation(summary = "Отправка кода по почте")
+    @PostMapping("/registration/confirmation-code")
+    @Operation(summary = "Отправка кода на почту")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Письмо отправлено", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),

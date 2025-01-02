@@ -4,8 +4,8 @@ import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.dto.profile.EmailChangeDto;
 import com.example.kptc_smp.dto.profile.PasswordChangeDto;
 import com.example.kptc_smp.dto.profile.UserInformationDto;
-import com.example.kptc_smp.service.EmailService;
-import com.example.kptc_smp.service.ProfileService;
+import com.example.kptc_smp.service.main.EmailService;
+import com.example.kptc_smp.service.main.ProfileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -14,9 +14,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.Resource;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -74,17 +71,17 @@ public class ProfileController {
         return profileService.getData();
     }
 
-    @GetMapping("/image")
-    @Operation(summary = "Получение фото пользователя")
+    @GetMapping("/image-name")
+    @Operation(summary = "Получение названия изображения пользователя")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Фото отправлено", content = {@Content(mediaType = "multipart/form-data")}),
+            @ApiResponse(responseCode = "200", description = "Фото отправлено", content = {@Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "404", description = "Фото не найдено", content = {@Content(mediaType = "application/json")})
     })
-    public ResponseEntity<Resource> getImage() {
-        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(profileService.getImage());
+    public ResponseDto getImageName() {
+        return profileService.getImageName();
     }
 
-    @PostMapping("/sendCode")
+    @PostMapping("/email/confirmation-code")
     @Operation(summary = "Отправка кода на текущую почту")
     @ApiResponse(responseCode = "200", description = "Письмо отправлено", content = {
             @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))})

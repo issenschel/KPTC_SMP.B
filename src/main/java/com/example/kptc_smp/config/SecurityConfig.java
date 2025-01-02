@@ -1,6 +1,6 @@
 package com.example.kptc_smp.config;
 
-import com.example.kptc_smp.service.UserService;
+import com.example.kptc_smp.service.main.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

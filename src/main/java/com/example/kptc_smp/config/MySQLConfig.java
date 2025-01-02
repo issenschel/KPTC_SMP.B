@@ -1,11 +1,10 @@
 package com.example.kptc_smp.config;
 
 import jakarta.persistence.EntityManagerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -23,10 +22,11 @@ import java.util.Map;
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(entityManagerFactoryRef = "mySQLEntityMangerFactoryBean", basePackages = {
-        "com.example.kptc_smp.repository.mySQL" }, transactionManagerRef = "mySQLTransactionManager")
+        "com.example.kptc_smp.repository.minecraft"}, transactionManagerRef = "mySQLTransactionManager")
+@RequiredArgsConstructor
 public class MySQLConfig {
-    @Autowired
-    private Environment environment;
+
+    private final Environment environment;
 
     @Bean(name = "mySQLDataSource")
     public DataSource dataSource() {
@@ -42,7 +42,7 @@ public class MySQLConfig {
     public LocalContainerEntityManagerFactoryBean entityManagerFactoryBean() {
         LocalContainerEntityManagerFactoryBean bean = new LocalContainerEntityManagerFactoryBean();
         bean.setDataSource(dataSource());
-        bean.setPackagesToScan("com.example.kptc_smp.entity.mySQL");
+        bean.setPackagesToScan("com.example.kptc_smp.entity.minecraft");
 
         JpaVendorAdapter adapter = new HibernateJpaVendorAdapter();
         bean.setJpaVendorAdapter(adapter);
@@ -55,9 +55,9 @@ public class MySQLConfig {
 
         return bean;
     }
-    
+
     @Bean(name = "mySQLTransactionManager")
-    public PlatformTransactionManager transactionManager(@Qualifier("mySQLEntityMangerFactoryBean") EntityManagerFactory entityManagerFactory ) {
+    public PlatformTransactionManager transactionManager(@Qualifier("mySQLEntityMangerFactoryBean") EntityManagerFactory entityManagerFactory) {
         return new JpaTransactionManager(entityManagerFactory);
     }
 }
