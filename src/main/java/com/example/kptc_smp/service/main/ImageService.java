@@ -1,6 +1,6 @@
 package com.example.kptc_smp.service.main;
 
-import com.example.kptc_smp.dto.ImageDto;
+import com.example.kptc_smp.dto.image.ImageDto;
 import com.example.kptc_smp.exception.image.ImageException;
 import com.example.kptc_smp.exception.image.ImageNotFoundException;
 import org.springframework.beans.factory.annotation.Value;

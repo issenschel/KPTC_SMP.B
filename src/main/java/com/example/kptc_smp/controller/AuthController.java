@@ -3,11 +3,13 @@ package com.example.kptc_smp.controller;
 import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.dto.auth.AuthTokenDto;
 import com.example.kptc_smp.dto.auth.JwtRequestDto;
+import com.example.kptc_smp.dto.auth.PasswordChangeDto;
 import com.example.kptc_smp.dto.profile.UserInformationDto;
 import com.example.kptc_smp.dto.registration.EmailDto;
 import com.example.kptc_smp.dto.registration.RegistrationUserDto;
 import com.example.kptc_smp.service.main.AuthService;
 import com.example.kptc_smp.service.main.EmailService;
+import com.example.kptc_smp.service.main.PasswordResetService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -18,6 +20,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -27,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
     private final AuthService authService;
     private final EmailService emailService;
+    private final PasswordResetService passwordResetService;
 
     @PostMapping("/login")
     @Operation(summary = "Авторизация")
@@ -47,9 +51,22 @@ public class AuthController {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = UserInformationDto.class))}),
             @ApiResponse(responseCode = "409", description = "Данные уже заняты", content = {@Content(mediaType = "application/json")})
     })
-    public UserInformationDto createNewUser(@Valid @RequestBody RegistrationUserDto registrationUserDto) {
-        return authService.createNewUser(registrationUserDto);
+    public UserInformationDto registrationUser(@Valid @RequestBody RegistrationUserDto registrationUserDto) {
+        return authService.registrationUser(registrationUserDto);
     }
+
+    @PostMapping("/send-token-password")
+    public ResponseDto resetPassword(@RequestParam("username") String username){
+        passwordResetService.resetPassword(username);
+        return new ResponseDto("Письмо отправлено");
+    }
+
+    @PostMapping("/save-password")
+    public ResponseDto savePassword(@RequestParam("token") String token,@Valid @RequestBody PasswordChangeDto passwordChangeDto) {
+        passwordResetService.changeUserPassword(token, passwordChangeDto);
+        return new ResponseDto("Пароль изменен");
+    }
+
 
     @PostMapping("/registration/confirmation-code")
     @Operation(summary = "Отправка кода на почту")

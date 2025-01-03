@@ -2,7 +2,7 @@ package com.example.kptc_smp.service.minecraft;
 
 import com.example.kptc_smp.entity.minecraft.AuthMe;
 import com.example.kptc_smp.entity.main.User;
-import com.example.kptc_smp.exception.UserNotFoundException;
+import com.example.kptc_smp.exception.user.UserNotFoundException;
 import com.example.kptc_smp.repository.minecraft.AuthMeRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;

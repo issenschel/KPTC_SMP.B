@@ -6,11 +6,11 @@ import com.example.kptc_smp.dto.profile.EmailChangeDto;
 import com.example.kptc_smp.dto.profile.PasswordChangeDto;
 import com.example.kptc_smp.dto.profile.UserInformationDto;
 import com.example.kptc_smp.entity.main.User;
-import com.example.kptc_smp.exception.EmailException;
-import com.example.kptc_smp.exception.UserNotFoundException;
+import com.example.kptc_smp.exception.email.EmailFoundException;
+import com.example.kptc_smp.exception.user.UserNotFoundException;
 import com.example.kptc_smp.exception.image.ImageException;
 import com.example.kptc_smp.exception.image.ImageNotFoundException;
-import com.example.kptc_smp.exception.profile.CodeValidationException;
+import com.example.kptc_smp.exception.email.CodeValidationException;
 import com.example.kptc_smp.exception.profile.PasswordValidationException;
 import com.example.kptc_smp.service.minecraft.AuthMeService;
 import com.example.kptc_smp.utility.JwtTokenUtils;
@@ -33,8 +33,8 @@ public class ProfileService {
     private final UserInformationService userInformationService;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenUtils jwtTokenUtils;
-    private final AssumptionService assumptionService;
-    private final TokenService tokenService;
+    private final EmailVerificationService emailVerificationService;
+    private final AuthTokenService authTokenService;
     private final AuthMeService authMeService;
     private final ImageService imageService;
 
@@ -62,13 +62,13 @@ public class ProfileService {
     public ResponseDto changeEmail(EmailChangeDto emailChangeDto) {
         Optional<User> user = userService.findWithUserInformationAndTokenVersionByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
         return user.map(us -> {
-            if (!assumptionService.validateCode(user.get().getUserInformation().getEmail(), emailChangeDto.getCode())) {
+            if (!emailVerificationService.validateCode(user.get().getUserInformation().getEmail(), emailChangeDto.getCode())) {
                 throw new CodeValidationException();
             }
             userInformationService.findByEmail(emailChangeDto.getEmail()).ifPresent(t -> {
-                throw new EmailException();
+                throw new EmailFoundException();
             });
-            assumptionService.findByEmail(us.getUserInformation().getEmail()).ifPresent(assumptionService::delete);
+            emailVerificationService.findByEmail(us.getUserInformation().getEmail()).ifPresent(emailVerificationService::delete);
             us.getUserInformation().setEmail(emailChangeDto.getEmail());
             userInformationService.save(us.getUserInformation());
             return updateAndGenerateToken(us);
@@ -115,8 +115,8 @@ public class ProfileService {
 
     private ResponseDto updateAndGenerateToken(User user) {
         UUID tokenUUID = UUID.randomUUID();
-        user.getToken().setTokenUUID(tokenUUID);
-        tokenService.save(user.getToken());
+        user.getAuthToken().setTokenUUID(tokenUUID);
+        authTokenService.save(user.getAuthToken());
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String token = jwtTokenUtils.generateToken(authentication, tokenUUID);
         return new ResponseDto(token);

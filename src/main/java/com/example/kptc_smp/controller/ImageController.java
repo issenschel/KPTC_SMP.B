@@ -1,6 +1,6 @@
 package com.example.kptc_smp.controller;
 
-import com.example.kptc_smp.dto.ImageDto;
+import com.example.kptc_smp.dto.image.ImageDto;
 import com.example.kptc_smp.service.main.ImageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

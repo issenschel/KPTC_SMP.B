@@ -32,5 +32,8 @@ public class User {
     private UserInformation userInformation;
 
     @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, optional = false)
-    private Token token;
+    private AuthToken authToken;
+
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, optional = false)
+    private PasswordReset passwordReset;
 }

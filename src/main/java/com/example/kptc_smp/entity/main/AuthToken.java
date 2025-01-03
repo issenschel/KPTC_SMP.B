@@ -7,8 +7,8 @@ import java.util.UUID;
 
 @Entity
 @Data
-@Table(name = "token")
-public class Token {
+@Table(name = "auth_token")
+public class AuthToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

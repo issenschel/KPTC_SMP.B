@@ -1,4 +1,4 @@
-package com.example.kptc_smp.exception;
+package com.example.kptc_smp.exception.user;
 
 public class UserNotFoundException extends RuntimeException {
 

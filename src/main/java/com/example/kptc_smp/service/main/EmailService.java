@@ -3,7 +3,7 @@ package com.example.kptc_smp.service.main;
 import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.dto.registration.EmailDto;
 import com.example.kptc_smp.entity.main.User;
-import com.example.kptc_smp.exception.EmailException;
+import com.example.kptc_smp.exception.email.EmailFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -19,7 +19,7 @@ import java.util.Random;
 @RequiredArgsConstructor
 public class EmailService {
     private final JavaMailSender javaMailSender;
-    private final AssumptionService assumptionService;
+    private final EmailVerificationService emailVerificationService;
     private final UserInformationService userInformationService;
     private final UserService userService;
 
@@ -37,14 +37,14 @@ public class EmailService {
 
     @Transactional
     public ResponseDto sendRegistrationCode(EmailDto emailDto){
-        userInformationService.findByEmail(emailDto.getEmail()).ifPresent(u -> {throw new EmailException();});
+        userInformationService.findByEmail(emailDto.getEmail()).ifPresent(u -> {throw new EmailFoundException();});
         return sendCode(emailDto.getEmail());
     }
 
     public ResponseDto sendCode(String email) {
         String key = generateVerificationCode();
         sendSimpleMessage(email, "Код подтверждения", "Код: " + key);
-        assumptionService.saveOrUpdate(email, key);
+        emailVerificationService.saveOrUpdate(email, key);
         return new ResponseDto("Код отправлен");
     }
 
@@ -54,7 +54,7 @@ public class EmailService {
         return sendCode(user.get().getUserInformation().getEmail());
     }
 
-    public String generateVerificationCode() {
+    private String generateVerificationCode() {
         return String.valueOf(new Random().nextInt(899999) + 100000);
     }
 

@@ -5,7 +5,7 @@ import com.example.kptc_smp.dto.profile.UserInformationDto;
 import com.example.kptc_smp.dto.registration.RegistrationUserDto;
 import com.example.kptc_smp.entity.main.User;
 import com.example.kptc_smp.entity.main.UserInformation;
-import com.example.kptc_smp.exception.RegistrationValidationException;
+import com.example.kptc_smp.exception.registration.RegistrationValidationException;
 import com.example.kptc_smp.service.minecraft.AuthMeService;
 import com.example.kptc_smp.service.minecraft.WhitelistService;
 import com.example.kptc_smp.utility.JwtTokenUtils;
@@ -31,8 +31,8 @@ public class AuthService {
     private final UserInformationService userInformationService;
     private final JwtTokenUtils jwtTokenUtils;
     private final AuthenticationManager authenticationManager;
-    private final TokenService tokenService;
-    private final AssumptionService assumptionService;
+    private final AuthTokenService authTokenService;
+    private final EmailVerificationService emailVerificationService;
     private final RegistrationValidatorService registrationValidatorService;
     private final WhitelistService whitelistService;
     private final AuthMeService authMeService;
@@ -41,27 +41,35 @@ public class AuthService {
     public AuthTokenDto createAuthToken(@RequestBody JwtRequestDto authRequest) throws BadCredentialsException {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
             Optional<User> user = userService.findWithTokenVersionByUsername(authRequest.getUsername());
-            UUID tokenUUID = user.orElseThrow(() -> new BadCredentialsException("")).getToken().getTokenUUID();
+            UUID tokenUUID = user.orElseThrow(() -> new BadCredentialsException("")).getAuthToken().getTokenUUID();
             String token = jwtTokenUtils.generateToken(authentication, tokenUUID);
             List<String> roles = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
             return new AuthTokenDto(token,roles);
     }
 
     @Transactional
-    public UserInformationDto createNewUser(@RequestBody RegistrationUserDto registrationUserDto) {
-            Map<String, String> validationsErrors = registrationValidatorService.validate(registrationUserDto);
-            if (!validationsErrors.isEmpty()){
-                throw new RegistrationValidationException(validationsErrors);
-            }
+    public UserInformationDto registrationUser(@RequestBody RegistrationUserDto registrationUserDto) {
+            validateRegistration(registrationUserDto);
             User user = userService.createNewUser(registrationUserDto.getUsername(), registrationUserDto.getPassword());
             UserInformation userInformation = userInformationService.createNewUserInformation(registrationUserDto, user);
-            authMeService.createAuthMe(user);
-            whitelistService.createWhitelist(user.getUsername());
+            minecraftRegistrationActions(user);
             UUID tokenUUID = UUID.randomUUID();
-            tokenService.createNewTokenVersion(user,tokenUUID);
-            assumptionService.deleteByEmail(registrationUserDto.getEmail());
+            authTokenService.createAuthToken(user,tokenUUID);
+            emailVerificationService.deleteByEmail(registrationUserDto.getEmail());
             return new UserInformationDto(userInformation.getId(), userInformation.getUser().getUsername(),
                     userInformation.getEmail());
+    }
+
+    private void validateRegistration(RegistrationUserDto registrationUserDto) {
+        Map<String, String> validationsErrors = registrationValidatorService.validate(registrationUserDto);
+        if (!validationsErrors.isEmpty()) {
+            throw new RegistrationValidationException(validationsErrors);
+        }
+    }
+
+    private void minecraftRegistrationActions(User user) {
+        authMeService.createAuthMe(user);
+        whitelistService.createWhitelist(user.getUsername());
     }
     
 }

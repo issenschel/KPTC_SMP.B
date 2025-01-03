@@ -5,7 +5,7 @@ import com.example.kptc_smp.dto.news.HeadlineNewsDto;
 import com.example.kptc_smp.dto.news.ListHeadlineNewsDto;
 import com.example.kptc_smp.dto.news.NewsRequestDto;
 import com.example.kptc_smp.entity.main.News;
-import com.example.kptc_smp.exception.NewsNotFoundException;
+import com.example.kptc_smp.exception.news.NewsNotFoundException;
 import com.example.kptc_smp.repository.main.NewsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

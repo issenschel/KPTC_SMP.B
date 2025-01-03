@@ -4,7 +4,7 @@ import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.dto.guild.GuildOrdersDto;
 import com.example.kptc_smp.dto.guild.GuildOrderDto;
 import com.example.kptc_smp.entity.main.GuildOrder;
-import com.example.kptc_smp.exception.OrderNotFoundException;
+import com.example.kptc_smp.exception.guild.OrderNotFoundException;
 import com.example.kptc_smp.repository.main.GuildOrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
