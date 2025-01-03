@@ -1,14 +1,16 @@
 package com.example.kptc_smp.service.main;
 
-import com.example.kptc_smp.dto.auth.PasswordChangeDto;
+import com.example.kptc_smp.dto.ResponseDto;
+import com.example.kptc_smp.dto.auth.PasswordResetDto;
+import com.example.kptc_smp.dto.email.EmailDto;
 import com.example.kptc_smp.entity.main.PasswordReset;
 import com.example.kptc_smp.entity.main.User;
+import com.example.kptc_smp.entity.main.UserInformation;
+import com.example.kptc_smp.exception.auth.PasswordResetDateExpiredException;
 import com.example.kptc_smp.exception.auth.TokenNotFoundException;
-import com.example.kptc_smp.exception.profile.PasswordValidationException;
 import com.example.kptc_smp.exception.user.UserNotFoundException;
 import com.example.kptc_smp.repository.main.PasswordResetRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Calendar;
@@ -19,37 +21,37 @@ import java.util.UUID;
 public class PasswordResetService {
     private final PasswordResetRepository passwordResetRepository;
     private final UserService userService;
+    private final UserInformationService userInformationService;
     private final EmailService emailService;
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordService passwordService;
 
-    public void resetPassword(String username){
-        User user = userService.findWithUserInformationByUsername(username).orElseThrow(UserNotFoundException::new);
-        String token = UUID.randomUUID().toString();
-        createPasswordResetTokenForUser(user, token);
-        emailService.sendSimpleMessage(user.getUserInformation().getEmail(),"Ссылка для смены пароля","http://localhost:5174/change-password?token="+token);
+    public ResponseDto createPasswordResetLink(EmailDto emailDto) {
+        UserInformation userInformation = userInformationService.findWithUserByEmail(emailDto.getEmail()).orElseThrow(UserNotFoundException::new);
+        UUID linkUUID = UUID.randomUUID();
+        createPasswordReset(userInformation.getUser(), linkUUID);
+        emailService.sendSimpleMessage(emailDto.getEmail(), "Ссылка для смены пароля", "ssilka" + linkUUID);
+        return new ResponseDto("Письмо отправлено");
     }
 
-    public void createPasswordResetTokenForUser(User user,String token) {
+    public void createPasswordReset(User user, UUID linkUUID) {
         PasswordReset passwordReset = new PasswordReset();
-        passwordReset.setToken(token);
+        passwordReset.setLinkUUID(linkUUID);
         passwordReset.setUser(user);
         passwordResetRepository.save(passwordReset);
     }
 
-    public void changeUserPassword(String token, PasswordChangeDto passwordChangeDto) {
-        PasswordReset passToken = passwordResetRepository.findByToken(token).orElseThrow(TokenNotFoundException::new);
-        if(isTokenExpired(passToken)){
-
+    public void changeUserPassword(UUID linkUUID, PasswordResetDto passwordResetDto) {
+        PasswordReset passwordReset = passwordResetRepository.findByLinkUUID(linkUUID).orElseThrow(TokenNotFoundException::new);
+        if (isDateExpired(passwordReset)) {
+            throw new PasswordResetDateExpiredException();
         }
-        if (!passwordChangeDto.getPassword().equals(passwordChangeDto.getConfirmPassword())) {
-            throw new PasswordValidationException("Новый пароль и подтверждение пароля не совпадают");
-        }
-        User user = passToken.getUser();
-        user.setPassword(passwordEncoder.encode(passwordChangeDto.getPassword()));
+        passwordService.validatePasswordMatch(passwordResetDto.getPassword(), passwordResetDto.getConfirmPassword());
+        User user = passwordReset.getUser();
+        user.setPassword(passwordService.encodePassword(passwordResetDto.getPassword()));
         userService.saveUser(user);
     }
 
-    private boolean isTokenExpired(PasswordReset passToken) {
+    private boolean isDateExpired(PasswordReset passToken) {
         Calendar cal = Calendar.getInstance();
         return passToken.getExpiryDate().before(cal.getTime());
     }

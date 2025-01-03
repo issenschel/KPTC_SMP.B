@@ -25,7 +25,7 @@ public class RegistrationValidatorService {
         validationRules.put("code", this::validateCode);
     }
 
-    public Map<String, String> validate(RegistrationUserDto registrationUserDto) {
+    public Map<String, String> validateRegistration(RegistrationUserDto registrationUserDto) {
         Map<String, String> errors = new HashMap<>();
 
         validationRules.forEach((field, rule) ->
@@ -47,7 +47,7 @@ public class RegistrationValidatorService {
     }
 
     public Optional<String> validateCode(RegistrationUserDto registrationUserDto){
-        if(!emailVerificationService.validateCode(registrationUserDto.getEmail(), registrationUserDto.getCode())){
+        if(emailVerificationService.validateCode(registrationUserDto.getEmail(), registrationUserDto.getCode()).isEmpty()){
             return  Optional.of("Неверный код");
         }
         return Optional.empty();

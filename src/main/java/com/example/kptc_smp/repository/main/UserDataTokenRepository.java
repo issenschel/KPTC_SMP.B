@@ -1,6 +1,6 @@
 package com.example.kptc_smp.repository.main;
 
-import com.example.kptc_smp.entity.main.AuthToken;
+import com.example.kptc_smp.entity.main.UserDataToken;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -8,6 +8,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface AuthTokenRepository extends CrudRepository<AuthToken, Integer> {
-    Optional<AuthToken> findByTokenUUID(UUID tokenUUID);
+public interface UserDataTokenRepository extends CrudRepository<UserDataToken, Integer> {
+    Optional<UserDataToken> findByTokenUUID(UUID tokenUUID);
 }

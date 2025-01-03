@@ -2,23 +2,21 @@ package com.example.kptc_smp.service.main;
 
 
 import com.example.kptc_smp.dto.ResponseDto;
+import com.example.kptc_smp.dto.auth.TokenDto;
 import com.example.kptc_smp.dto.profile.EmailChangeDto;
 import com.example.kptc_smp.dto.profile.PasswordChangeDto;
 import com.example.kptc_smp.dto.profile.UserInformationDto;
 import com.example.kptc_smp.entity.main.User;
+import com.example.kptc_smp.exception.email.CodeValidationException;
 import com.example.kptc_smp.exception.email.EmailFoundException;
-import com.example.kptc_smp.exception.user.UserNotFoundException;
 import com.example.kptc_smp.exception.image.ImageException;
 import com.example.kptc_smp.exception.image.ImageNotFoundException;
-import com.example.kptc_smp.exception.email.CodeValidationException;
-import com.example.kptc_smp.exception.profile.PasswordValidationException;
+import com.example.kptc_smp.exception.user.UserNotFoundException;
 import com.example.kptc_smp.service.minecraft.AuthMeService;
 import com.example.kptc_smp.utility.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,26 +29,21 @@ import java.util.UUID;
 public class ProfileService {
     private final UserService userService;
     private final UserInformationService userInformationService;
-    private final PasswordEncoder passwordEncoder;
     private final JwtTokenUtils jwtTokenUtils;
     private final EmailVerificationService emailVerificationService;
-    private final AuthTokenService authTokenService;
+    private final UserDataTokenService userDataTokenService;
     private final AuthMeService authMeService;
     private final ImageService imageService;
-
-    @Value("${upload.path}")
-    private String uploadPath;
+    private final PasswordService passwordService;
 
     @Transactional
-    public ResponseDto changePassword(PasswordChangeDto passwordChangeDto) {
+    public TokenDto changePassword(PasswordChangeDto passwordChangeDto) {
         Optional<User> user = userService.findWithTokenVersionByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
         return user.map(
                 us -> {
-                    if (!passwordChangeDto.getPassword().equals(passwordChangeDto.getConfirmPassword())) {
-                        throw new PasswordValidationException("Новый пароль и подтверждение пароля не совпадают");
-                    }
-                    checkPassword(passwordChangeDto.getOldPassword(), us.getPassword());
-                    String password = passwordEncoder.encode(passwordChangeDto.getPassword());
+                    passwordService.validatePasswordMatch(passwordChangeDto.getPassword(), passwordChangeDto.getConfirmPassword());
+                    passwordService.validateEncodedPasswordMatch(passwordChangeDto.getOldPassword(), us.getPassword());
+                    String password = passwordService.encodePassword(passwordChangeDto.getPassword());
                     us.setPassword(password);
                     authMeService.updatePassword(us.getUsername(), password);
                     userService.saveUser(us);
@@ -59,12 +52,11 @@ public class ProfileService {
     }
 
     @Transactional
-    public ResponseDto changeEmail(EmailChangeDto emailChangeDto) {
+    public TokenDto changeEmail(EmailChangeDto emailChangeDto) {
         Optional<User> user = userService.findWithUserInformationAndTokenVersionByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
         return user.map(us -> {
-            if (!emailVerificationService.validateCode(user.get().getUserInformation().getEmail(), emailChangeDto.getCode())) {
-                throw new CodeValidationException();
-            }
+            emailVerificationService.validateCode(user.get().getUserInformation().getEmail(), emailChangeDto.getCode())
+                    .orElseThrow(CodeValidationException::new);
             userInformationService.findByEmail(emailChangeDto.getEmail()).ifPresent(t -> {
                 throw new EmailFoundException();
             });
@@ -77,7 +69,7 @@ public class ProfileService {
 
     @Transactional
     public ResponseDto changeImage(MultipartFile image) {
-        if (image != null && image.getContentType() != null && image.getContentType().matches("image/.*")) {
+        if (imageService.isValidImage(image)) {
             Optional<User> user = userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
             return user.map(us -> {
                 String imageName;
@@ -113,18 +105,12 @@ public class ProfileService {
         ).orElseThrow(UserNotFoundException::new));
     }
 
-    private ResponseDto updateAndGenerateToken(User user) {
+    private TokenDto updateAndGenerateToken(User user) {
         UUID tokenUUID = UUID.randomUUID();
-        user.getAuthToken().setTokenUUID(tokenUUID);
-        authTokenService.save(user.getAuthToken());
+        user.getUserDataToken().setTokenUUID(tokenUUID);
+        userDataTokenService.save(user.getUserDataToken());
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String token = jwtTokenUtils.generateToken(authentication, tokenUUID);
-        return new ResponseDto(token);
-    }
-
-    private void checkPassword(String currentPassword, String inputAtPassword) {
-        if (!passwordEncoder.matches(currentPassword, inputAtPassword)) {
-            throw new PasswordValidationException();
-        }
+        return new TokenDto(token);
     }
 }

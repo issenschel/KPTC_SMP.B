@@ -13,27 +13,30 @@ import java.util.Optional;
 public class EmailVerificationService {
     private final EmailVerificationRepository emailVerificationRepository;
 
-        @Transactional
-        public void saveOrUpdate(String email, String code){
-            Optional<EmailVerification> assumptionOptional = emailVerificationRepository.findByEmail(email);
-            if (assumptionOptional.isPresent()) {
-                EmailVerification emailVerification = assumptionOptional.get();
-                emailVerification.setCode(code);
-                emailVerificationRepository.save(emailVerification);
-            } else {
-                createNewAssumption(email, code);
-            }
+    @Transactional
+    public void createOrUpdate(String email, String code){
+        Optional<EmailVerification> assumptionOptional = emailVerificationRepository.findByEmail(email);
+        if (assumptionOptional.isPresent()) {
+            changeEmailVerification(assumptionOptional.get(), code);
+        } else {
+            createEmailVerification(email, code);
         }
+    }
 
-        public void createNewAssumption(String email, String code) {
-            EmailVerification emailVerification = new EmailVerification();
-            emailVerification.setEmail(email);
-            emailVerification.setCode(code);
-            emailVerificationRepository.save(emailVerification);
-        }
+    public void createEmailVerification(String email, String code) {
+        EmailVerification emailVerification = new EmailVerification();
+        emailVerification.setEmail(email);
+        emailVerification.setCode(code);
+        emailVerificationRepository.save(emailVerification);
+    }
 
-    public boolean validateCode(String email, String code) {
-        return emailVerificationRepository.findByEmail(email).filter(emailVerification -> emailVerification.getCode().equals(code)).isPresent();
+    public void changeEmailVerification(EmailVerification emailVerification, String code) {
+        emailVerification.setCode(code);
+        emailVerificationRepository.save(emailVerification);
+    }
+
+    public Optional<EmailVerification> validateCode(String email, String code) {
+        return emailVerificationRepository.findByEmail(email).filter(emailVerification -> emailVerification.getCode().equals(code));
     }
 
     public void delete(EmailVerification emailVerification){

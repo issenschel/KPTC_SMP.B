@@ -1,6 +1,7 @@
 package com.example.kptc_smp.controller;
 
 import com.example.kptc_smp.dto.ResponseDto;
+import com.example.kptc_smp.exception.auth.PasswordResetDateExpiredException;
 import com.example.kptc_smp.exception.email.EmailFoundException;
 import com.example.kptc_smp.exception.guild.OrderNotFoundException;
 import com.example.kptc_smp.exception.image.ImageNotFoundException;
@@ -90,6 +91,11 @@ public class AdviceController {
 
     @ExceptionHandler(ImageNotFoundException.class)
     public ResponseEntity<ResponseDto> imageNotFoundException(ImageNotFoundException e) {
+        return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
+    }
+
+    @ExceptionHandler(PasswordResetDateExpiredException.class)
+    public ResponseEntity<ResponseDto> passwordResetDateExpired(PasswordResetDateExpiredException e) {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
     }
 

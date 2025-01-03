@@ -8,7 +8,7 @@ import java.util.List;
 
 @Data
 @Schema(description = "Модель получения списка заказов")
-public class GuildOrdersDto {
+public class GuildOrderGroupDto {
     @Schema(description = "Список заказов")
     List<GuildOrder> guildOrders;
     @Schema(description = "Количество страниц с заказами")

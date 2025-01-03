@@ -8,6 +8,7 @@ import java.util.Optional;
 
 @Repository
 public interface EmailVerificationRepository extends CrudRepository<EmailVerification, Integer> {
+
     Optional<EmailVerification> findByEmail(String email);
 
     void deleteByEmail(String email);

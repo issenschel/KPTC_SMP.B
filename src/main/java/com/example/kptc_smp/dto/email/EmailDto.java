@@ -1,4 +1,4 @@
-package com.example.kptc_smp.dto.registration;
+package com.example.kptc_smp.dto.email;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;

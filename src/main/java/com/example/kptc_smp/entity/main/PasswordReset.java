@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -17,11 +18,13 @@ public class PasswordReset {
     @Column(name = "id")
     private Long id;
 
-    private String token;
-
     @OneToOne
     @MapsId
     private User user;
 
+    @Column(name = "uuid")
+    private UUID linkUUID;
+
+    @Column(name = "uuid")
     private Date expiryDate;
 }

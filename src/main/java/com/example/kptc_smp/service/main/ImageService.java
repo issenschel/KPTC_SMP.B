@@ -23,7 +23,7 @@ public class ImageService {
     @Value("${upload.path}")
     private String uploadPath;
 
-    public Resource getImage(String imageName){
+    public Resource getImageAsResource(String imageName){
         Path path = Paths.get(uploadPath + File.separator + imageName);
         try {
             return new UrlResource(path.toUri());
@@ -41,26 +41,10 @@ public class ImageService {
         }
     }
 
-    public String uploadImage(MultipartFile image){
-        String uuidFile = UUID.randomUUID().toString();
-        String originalFilename = image.getOriginalFilename();
-        String extension = originalFilename.substring(originalFilename.lastIndexOf('.') + 1);
-        String result = uuidFile + "." + extension;
-        File file = new File(uploadPath + File.separator + result);
-        try {
-            image.transferTo(file);
-            return result;
-        } catch (IOException e) {
-            throw new ImageException();
-        }
-    }
-
     public String updateImage(MultipartFile image, String oldImageName) {
         deleteOldImage(oldImageName);
         return uploadImage(image);
     }
-
-
 
     public void deleteOldImage(String oldImageName){
         try {
@@ -71,4 +55,21 @@ public class ImageService {
 
     }
 
+    public String uploadImage(MultipartFile image){
+        String fileUUID = UUID.randomUUID().toString();
+        String originalFilename = image.getOriginalFilename();
+        String extension = originalFilename.substring(originalFilename.lastIndexOf('.') + 1);
+        String result = fileUUID + "." + extension;
+        File file = new File(uploadPath + File.separator + result);
+        try {
+            image.transferTo(file);
+            return result;
+        } catch (IOException e) {
+            throw new ImageException();
+        }
+    }
+
+    public boolean isValidImage(MultipartFile image){
+        return image != null && image.getContentType() != null && image.getContentType().matches("image/.*");
+    }
 }

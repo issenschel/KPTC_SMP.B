@@ -1,9 +1,10 @@
 package com.example.kptc_smp.service.main;
 
 import com.example.kptc_smp.dto.ResponseDto;
-import com.example.kptc_smp.dto.registration.EmailDto;
+import com.example.kptc_smp.dto.email.EmailDto;
 import com.example.kptc_smp.entity.main.User;
 import com.example.kptc_smp.exception.email.EmailFoundException;
+import com.example.kptc_smp.exception.user.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -12,7 +13,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
 import java.util.Random;
 
 @Service
@@ -41,17 +41,18 @@ public class EmailService {
         return sendCode(emailDto.getEmail());
     }
 
-    public ResponseDto sendCode(String email) {
-        String key = generateVerificationCode();
-        sendSimpleMessage(email, "Код подтверждения", "Код: " + key);
-        emailVerificationService.saveOrUpdate(email, key);
-        return new ResponseDto("Код отправлен");
-    }
-
     @Transactional
     public ResponseDto sendChangeEmailCode(){
-        Optional<User> user = userService.findWithUserInformationAndTokenVersionByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
-        return sendCode(user.get().getUserInformation().getEmail());
+        User user = userService.findWithUserInformationAndTokenVersionByUsername(SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(UserNotFoundException::new);
+        return sendCode(user.getUserInformation().getEmail());
+    }
+
+    public ResponseDto sendCode(String email) {
+        String key = generateVerificationCode();
+        emailVerificationService.createOrUpdate(email, key);
+        sendSimpleMessage(email, "Код подтверждения", "Код: " + key);
+        return new ResponseDto("Код отправлен");
     }
 
     private String generateVerificationCode() {

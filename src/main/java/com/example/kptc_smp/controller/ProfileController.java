@@ -1,6 +1,7 @@
 package com.example.kptc_smp.controller;
 
 import com.example.kptc_smp.dto.ResponseDto;
+import com.example.kptc_smp.dto.auth.TokenDto;
 import com.example.kptc_smp.dto.profile.EmailChangeDto;
 import com.example.kptc_smp.dto.profile.PasswordChangeDto;
 import com.example.kptc_smp.dto.profile.UserInformationDto;
@@ -36,7 +37,7 @@ public class ProfileController {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
             @ApiResponse(responseCode = "400", description = "Неверно заполнены данные | поля", content = {@Content(mediaType = "application/json")}),
     })
-    public ResponseDto changePassword(@Valid @RequestBody PasswordChangeDto passwordChangeDto) {
+    public TokenDto changePassword(@Valid @RequestBody PasswordChangeDto passwordChangeDto) {
         return profileService.changePassword(passwordChangeDto);
     }
 
@@ -48,7 +49,7 @@ public class ProfileController {
             @ApiResponse(responseCode = "400", description = "Неверно заполнены данные | поля", content = {@Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "409", description = "Почта занята", content = {@Content(mediaType = "application/json")}),
     })
-    public ResponseDto changeEmail(@Valid @RequestBody EmailChangeDto emailChangeDto) {
+    public TokenDto changeEmail(@Valid @RequestBody EmailChangeDto emailChangeDto) {
         return profileService.changeEmail(emailChangeDto);
     }
 

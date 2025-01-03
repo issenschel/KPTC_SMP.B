@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class PasswordChangeDto {
+public class PasswordResetDto {
     @Schema(description = "Новый пароль", example = "Desiigner_^@")
     @NotBlank(message = "Новый пароль не может быть пустым")
     @Size(min = 8, max = 30, message = "Пароль не может быть меньше 8 или больше 30")

@@ -1,11 +1,11 @@
 package com.example.kptc_smp.controller;
 
 import com.example.kptc_smp.dto.ResponseDto;
-import com.example.kptc_smp.dto.auth.AuthTokenDto;
+import com.example.kptc_smp.dto.auth.JwtResponseDto;
 import com.example.kptc_smp.dto.auth.JwtRequestDto;
-import com.example.kptc_smp.dto.auth.PasswordChangeDto;
+import com.example.kptc_smp.dto.auth.PasswordResetDto;
 import com.example.kptc_smp.dto.profile.UserInformationDto;
-import com.example.kptc_smp.dto.registration.EmailDto;
+import com.example.kptc_smp.dto.email.EmailDto;
 import com.example.kptc_smp.dto.registration.RegistrationUserDto;
 import com.example.kptc_smp.service.main.AuthService;
 import com.example.kptc_smp.service.main.EmailService;
@@ -23,6 +23,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.UUID;
+
 @RestController
 @RequiredArgsConstructor
 @ApiResponse(responseCode = "400", description = "Неверно заполнены данные | поля", content = {@Content(mediaType = "application/json")})
@@ -36,11 +38,11 @@ public class AuthController {
     @Operation(summary = "Авторизация")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Токен получен", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = AuthTokenDto.class))}),
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = JwtResponseDto.class))}),
             @ApiResponse(responseCode = "401", description = "Неверный логин или пароль", content = {@Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "404", description = "Пользователь не найден", content = {@Content(mediaType = "application/json")})
     })
-    public AuthTokenDto createAuthToken(@Valid @RequestBody JwtRequestDto authRequest) {
+    public JwtResponseDto createAuthToken(@Valid @RequestBody JwtRequestDto authRequest) {
         return authService.createAuthToken(authRequest);
     }
 
@@ -55,18 +57,16 @@ public class AuthController {
         return authService.registrationUser(registrationUserDto);
     }
 
-    @PostMapping("/send-token-password")
-    public ResponseDto resetPassword(@RequestParam("username") String username){
-        passwordResetService.resetPassword(username);
-        return new ResponseDto("Письмо отправлено");
+    @PostMapping("/password-reset/request")
+    public ResponseDto createPasswordResetLink(@RequestBody EmailDto emailDto){
+        return passwordResetService.createPasswordResetLink(emailDto);
     }
 
-    @PostMapping("/save-password")
-    public ResponseDto savePassword(@RequestParam("token") String token,@Valid @RequestBody PasswordChangeDto passwordChangeDto) {
-        passwordResetService.changeUserPassword(token, passwordChangeDto);
+    @PostMapping("/password-reset/confirm")
+    public ResponseDto savePassword(@RequestParam("uuid") UUID linkUUID, @Valid @RequestBody PasswordResetDto passwordResetDto) {
+        passwordResetService.changeUserPassword(linkUUID, passwordResetDto);
         return new ResponseDto("Пароль изменен");
     }
-
 
     @PostMapping("/registration/confirmation-code")
     @Operation(summary = "Отправка кода на почту")

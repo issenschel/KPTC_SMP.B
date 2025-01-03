@@ -1,5 +1,5 @@
 package com.example.kptc_smp.service.main;
-import com.example.kptc_smp.dto.auth.AuthTokenDto;
+import com.example.kptc_smp.dto.auth.JwtResponseDto;
 import com.example.kptc_smp.dto.auth.JwtRequestDto;
 import com.example.kptc_smp.dto.profile.UserInformationDto;
 import com.example.kptc_smp.dto.registration.RegistrationUserDto;
@@ -31,20 +31,20 @@ public class AuthService {
     private final UserInformationService userInformationService;
     private final JwtTokenUtils jwtTokenUtils;
     private final AuthenticationManager authenticationManager;
-    private final AuthTokenService authTokenService;
+    private final UserDataTokenService userDataTokenService;
     private final EmailVerificationService emailVerificationService;
     private final RegistrationValidatorService registrationValidatorService;
     private final WhitelistService whitelistService;
     private final AuthMeService authMeService;
 
     @Transactional
-    public AuthTokenDto createAuthToken(@RequestBody JwtRequestDto authRequest) throws BadCredentialsException {
+    public JwtResponseDto createAuthToken(@RequestBody JwtRequestDto authRequest) {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
             Optional<User> user = userService.findWithTokenVersionByUsername(authRequest.getUsername());
-            UUID tokenUUID = user.orElseThrow(() -> new BadCredentialsException("")).getAuthToken().getTokenUUID();
+            UUID tokenUUID = user.orElseThrow(() -> new BadCredentialsException("")).getUserDataToken().getTokenUUID();
             String token = jwtTokenUtils.generateToken(authentication, tokenUUID);
             List<String> roles = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
-            return new AuthTokenDto(token,roles);
+            return new JwtResponseDto(token,roles);
     }
 
     @Transactional
@@ -54,14 +54,14 @@ public class AuthService {
             UserInformation userInformation = userInformationService.createNewUserInformation(registrationUserDto, user);
             minecraftRegistrationActions(user);
             UUID tokenUUID = UUID.randomUUID();
-            authTokenService.createAuthToken(user,tokenUUID);
+            userDataTokenService.createUserDataToken(user,tokenUUID);
             emailVerificationService.deleteByEmail(registrationUserDto.getEmail());
             return new UserInformationDto(userInformation.getId(), userInformation.getUser().getUsername(),
                     userInformation.getEmail());
     }
 
     private void validateRegistration(RegistrationUserDto registrationUserDto) {
-        Map<String, String> validationsErrors = registrationValidatorService.validate(registrationUserDto);
+        Map<String, String> validationsErrors = registrationValidatorService.validateRegistration(registrationUserDto);
         if (!validationsErrors.isEmpty()) {
             throw new RegistrationValidationException(validationsErrors);
         }
