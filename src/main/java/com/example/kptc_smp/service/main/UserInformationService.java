@@ -25,6 +25,10 @@ public class UserInformationService {
         return userInformationRepository.findByEmail(email);
     }
 
+    public Optional<UserInformation> findWithUserByEmail(String email) {
+        return userInformationRepository.findWithUserByEmail(email);
+    }
+
     public void save(UserInformation userInformation) {
         userInformationRepository.save(userInformation);
     }

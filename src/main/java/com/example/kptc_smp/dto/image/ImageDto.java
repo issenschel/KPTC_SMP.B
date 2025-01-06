@@ -1,4 +1,4 @@
-package com.example.kptc_smp.dto;
+package com.example.kptc_smp.dto.image;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

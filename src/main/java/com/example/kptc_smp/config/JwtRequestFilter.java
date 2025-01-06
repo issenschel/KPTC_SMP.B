@@ -1,6 +1,6 @@
 package com.example.kptc_smp.config;
 
-import com.example.kptc_smp.service.main.TokenService;
+import com.example.kptc_smp.service.main.UserDataTokenService;
 import com.example.kptc_smp.utility.JwtTokenUtils;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.SignatureException;
@@ -23,7 +23,7 @@ import java.io.IOException;
 @Slf4j
 public class JwtRequestFilter extends OncePerRequestFilter {
     private final JwtTokenUtils jwtTokenUtils;
-    private final TokenService tokenService;
+    private final UserDataTokenService userDataTokenService;
 
     @Override
     protected  void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -37,7 +37,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 try {
                     username = jwtTokenUtils.getUsername(jwt);
                     if (username != null && SecurityContextHolder.getContext().getAuthentication() == null &&
-                            (tokenService.findByTokenUUID(jwtTokenUtils.getTokenUUID(jwt))).isPresent()) {
+                            (userDataTokenService.findByTokenUUID(jwtTokenUtils.getTokenUUID(jwt))).isPresent()) {
                         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
                                 username, null, jwtTokenUtils.getRoles(jwt).stream().map(SimpleGrantedAuthority::new).toList());
                         SecurityContextHolder.getContext().setAuthentication(token);

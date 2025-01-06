@@ -1,4 +1,4 @@
-package com.example.kptc_smp.exception;
+package com.example.kptc_smp.exception.guild;
 
 public class OrderNotFoundException extends RuntimeException {
     public OrderNotFoundException() {

@@ -1,4 +1,4 @@
-package com.example.kptc_smp.exception;
+package com.example.kptc_smp.exception.news;
 
 public class NewsNotFoundException extends RuntimeException {
     public NewsNotFoundException() {

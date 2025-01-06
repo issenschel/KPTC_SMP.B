@@ -1,6 +1,6 @@
 package com.example.kptc_smp.service.main;
 
-import com.example.kptc_smp.dto.ImageDto;
+import com.example.kptc_smp.dto.image.ImageDto;
 import com.example.kptc_smp.exception.image.ImageException;
 import com.example.kptc_smp.exception.image.ImageNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,7 +23,7 @@ public class ImageService {
     @Value("${upload.path}")
     private String uploadPath;
 
-    public Resource getImage(String imageName){
+    public Resource getImageAsResource(String imageName){
         Path path = Paths.get(uploadPath + File.separator + imageName);
         try {
             return new UrlResource(path.toUri());
@@ -36,16 +36,27 @@ public class ImageService {
         try {
             File image = new File(uploadPath + File.separator + imageName);
             return new ImageDto(Files.readAllBytes(image.toPath()));
-        }catch (IOException e){
+        } catch (IOException e){
             throw new ImageNotFoundException();
         }
     }
 
+    public String updateImage(MultipartFile image, String oldImageName) {
+        deleteOldImage(oldImageName);
+        return uploadImage(image);
+    }
+
+    public void deleteOldImage(String oldImageName){
+        try {
+            Files.delete(Path.of(uploadPath + File.separator + oldImageName));
+        } catch (IOException ignored) {}
+    }
+
     public String uploadImage(MultipartFile image){
-        String uuidFile = UUID.randomUUID().toString();
+        String fileUUID = UUID.randomUUID().toString();
         String originalFilename = image.getOriginalFilename();
         String extension = originalFilename.substring(originalFilename.lastIndexOf('.') + 1);
-        String result = uuidFile + "." + extension;
+        String result = fileUUID + "." + extension;
         File file = new File(uploadPath + File.separator + result);
         try {
             image.transferTo(file);
@@ -55,20 +66,7 @@ public class ImageService {
         }
     }
 
-    public String updateImage(MultipartFile image, String oldImageName) {
-        deleteOldImage(oldImageName);
-        return uploadImage(image);
+    public boolean isValidImage(MultipartFile image){
+        return image != null && image.getContentType() != null && image.getContentType().matches("image/.*");
     }
-
-
-
-    public void deleteOldImage(String oldImageName){
-        try {
-            Files.delete(Path.of(uploadPath + File.separator + oldImageName));
-        } catch (IOException ignored) {
-
-        }
-
-    }
-
 }

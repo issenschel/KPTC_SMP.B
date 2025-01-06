@@ -1,8 +1,8 @@
 package com.example.kptc_smp.controller;
 
 import com.example.kptc_smp.dto.ResponseDto;
-import com.example.kptc_smp.dto.news.ListHeadlineNewsDto;
-import com.example.kptc_smp.dto.news.NewsRequestDto;
+import com.example.kptc_smp.dto.news.HeadlineGroupNewsDto;
+import com.example.kptc_smp.dto.news.NewsDto;
 import com.example.kptc_smp.entity.main.News;
 import com.example.kptc_smp.service.main.NewsService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,9 +32,9 @@ public class NewsController {
             @ApiResponse(responseCode = "401", description = "Вы не авторизованы", content = {@Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "403", description = "Недостаточно прав", content = {@Content(mediaType = "application/json")})
     })
-    public News createNews(@Valid @ModelAttribute NewsRequestDto newsRequestDto,
+    public News createNews(@Valid @ModelAttribute NewsDto newsDto,
                            @RequestParam(value = "image", required = false) MultipartFile image) {
-        return newsService.createNews(newsRequestDto, image);
+        return newsService.createNews(newsDto, image);
     }
 
     @PutMapping(consumes = "multipart/*")
@@ -47,9 +47,9 @@ public class NewsController {
             @ApiResponse(responseCode = "404", description = "Новость не найдена", content = {@Content(mediaType = "application/json")})
     })
     public News changeNews(@RequestParam(name = "id") int id,
-                           @Valid @ModelAttribute NewsRequestDto newsRequestDto,
+                           @Valid @ModelAttribute NewsDto newsDto,
                            @RequestParam(value = "image", required = false) MultipartFile image) {
-        return newsService.changeNews(newsRequestDto, image, id);
+        return newsService.changeNews(newsDto, image, id);
     }
 
     @DeleteMapping
@@ -68,8 +68,8 @@ public class NewsController {
     @GetMapping()
     @Operation(summary = "Получение списка новостей")
     @ApiResponse(responseCode = "200", description = "Список новостей получен", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = ListHeadlineNewsDto.class))})
-    public ListHeadlineNewsDto getHeadlineNews(@RequestParam(name = "page") int page) {
+            @Content(mediaType = "application/json", schema = @Schema(implementation = HeadlineGroupNewsDto.class))})
+    public HeadlineGroupNewsDto getHeadlineNews(@RequestParam(name = "page") int page) {
         return newsService.getHeadlineNews(page);
     }
 

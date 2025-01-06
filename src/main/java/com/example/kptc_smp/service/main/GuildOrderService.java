@@ -1,10 +1,10 @@
 package com.example.kptc_smp.service.main;
 
 import com.example.kptc_smp.dto.ResponseDto;
-import com.example.kptc_smp.dto.guild.GuildOrdersDto;
+import com.example.kptc_smp.dto.guild.GuildOrderGroupDto;
 import com.example.kptc_smp.dto.guild.GuildOrderDto;
 import com.example.kptc_smp.entity.main.GuildOrder;
-import com.example.kptc_smp.exception.OrderNotFoundException;
+import com.example.kptc_smp.exception.guild.OrderNotFoundException;
 import com.example.kptc_smp.repository.main.GuildOrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -39,13 +39,13 @@ public class GuildOrderService {
         return new ResponseDto("Заказ удален");
     }
 
-    public GuildOrdersDto getOrders(int page) {
-        GuildOrdersDto guildOrdersDto = new GuildOrdersDto();
+    public GuildOrderGroupDto getOrders(int page) {
+        GuildOrderGroupDto guildOrderGroupDto = new GuildOrderGroupDto();
         PageRequest pageRequest = PageRequest.of(page, 6);
         Page<GuildOrder> ordersPage = guildOrderRepository.findAll(pageRequest);
         int totalPages = ordersPage.getTotalPages();
-        guildOrdersDto.setGuildOrders(ordersPage.getContent());
-        guildOrdersDto.setCount(totalPages);
-        return guildOrdersDto;
+        guildOrderGroupDto.setGuildOrders(ordersPage.getContent());
+        guildOrderGroupDto.setCount(totalPages);
+        return guildOrderGroupDto;
     }
 }

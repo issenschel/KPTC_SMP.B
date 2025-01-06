@@ -2,7 +2,7 @@ package com.example.kptc_smp.controller;
 
 import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.dto.guild.GuildOrderDto;
-import com.example.kptc_smp.dto.guild.GuildOrdersDto;
+import com.example.kptc_smp.dto.guild.GuildOrderGroupDto;
 import com.example.kptc_smp.entity.main.GuildOrder;
 import com.example.kptc_smp.service.main.GuildOrderService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -65,8 +65,8 @@ public class GuildController {
     @GetMapping("/orders")
     @Operation(summary = "Получение заказов")
     @ApiResponse(responseCode = "200", description = "Список заказов получен", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = GuildOrdersDto.class))})
-    public GuildOrdersDto getOrders(@RequestParam(name = "page") int page) {
+            @Content(mediaType = "application/json", schema = @Schema(implementation = GuildOrderGroupDto.class))})
+    public GuildOrderGroupDto getOrders(@RequestParam(name = "page") int page) {
         return guildOrderService.getOrders(page);
     }
 }

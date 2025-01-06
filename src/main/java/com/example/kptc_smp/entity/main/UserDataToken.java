@@ -3,18 +3,22 @@ package com.example.kptc_smp.entity.main;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.UUID;
+
 @Entity
 @Data
-@Table(name = "assumption")
-public class Assumption {
+@Table(name = "user_data_token")
+public class UserDataToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Integer id;
 
-    @Column(name = "email")
-    private String email;
+    @OneToOne
+    @MapsId
+    private User user;
 
-    @Column(name = "code")
-    private String code;
+    @Column(name = "token_uuid")
+    private UUID tokenUUID;
+
 }

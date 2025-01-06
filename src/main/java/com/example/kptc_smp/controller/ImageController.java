@@ -1,6 +1,6 @@
 package com.example.kptc_smp.controller;
 
-import com.example.kptc_smp.dto.ImageDto;
+import com.example.kptc_smp.dto.image.ImageDto;
 import com.example.kptc_smp.service.main.ImageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -31,7 +31,7 @@ public class ImageController {
             @ApiResponse(responseCode = "404", description = "Фото не найдено", content = {@Content(mediaType = "application/json")})
     })
     public ResponseEntity<Resource> getImageAsResource(@RequestParam(name = "imageName") String imageName) {
-        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(imageService.getImage(imageName));
+        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(imageService.getImageAsResource(imageName));
     }
 
     @GetMapping("/byte")

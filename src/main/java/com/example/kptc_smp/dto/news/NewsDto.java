@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 @Schema(description = "Модель создания новости")
-public class NewsRequestDto {
+public class NewsDto {
 
     @Schema(description = "Заголовок", example = "Крутые новости")
     @NotBlank(message = "Заголовок не может быть пустым")

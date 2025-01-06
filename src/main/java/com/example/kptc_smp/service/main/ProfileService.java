@@ -2,28 +2,25 @@ package com.example.kptc_smp.service.main;
 
 
 import com.example.kptc_smp.dto.ResponseDto;
+import com.example.kptc_smp.dto.auth.TokenDto;
 import com.example.kptc_smp.dto.profile.EmailChangeDto;
 import com.example.kptc_smp.dto.profile.PasswordChangeDto;
 import com.example.kptc_smp.dto.profile.UserInformationDto;
 import com.example.kptc_smp.entity.main.User;
-import com.example.kptc_smp.exception.EmailException;
-import com.example.kptc_smp.exception.UserNotFoundException;
+import com.example.kptc_smp.exception.email.CodeValidationException;
+import com.example.kptc_smp.exception.email.EmailFoundException;
 import com.example.kptc_smp.exception.image.ImageException;
 import com.example.kptc_smp.exception.image.ImageNotFoundException;
-import com.example.kptc_smp.exception.profile.CodeValidationException;
-import com.example.kptc_smp.exception.profile.PasswordValidationException;
+import com.example.kptc_smp.exception.user.UserNotFoundException;
 import com.example.kptc_smp.service.minecraft.AuthMeService;
 import com.example.kptc_smp.utility.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -31,78 +28,70 @@ import java.util.UUID;
 public class ProfileService {
     private final UserService userService;
     private final UserInformationService userInformationService;
-    private final PasswordEncoder passwordEncoder;
     private final JwtTokenUtils jwtTokenUtils;
-    private final AssumptionService assumptionService;
-    private final TokenService tokenService;
+    private final EmailVerificationService emailVerificationService;
+    private final UserDataTokenService userDataTokenService;
     private final AuthMeService authMeService;
     private final ImageService imageService;
-
-    @Value("${upload.path}")
-    private String uploadPath;
+    private final PasswordService passwordService;
 
     @Transactional
-    public ResponseDto changePassword(PasswordChangeDto passwordChangeDto) {
-        Optional<User> user = userService.findWithTokenVersionByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
-        return user.map(
-                us -> {
-                    if (!passwordChangeDto.getPassword().equals(passwordChangeDto.getConfirmPassword())) {
-                        throw new PasswordValidationException("Новый пароль и подтверждение пароля не совпадают");
-                    }
-                    checkPassword(passwordChangeDto.getOldPassword(), us.getPassword());
-                    String password = passwordEncoder.encode(passwordChangeDto.getPassword());
-                    us.setPassword(password);
-                    authMeService.updatePassword(us.getUsername(), password);
-                    userService.saveUser(us);
-                    return updateAndGenerateToken(us);
+    public TokenDto changePassword(PasswordChangeDto passwordChangeDto) {
+        return userService.findWithTokenVersionByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
+                user -> {
+                    passwordService.validatePasswordEquals(passwordChangeDto.getPassword(), passwordChangeDto.getConfirmPassword());
+                    passwordService.validateEncodedPasswordMatch(passwordChangeDto.getOldPassword(), user.getPassword());
+                    String password = passwordService.encodePassword(passwordChangeDto.getPassword());
+                    user.setPassword(password);
+                    authMeService.updatePassword(user.getUsername(), password);
+                    userService.saveUser(user);
+                    return updateAndGenerateToken(user);
                 }).orElseThrow(UserNotFoundException::new);
     }
 
     @Transactional
-    public ResponseDto changeEmail(EmailChangeDto emailChangeDto) {
-        Optional<User> user = userService.findWithUserInformationAndTokenVersionByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
-        return user.map(us -> {
-            if (!assumptionService.validateCode(user.get().getUserInformation().getEmail(), emailChangeDto.getCode())) {
-                throw new CodeValidationException();
-            }
-            userInformationService.findByEmail(emailChangeDto.getEmail()).ifPresent(t -> {
-                throw new EmailException();
-            });
-            assumptionService.findByEmail(us.getUserInformation().getEmail()).ifPresent(assumptionService::delete);
-            us.getUserInformation().setEmail(emailChangeDto.getEmail());
-            userInformationService.save(us.getUserInformation());
-            return updateAndGenerateToken(us);
-        }).orElseThrow(UserNotFoundException::new);
+    public TokenDto changeEmail(EmailChangeDto emailChangeDto) {
+        return userService.findWithUserInformationAndTokenVersionByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
+                user -> {
+                    emailVerificationService.validateCode(user.getUserInformation().getEmail(), emailChangeDto.getCode())
+                            .orElseThrow(CodeValidationException::new);
+                    userInformationService.findByEmail(emailChangeDto.getEmail()).ifPresent(t -> {
+                        throw new EmailFoundException();
+                    });
+                    emailVerificationService.findByEmail(user.getUserInformation().getEmail()).ifPresent(emailVerificationService::delete);
+                    user.getUserInformation().setEmail(emailChangeDto.getEmail());
+                    userInformationService.save(user.getUserInformation());
+                    return updateAndGenerateToken(user);
+                }).orElseThrow(UserNotFoundException::new);
     }
 
     @Transactional
     public ResponseDto changeImage(MultipartFile image) {
-        if (image != null && image.getContentType() != null && image.getContentType().matches("image/.*")) {
-            Optional<User> user = userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
-            return user.map(us -> {
-                String imageName;
-                if (us.getUserInformation().getImageName() == null) {
-                    imageName = imageService.uploadImage(image);
-                } else {
-                    imageName = imageService.updateImage(image, us.getUserInformation().getImageName());
-                }
-                us.getUserInformation().setImageName(imageName);
-                userInformationService.save(us.getUserInformation());
-                return new ResponseDto("Успешное изменение фотографии");
-            }).orElseThrow(UserNotFoundException::new);
+        if (imageService.isValidImage(image)) {
+            return userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
+                    user -> {
+                        String imageName;
+                        if (user.getUserInformation().getImageName() == null) {
+                            imageName = imageService.uploadImage(image);
+                        } else {
+                            imageName = imageService.updateImage(image, user.getUserInformation().getImageName());
+                        }
+                        user.getUserInformation().setImageName(imageName);
+                        userInformationService.save(user.getUserInformation());
+                        return new ResponseDto("Успешное изменение фотографии");
+                    }).orElseThrow(UserNotFoundException::new);
         }
         throw new ImageException();
     }
 
     public UserInformationDto getData() {
-        Optional<User> user = userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
-        return user.map(
-                us -> new UserInformationDto(us.getId(), us.getUsername(), us.getUserInformation().getEmail())
+        return userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
+                user -> new UserInformationDto(user.getId(), user.getUsername(), user.getUserInformation().getEmail())
         ).orElseThrow(UserNotFoundException::new);
     }
 
     public ResponseDto getImageName() {
-        return (userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
+        return userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
                 user -> {
                     String imageName = user.getUserInformation().getImageName();
                     if (imageName != null) {
@@ -110,21 +99,15 @@ public class ProfileService {
                     }
                     throw new ImageNotFoundException();
                 }
-        ).orElseThrow(UserNotFoundException::new));
+        ).orElseThrow(UserNotFoundException::new);
     }
 
-    private ResponseDto updateAndGenerateToken(User user) {
+    private TokenDto updateAndGenerateToken(User user) {
         UUID tokenUUID = UUID.randomUUID();
-        user.getToken().setTokenUUID(tokenUUID);
-        tokenService.save(user.getToken());
+        user.getUserDataToken().setTokenUUID(tokenUUID);
+        userDataTokenService.save(user.getUserDataToken());
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String token = jwtTokenUtils.generateToken(authentication, tokenUUID);
-        return new ResponseDto(token);
-    }
-
-    private void checkPassword(String currentPassword, String inputAtPassword) {
-        if (!passwordEncoder.matches(currentPassword, inputAtPassword)) {
-            throw new PasswordValidationException();
-        }
+        return new TokenDto(token);
     }
 }

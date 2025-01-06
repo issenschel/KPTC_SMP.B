@@ -1,12 +1,17 @@
 package com.example.kptc_smp.controller;
 
 import com.example.kptc_smp.dto.ResponseDto;
-import com.example.kptc_smp.exception.*;
-import com.example.kptc_smp.exception.EmailException;
+import com.example.kptc_smp.exception.auth.PasswordResetDateExpiredException;
+import com.example.kptc_smp.exception.auth.PasswordResetUUIDNotFoundException;
+import com.example.kptc_smp.exception.email.EmailFoundException;
+import com.example.kptc_smp.exception.guild.OrderNotFoundException;
 import com.example.kptc_smp.exception.image.ImageNotFoundException;
-import com.example.kptc_smp.exception.profile.CodeValidationException;
+import com.example.kptc_smp.exception.email.CodeValidationException;
+import com.example.kptc_smp.exception.news.NewsNotFoundException;
 import com.example.kptc_smp.exception.profile.PasswordValidationException;
 import com.example.kptc_smp.exception.image.ImageException;
+import com.example.kptc_smp.exception.auth.RegistrationValidationException;
+import com.example.kptc_smp.exception.user.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -45,8 +50,8 @@ public class AdviceController {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getValidationErrors());
     }
 
-    @ExceptionHandler(EmailException.class)
-    public ResponseEntity<ResponseDto> emailException(EmailException e) {
+    @ExceptionHandler(EmailFoundException.class)
+    public ResponseEntity<ResponseDto> emailException(EmailFoundException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ResponseDto(e.getMessage()));
     }
 
@@ -87,6 +92,16 @@ public class AdviceController {
 
     @ExceptionHandler(ImageNotFoundException.class)
     public ResponseEntity<ResponseDto> imageNotFoundException(ImageNotFoundException e) {
+        return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
+    }
+
+    @ExceptionHandler(PasswordResetDateExpiredException.class)
+    public ResponseEntity<ResponseDto> passwordResetDateExpired(PasswordResetDateExpiredException e) {
+        return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
+    }
+
+    @ExceptionHandler(PasswordResetUUIDNotFoundException.class)
+    public ResponseEntity<ResponseDto> passwordResetUUIDNotFoundException(PasswordResetUUIDNotFoundException e) {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
     }
 
