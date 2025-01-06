@@ -36,7 +36,7 @@ public class ImageService {
         try {
             File image = new File(uploadPath + File.separator + imageName);
             return new ImageDto(Files.readAllBytes(image.toPath()));
-        }catch (IOException e){
+        } catch (IOException e){
             throw new ImageNotFoundException();
         }
     }
@@ -49,10 +49,7 @@ public class ImageService {
     public void deleteOldImage(String oldImageName){
         try {
             Files.delete(Path.of(uploadPath + File.separator + oldImageName));
-        } catch (IOException ignored) {
-
-        }
-
+        } catch (IOException ignored) {}
     }
 
     public String uploadImage(MultipartFile image){

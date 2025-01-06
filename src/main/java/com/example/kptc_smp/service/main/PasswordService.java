@@ -16,7 +16,7 @@ public class PasswordService {
         }
     }
 
-    public void validatePasswordMatch(String currentPassword, String inputAtPassword){
+    public void validatePasswordEquals(String currentPassword, String inputAtPassword){
         if (!currentPassword.equals(inputAtPassword)) {
             throw new PasswordValidationException("Новый пароль и подтверждение пароля не совпадают");
         }

@@ -5,7 +5,7 @@ import com.example.kptc_smp.dto.profile.UserInformationDto;
 import com.example.kptc_smp.dto.registration.RegistrationUserDto;
 import com.example.kptc_smp.entity.main.User;
 import com.example.kptc_smp.entity.main.UserInformation;
-import com.example.kptc_smp.exception.registration.RegistrationValidationException;
+import com.example.kptc_smp.exception.auth.RegistrationValidationException;
 import com.example.kptc_smp.service.minecraft.AuthMeService;
 import com.example.kptc_smp.service.minecraft.WhitelistService;
 import com.example.kptc_smp.utility.JwtTokenUtils;

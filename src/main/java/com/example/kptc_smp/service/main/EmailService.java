@@ -26,23 +26,16 @@ public class EmailService {
     @Value("${spring.mail.username}")
     private String email;
 
-    public void sendSimpleMessage(String to, String subject, String text) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(email);
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(text);
-        javaMailSender.send(message);
-    }
-
     @Transactional
-    public ResponseDto sendRegistrationCode(EmailDto emailDto){
-        userInformationService.findByEmail(emailDto.getEmail()).ifPresent(u -> {throw new EmailFoundException();});
+    public ResponseDto sendRegistrationCode(EmailDto emailDto) {
+        userInformationService.findByEmail(emailDto.getEmail()).ifPresent(u -> {
+            throw new EmailFoundException();
+        });
         return sendCode(emailDto.getEmail());
     }
 
     @Transactional
-    public ResponseDto sendChangeEmailCode(){
+    public ResponseDto sendChangeEmailCode() {
         User user = userService.findWithUserInformationAndTokenVersionByUsername(SecurityContextHolder.getContext().getAuthentication().getName())
                 .orElseThrow(UserNotFoundException::new);
         return sendCode(user.getUserInformation().getEmail());
@@ -51,8 +44,26 @@ public class EmailService {
     public ResponseDto sendCode(String email) {
         String key = generateVerificationCode();
         emailVerificationService.createOrUpdate(email, key);
-        sendSimpleMessage(email, "Код подтверждения", "Код: " + key);
+        String subject = "Код подтверждения";
+        String message = "Код: " + key;
+        sendSimpleMessage(email, subject, message);
         return new ResponseDto("Код отправлен");
+    }
+
+    public ResponseDto sendPasswordResetLink(String email, String link) {
+        String subject = "Ссылка для смены пароля";
+        String message = "Ссылка: " + link;
+        sendSimpleMessage(email, subject, message);
+        return new ResponseDto("Письмо отправлено");
+    }
+
+    public void sendSimpleMessage(String to, String subject, String text) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(email);
+        message.setTo(to);
+        message.setSubject(subject);
+        message.setText(text);
+        javaMailSender.send(message);
     }
 
     private String generateVerificationCode() {

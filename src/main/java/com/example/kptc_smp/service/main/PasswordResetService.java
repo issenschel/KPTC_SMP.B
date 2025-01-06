@@ -7,11 +7,13 @@ import com.example.kptc_smp.entity.main.PasswordReset;
 import com.example.kptc_smp.entity.main.User;
 import com.example.kptc_smp.entity.main.UserInformation;
 import com.example.kptc_smp.exception.auth.PasswordResetDateExpiredException;
-import com.example.kptc_smp.exception.auth.TokenNotFoundException;
+import com.example.kptc_smp.exception.auth.PasswordResetUUIDNotFoundException;
 import com.example.kptc_smp.exception.user.UserNotFoundException;
 import com.example.kptc_smp.repository.main.PasswordResetRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Calendar;
 import java.util.UUID;
@@ -25,34 +27,45 @@ public class PasswordResetService {
     private final EmailService emailService;
     private final PasswordService passwordService;
 
+    @Value("${password.reset.base.url}")
+    private String passwordResetBaseUrl;
+
+    @Transactional
     public ResponseDto createPasswordResetLink(EmailDto emailDto) {
         UserInformation userInformation = userInformationService.findWithUserByEmail(emailDto.getEmail()).orElseThrow(UserNotFoundException::new);
         UUID linkUUID = UUID.randomUUID();
         createPasswordReset(userInformation.getUser(), linkUUID);
-        emailService.sendSimpleMessage(emailDto.getEmail(), "Ссылка для смены пароля", "ssilka" + linkUUID);
-        return new ResponseDto("Письмо отправлено");
+        String link = passwordResetBaseUrl + linkUUID;
+        return emailService.sendPasswordResetLink(emailDto.getEmail(),link);
     }
 
     public void createPasswordReset(User user, UUID linkUUID) {
         PasswordReset passwordReset = new PasswordReset();
         passwordReset.setLinkUUID(linkUUID);
         passwordReset.setUser(user);
+        passwordReset.setExpiryDate();
         passwordResetRepository.save(passwordReset);
     }
 
-    public void changeUserPassword(UUID linkUUID, PasswordResetDto passwordResetDto) {
-        PasswordReset passwordReset = passwordResetRepository.findByLinkUUID(linkUUID).orElseThrow(TokenNotFoundException::new);
+    @Transactional
+    public ResponseDto resetPassword(UUID linkUUID, PasswordResetDto passwordResetDto) {
+        PasswordReset passwordReset = passwordResetRepository.findByLinkUUID(linkUUID).orElseThrow(PasswordResetUUIDNotFoundException::new);
         if (isDateExpired(passwordReset)) {
             throw new PasswordResetDateExpiredException();
         }
-        passwordService.validatePasswordMatch(passwordResetDto.getPassword(), passwordResetDto.getConfirmPassword());
+        passwordService.validatePasswordEquals(passwordResetDto.getPassword(), passwordResetDto.getConfirmPassword());
+        changeUserPassword(passwordReset,passwordResetDto);
+        return new ResponseDto("Пароль изменен");
+    }
+
+    private boolean isDateExpired(PasswordReset passwordReset) {
+        Calendar cal = Calendar.getInstance();
+        return passwordReset.getExpiryDate().before(cal.getTime());
+    }
+
+    private void changeUserPassword(PasswordReset passwordReset, PasswordResetDto passwordResetDto){
         User user = passwordReset.getUser();
         user.setPassword(passwordService.encodePassword(passwordResetDto.getPassword()));
         userService.saveUser(user);
-    }
-
-    private boolean isDateExpired(PasswordReset passToken) {
-        Calendar cal = Calendar.getInstance();
-        return passToken.getExpiryDate().before(cal.getTime());
     }
 }

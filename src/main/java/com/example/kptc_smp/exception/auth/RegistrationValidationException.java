@@ -1,4 +1,4 @@
-package com.example.kptc_smp.exception.registration;
+package com.example.kptc_smp.exception.auth;
 
 import lombok.Getter;
 

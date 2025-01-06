@@ -18,7 +18,7 @@ public class UserDataToken {
     @MapsId
     private User user;
 
-    @Column(name = "uuid")
+    @Column(name = "token_uuid")
     private UUID tokenUUID;
 
 }

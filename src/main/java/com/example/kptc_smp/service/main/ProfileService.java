@@ -21,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -38,63 +37,61 @@ public class ProfileService {
 
     @Transactional
     public TokenDto changePassword(PasswordChangeDto passwordChangeDto) {
-        Optional<User> user = userService.findWithTokenVersionByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
-        return user.map(
-                us -> {
-                    passwordService.validatePasswordMatch(passwordChangeDto.getPassword(), passwordChangeDto.getConfirmPassword());
-                    passwordService.validateEncodedPasswordMatch(passwordChangeDto.getOldPassword(), us.getPassword());
+        return userService.findWithTokenVersionByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
+                user -> {
+                    passwordService.validatePasswordEquals(passwordChangeDto.getPassword(), passwordChangeDto.getConfirmPassword());
+                    passwordService.validateEncodedPasswordMatch(passwordChangeDto.getOldPassword(), user.getPassword());
                     String password = passwordService.encodePassword(passwordChangeDto.getPassword());
-                    us.setPassword(password);
-                    authMeService.updatePassword(us.getUsername(), password);
-                    userService.saveUser(us);
-                    return updateAndGenerateToken(us);
+                    user.setPassword(password);
+                    authMeService.updatePassword(user.getUsername(), password);
+                    userService.saveUser(user);
+                    return updateAndGenerateToken(user);
                 }).orElseThrow(UserNotFoundException::new);
     }
 
     @Transactional
     public TokenDto changeEmail(EmailChangeDto emailChangeDto) {
-        Optional<User> user = userService.findWithUserInformationAndTokenVersionByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
-        return user.map(us -> {
-            emailVerificationService.validateCode(user.get().getUserInformation().getEmail(), emailChangeDto.getCode())
-                    .orElseThrow(CodeValidationException::new);
-            userInformationService.findByEmail(emailChangeDto.getEmail()).ifPresent(t -> {
-                throw new EmailFoundException();
-            });
-            emailVerificationService.findByEmail(us.getUserInformation().getEmail()).ifPresent(emailVerificationService::delete);
-            us.getUserInformation().setEmail(emailChangeDto.getEmail());
-            userInformationService.save(us.getUserInformation());
-            return updateAndGenerateToken(us);
-        }).orElseThrow(UserNotFoundException::new);
+        return userService.findWithUserInformationAndTokenVersionByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
+                user -> {
+                    emailVerificationService.validateCode(user.getUserInformation().getEmail(), emailChangeDto.getCode())
+                            .orElseThrow(CodeValidationException::new);
+                    userInformationService.findByEmail(emailChangeDto.getEmail()).ifPresent(t -> {
+                        throw new EmailFoundException();
+                    });
+                    emailVerificationService.findByEmail(user.getUserInformation().getEmail()).ifPresent(emailVerificationService::delete);
+                    user.getUserInformation().setEmail(emailChangeDto.getEmail());
+                    userInformationService.save(user.getUserInformation());
+                    return updateAndGenerateToken(user);
+                }).orElseThrow(UserNotFoundException::new);
     }
 
     @Transactional
     public ResponseDto changeImage(MultipartFile image) {
         if (imageService.isValidImage(image)) {
-            Optional<User> user = userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
-            return user.map(us -> {
-                String imageName;
-                if (us.getUserInformation().getImageName() == null) {
-                    imageName = imageService.uploadImage(image);
-                } else {
-                    imageName = imageService.updateImage(image, us.getUserInformation().getImageName());
-                }
-                us.getUserInformation().setImageName(imageName);
-                userInformationService.save(us.getUserInformation());
-                return new ResponseDto("Успешное изменение фотографии");
-            }).orElseThrow(UserNotFoundException::new);
+            return userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
+                    user -> {
+                        String imageName;
+                        if (user.getUserInformation().getImageName() == null) {
+                            imageName = imageService.uploadImage(image);
+                        } else {
+                            imageName = imageService.updateImage(image, user.getUserInformation().getImageName());
+                        }
+                        user.getUserInformation().setImageName(imageName);
+                        userInformationService.save(user.getUserInformation());
+                        return new ResponseDto("Успешное изменение фотографии");
+                    }).orElseThrow(UserNotFoundException::new);
         }
         throw new ImageException();
     }
 
     public UserInformationDto getData() {
-        Optional<User> user = userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
-        return user.map(
-                us -> new UserInformationDto(us.getId(), us.getUsername(), us.getUserInformation().getEmail())
+        return userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
+                user -> new UserInformationDto(user.getId(), user.getUsername(), user.getUserInformation().getEmail())
         ).orElseThrow(UserNotFoundException::new);
     }
 
     public ResponseDto getImageName() {
-        return (userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
+        return userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
                 user -> {
                     String imageName = user.getUserInformation().getImageName();
                     if (imageName != null) {
@@ -102,7 +99,7 @@ public class ProfileService {
                     }
                     throw new ImageNotFoundException();
                 }
-        ).orElseThrow(UserNotFoundException::new));
+        ).orElseThrow(UserNotFoundException::new);
     }
 
     private TokenDto updateAndGenerateToken(User user) {
