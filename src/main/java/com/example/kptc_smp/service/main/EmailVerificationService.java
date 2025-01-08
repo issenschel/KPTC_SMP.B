@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -27,6 +28,7 @@ public class EmailVerificationService {
         EmailVerification emailVerification = new EmailVerification();
         emailVerification.setEmail(email);
         emailVerification.setCode(code);
+        emailVerification.setExpiresAt(LocalDateTime.now().plusMinutes(10));
         emailVerificationRepository.save(emailVerification);
     }
 
@@ -35,8 +37,13 @@ public class EmailVerificationService {
         emailVerificationRepository.save(emailVerification);
     }
 
-    public Optional<EmailVerification> validateCode(String email, String code) {
-        return emailVerificationRepository.findByEmail(email).filter(emailVerification -> emailVerification.getCode().equals(code));
+    public boolean validateCode(EmailVerification emailVerification, String code) {
+        return emailVerification.getCode().equals(code);
+    }
+
+    public boolean isExpired(EmailVerification emailVerification) {
+        LocalDateTime now = LocalDateTime.now();
+        return emailVerification.getExpiresAt().isBefore(now);
     }
 
     public void delete(EmailVerification emailVerification){

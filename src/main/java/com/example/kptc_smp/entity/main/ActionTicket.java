@@ -7,18 +7,19 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data
-@Table(name = "email_verification")
-public class EmailVerification {
+@Table(name = "action_ticket")
+public class ActionTicket {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Integer id;
 
-    @Column(name = "email")
-    private String email;
+    @OneToOne
+    @MapsId
+    private User user;
 
-    @Column(name = "code")
-    private String code;
+    @Column(name = "ticket")
+    private String ticket;
 
     @Column(name = "expires_at")
     private LocalDateTime expiresAt;

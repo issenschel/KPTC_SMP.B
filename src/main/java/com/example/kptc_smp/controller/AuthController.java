@@ -77,14 +77,4 @@ public class AuthController {
         return passwordResetService.resetPassword(linkUUID, passwordResetDto);
     }
 
-    @PostMapping("/registration/confirmation-code")
-    @Operation(summary = "Отправка кода на почту")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Письмо отправлено", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
-            @ApiResponse(responseCode = "404", description = "Пользователь не найден | Время истекло", content = {@Content(mediaType = "application/json")})
-    })
-    public ResponseDto sendCode(@Valid @RequestBody EmailDto emailDto) {
-        return emailService.sendRegistrationCode(emailDto);
-    }
 }

@@ -3,6 +3,7 @@ package com.example.kptc_smp.entity.main;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
@@ -26,12 +27,6 @@ public class PasswordReset {
     @Column(name = "link_uuid")
     private UUID linkUUID;
 
-    @Column(name = "expiry_date")
-    private Date expiryDate;
-
-    public void setExpiryDate() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.MINUTE, EXPIRATION);
-        this.expiryDate = calendar.getTime();
-    }
+    @Column(name = "expires_at")
+    private LocalDateTime expiresAt;
 }

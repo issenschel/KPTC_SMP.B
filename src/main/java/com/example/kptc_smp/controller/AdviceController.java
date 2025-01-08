@@ -3,7 +3,9 @@ package com.example.kptc_smp.controller;
 import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.exception.auth.PasswordResetDateExpiredException;
 import com.example.kptc_smp.exception.auth.PasswordResetUUIDNotFoundException;
+import com.example.kptc_smp.exception.email.CodeExpireException;
 import com.example.kptc_smp.exception.email.EmailFoundException;
+import com.example.kptc_smp.exception.email.EmailNotFoundException;
 import com.example.kptc_smp.exception.guild.OrderNotFoundException;
 import com.example.kptc_smp.exception.image.ImageNotFoundException;
 import com.example.kptc_smp.exception.email.CodeValidationException;
@@ -102,6 +104,16 @@ public class AdviceController {
 
     @ExceptionHandler(PasswordResetUUIDNotFoundException.class)
     public ResponseEntity<ResponseDto> passwordResetUUIDNotFoundException(PasswordResetUUIDNotFoundException e) {
+        return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
+    }
+
+    @ExceptionHandler(EmailNotFoundException.class)
+    public ResponseEntity<ResponseDto> emailNotFoundException(EmailNotFoundException e) {
+        return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
+    }
+
+    @ExceptionHandler(CodeExpireException.class)
+    public ResponseEntity<ResponseDto> codeExpireException(CodeExpireException e) {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
     }
 

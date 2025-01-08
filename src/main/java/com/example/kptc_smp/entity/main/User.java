@@ -36,4 +36,7 @@ public class User {
 
     @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, optional = false)
     private PasswordReset passwordReset;
+
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, optional = false)
+    private ActionTicket actionTicket;
 }

@@ -1,6 +1,7 @@
 package com.example.kptc_smp.service.main;
 
 import com.example.kptc_smp.dto.registration.RegistrationUserDto;
+import com.example.kptc_smp.entity.main.EmailVerification;
 import com.example.kptc_smp.interfaces.ValidationRule;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -47,8 +48,11 @@ public class RegistrationValidatorService {
     }
 
     public Optional<String> validateCode(RegistrationUserDto registrationUserDto){
-        if(emailVerificationService.validateCode(registrationUserDto.getEmail(), registrationUserDto.getCode()).isEmpty()){
-            return  Optional.of("Неверный код");
+        Optional<EmailVerification> emailVerification = emailVerificationService.findByEmail(registrationUserDto.getEmail());
+        if(emailVerification.isEmpty() || emailVerificationService.validateCode(emailVerification.get(),registrationUserDto.getCode())){
+            return Optional.of("Неверный код");
+        }else if(emailVerificationService.isExpired(emailVerification.get())){
+            return Optional.of("Время кода истекло");
         }
         return Optional.empty();
     }

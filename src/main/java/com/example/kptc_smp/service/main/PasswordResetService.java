@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.UUID;
 
@@ -43,24 +44,24 @@ public class PasswordResetService {
         PasswordReset passwordReset = new PasswordReset();
         passwordReset.setLinkUUID(linkUUID);
         passwordReset.setUser(user);
-        passwordReset.setExpiryDate();
+        passwordReset.setExpiresAt(LocalDateTime.now().plusMinutes(10));
         passwordResetRepository.save(passwordReset);
     }
 
     @Transactional
     public ResponseDto resetPassword(UUID linkUUID, PasswordResetDto passwordResetDto) {
         PasswordReset passwordReset = passwordResetRepository.findByLinkUUID(linkUUID).orElseThrow(PasswordResetUUIDNotFoundException::new);
-        if (isDateExpired(passwordReset)) {
-            throw new PasswordResetDateExpiredException();
-        }
+        isDateExpired(passwordReset);
         passwordService.validatePasswordEquals(passwordResetDto.getPassword(), passwordResetDto.getConfirmPassword());
         changeUserPassword(passwordReset,passwordResetDto);
         return new ResponseDto("Пароль изменен");
     }
 
-    private boolean isDateExpired(PasswordReset passwordReset) {
-        Calendar cal = Calendar.getInstance();
-        return passwordReset.getExpiryDate().before(cal.getTime());
+    private void isDateExpired(PasswordReset passwordReset) {
+        LocalDateTime now = LocalDateTime.now();
+        if(passwordReset.getExpiresAt().isBefore(now)){
+            throw new PasswordResetDateExpiredException();
+        }
     }
 
     private void changeUserPassword(PasswordReset passwordReset, PasswordResetDto passwordResetDto){

@@ -1,7 +1,9 @@
 package com.example.kptc_smp.controller;
 
+import com.example.kptc_smp.dto.ActionTicketDto;
 import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.dto.auth.TokenDto;
+import com.example.kptc_smp.dto.email.CodeDto;
 import com.example.kptc_smp.dto.profile.EmailChangeDto;
 import com.example.kptc_smp.dto.profile.PasswordChangeDto;
 import com.example.kptc_smp.dto.profile.UserInformationDto;
@@ -41,18 +43,6 @@ public class ProfileController {
         return profileService.changePassword(passwordChangeDto);
     }
 
-    @PutMapping("/email")
-    @Operation(summary = "Смена почты пользователя")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Почта изменена", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
-            @ApiResponse(responseCode = "400", description = "Неверно заполнены данные | поля", content = {@Content(mediaType = "application/json")}),
-            @ApiResponse(responseCode = "409", description = "Почта занята", content = {@Content(mediaType = "application/json")}),
-    })
-    public TokenDto changeEmail(@Valid @RequestBody EmailChangeDto emailChangeDto) {
-        return profileService.changeEmail(emailChangeDto);
-    }
-
     @PutMapping(path = "/image", consumes = "multipart/*")
     @Operation(summary = "Смена фотографии пользователя")
     @ApiResponses({
@@ -82,12 +72,28 @@ public class ProfileController {
         return profileService.getImageName();
     }
 
-    @PostMapping("/email/confirmation-code")
-    @Operation(summary = "Отправка кода на текущую почту")
-    @ApiResponse(responseCode = "200", description = "Письмо отправлено", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))})
-    public ResponseDto sendChangeEmailCode() {
-        return emailService.sendChangeEmailCode();
+    @PutMapping("/email")
+    @Operation(summary = "Смена почты пользователя")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Почта изменена", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
+            @ApiResponse(responseCode = "400", description = "Неверно заполнены данные | поля", content = {@Content(mediaType = "application/json")}),
+            @ApiResponse(responseCode = "409", description = "Почта занята", content = {@Content(mediaType = "application/json")}),
+    })
+    public TokenDto changeEmail(@Valid @RequestBody EmailChangeDto emailChangeDto) {
+        return profileService.changeEmail(emailChangeDto);
+    }
+
+    @PutMapping("/email123")
+    @Operation(summary = "Смена почты пользователя")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Почта изменена", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
+            @ApiResponse(responseCode = "400", description = "Неверно заполнены данные | поля", content = {@Content(mediaType = "application/json")}),
+            @ApiResponse(responseCode = "409", description = "Почта занята", content = {@Content(mediaType = "application/json")}),
+    })
+    public ActionTicketDto changeEmail123(@Valid @RequestBody CodeDto codeDto) {
+        return profileService.verifyChangeEmailCode(codeDto);
     }
 
 }
