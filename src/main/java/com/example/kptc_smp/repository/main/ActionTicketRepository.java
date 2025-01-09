@@ -5,6 +5,6 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ActionTicketRepository extends CrudRepository<ActionTicket,Integer> {
+public interface ActionTicketRepository extends CrudRepository<ActionTicket, Integer> {
 
 }

@@ -65,12 +65,7 @@ public class ProfileService {
         if (imageService.isValidImage(image)) {
             return userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
                     user -> {
-                        String imageName;
-                        if (user.getUserInformation().getImageName() == null) {
-                            imageName = imageService.uploadImage(image);
-                        } else {
-                            imageName = imageService.updateImage(image, user.getUserInformation().getImageName());
-                        }
+                        String imageName = imageService.updateOrUploadImage(image, user);
                         user.getUserInformation().setImageName(imageName);
                         userInformationService.save(user.getUserInformation());
                         return new ResponseDto("Успешное изменение фотографии");
@@ -95,14 +90,13 @@ public class ProfileService {
 
     @Transactional
     public TokenDto changeEmail(EmailChangeDto emailChangeDto) {
-        return userService.findWithUserInformationAndTokenVersionByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
+        return userService.findWithInfoAndTokenAndTicketByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
                 user -> {
-                    actionTicketService.isTicketExpired(user.getActionTicket());
-                    userInformationService.findByEmail(emailChangeDto.getEmail()).ifPresent(t -> {
-                        throw new EmailFoundException();
-                    });
+                    ActionTicket actionTicket = actionTicketService.getValidateActionTicket(user.getActionTicket(),emailChangeDto.getActionTicket());
+                    userInformationService.findByEmail(emailChangeDto.getEmail()).ifPresent(t -> {throw new EmailFoundException();});
                     EmailVerification emailVerification = getValidatedEmailVerification(emailChangeDto.getEmail(), emailChangeDto.getCode());
                     emailVerificationService.delete(emailVerification);
+                    actionTicketService.delete(actionTicket);
                     user.getUserInformation().setEmail(emailChangeDto.getEmail());
                     userInformationService.save(user.getUserInformation());
                     return updateAndGenerateToken(user);
@@ -110,11 +104,12 @@ public class ProfileService {
     }
 
     @Transactional
-    public ActionTicketDto verifyChangeEmailCode(CodeDto codeDto){
-        return userService.findWithUserInformationAndTokenVersionByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
+    public ActionTicketDto verifyCurrentEmailCode(CodeDto codeDto){
+        return userService.findWithInfoAndDataTokenByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
                 user -> {
-                    getValidatedEmailVerification(user.getUserInformation().getEmail(), codeDto.getCode());
+                    EmailVerification emailVerification = getValidatedEmailVerification(user.getUserInformation().getEmail(), codeDto.getCode());
                     ActionTicket actionTicket = actionTicketService.createActionTicket(user);
+                    emailVerificationService.delete(emailVerification);
                     return new ActionTicketDto(actionTicket.getTicket());
                 }).orElseThrow(UserNotFoundException::new);
     }
@@ -129,8 +124,7 @@ public class ProfileService {
     }
 
     private EmailVerification getValidatedEmailVerification (String email, String code) {
-        EmailVerification emailVerification = emailVerificationService.findByEmail(email)
-                .orElseThrow(EmailNotFoundException::new);
+        EmailVerification emailVerification = emailVerificationService.findByEmail(email).orElseThrow(EmailNotFoundException::new);
         if(!emailVerificationService.validateCode(emailVerification, code)){
             throw new CodeValidationException();
         } else if (emailVerificationService.isExpired(emailVerification)) {

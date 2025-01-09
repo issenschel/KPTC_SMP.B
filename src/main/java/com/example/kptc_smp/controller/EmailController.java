@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class EmailController {
     private final EmailService emailService;
 
-    @PostMapping("/registration/confirmation-code")
+    @PostMapping("/confirmation-code")
     @Operation(summary = "Отправка кода на почту")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Письмо отправлено", content = {
@@ -33,7 +32,7 @@ public class EmailController {
         return emailService.sendRegistrationCode(emailDto);
     }
 
-    @PostMapping("/profile/confirmation-code")
+    @PostMapping("/confirmation-code/current")
     @Operation(summary = "Отправка кода на текущую почту")
     @ApiResponse(responseCode = "200", description = "Письмо отправлено", content = {
             @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))})

@@ -11,20 +11,23 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends CrudRepository<User, Integer> {
 
-    @EntityGraph(attributePaths = {"roles","userInformation","token"})
-    @Query("SELECT u FROM User u WHERE u.username = :username")
-    Optional<User> findWithAllDependenciesByUsername(String username);
+    @EntityGraph(attributePaths = {"userDataToken","userInformation","actionTicket"})
+    Optional<User> findWithInfoAndTokenAndTicketByUsername(String username);
 
-    @EntityGraph(attributePaths = {"token","userInformation"})
-    Optional<User> findWithUserInformationAndTokenVersionByUsername(String username);
+    @EntityGraph(attributePaths = {"userDataToken","userInformation"})
+    Optional<User> findWithInfoAndDataTokenByUsername(String username);
 
-    @EntityGraph(attributePaths = "token")
+    @EntityGraph(attributePaths = "userDataToken")
     @Query("SELECT u FROM User u WHERE u.username = :username")
     Optional<User> findWithTokenVersionByUsername(String username);
 
     @EntityGraph(attributePaths = "userInformation")
     @Query("SELECT u FROM User u WHERE u.username = :username")
     Optional<User> findWithUserInformationByUsername(String username);
+
+    @EntityGraph(attributePaths = {"roles"})
+    @Query("SELECT u FROM User u WHERE u.username = :username")
+    Optional<User> findWithRolesByUsername(String username);
 
     Optional<User> findByUsername(String username);
 }

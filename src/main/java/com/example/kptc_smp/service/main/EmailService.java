@@ -37,7 +37,7 @@ public class EmailService {
 
     @Transactional
     public ResponseDto sendChangeEmailCode() {
-        User user = userService.findWithUserInformationAndTokenVersionByUsername(SecurityContextHolder.getContext().getAuthentication().getName())
+        User user = userService.findWithInfoAndDataTokenByUsername(SecurityContextHolder.getContext().getAuthentication().getName())
                 .orElseThrow(UserNotFoundException::new);
         sendCode(user.getUserInformation().getEmail());
         return new ResponseDto("Код отправлен");

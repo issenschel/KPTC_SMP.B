@@ -1,11 +1,11 @@
 package com.example.kptc_smp.controller;
 
 import com.example.kptc_smp.dto.ResponseDto;
-import com.example.kptc_smp.dto.auth.JwtResponseDto;
 import com.example.kptc_smp.dto.auth.JwtRequestDto;
+import com.example.kptc_smp.dto.auth.JwtResponseDto;
 import com.example.kptc_smp.dto.auth.PasswordResetDto;
-import com.example.kptc_smp.dto.profile.UserInformationDto;
 import com.example.kptc_smp.dto.email.EmailDto;
+import com.example.kptc_smp.dto.profile.UserInformationDto;
 import com.example.kptc_smp.dto.registration.RegistrationUserDto;
 import com.example.kptc_smp.service.main.AuthService;
 import com.example.kptc_smp.service.main.EmailService;
@@ -29,7 +29,6 @@ import java.util.UUID;
 @Tag(name = "Auth")
 public class AuthController {
     private final AuthService authService;
-    private final EmailService emailService;
     private final PasswordResetService passwordResetService;
 
     @PostMapping("/login")
@@ -62,7 +61,7 @@ public class AuthController {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
             @ApiResponse(responseCode = "404", description = "Пользователь не найден", content = {@Content(mediaType = "application/json")})
     })
-    public ResponseDto createPasswordResetLink(@RequestBody EmailDto emailDto){
+    public ResponseDto createPasswordResetLink(@Valid @RequestBody EmailDto emailDto) {
         return passwordResetService.createPasswordResetLink(emailDto);
     }
 

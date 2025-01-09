@@ -30,7 +30,6 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/profile")
 public class ProfileController {
     private final ProfileService profileService;
-    private final EmailService emailService;
 
     @PutMapping("/password")
     @Operation(summary = "Смена пароля пользователя")
@@ -84,16 +83,15 @@ public class ProfileController {
         return profileService.changeEmail(emailChangeDto);
     }
 
-    @PutMapping("/email123")
-    @Operation(summary = "Смена почты пользователя")
+    @PostMapping("/email-ticket")
+    @Operation(summary = "Подтверждение текущей почты с отправкой тикета")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Почта изменена", content = {
+            @ApiResponse(responseCode = "200", description = "Почта подтверждена", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
             @ApiResponse(responseCode = "400", description = "Неверно заполнены данные | поля", content = {@Content(mediaType = "application/json")}),
-            @ApiResponse(responseCode = "409", description = "Почта занята", content = {@Content(mediaType = "application/json")}),
     })
-    public ActionTicketDto changeEmail123(@Valid @RequestBody CodeDto codeDto) {
-        return profileService.verifyChangeEmailCode(codeDto);
+    public ActionTicketDto verifyCurrentEmailCode(@Valid @RequestBody CodeDto codeDto) {
+        return profileService.verifyCurrentEmailCode(codeDto);
     }
 
 }

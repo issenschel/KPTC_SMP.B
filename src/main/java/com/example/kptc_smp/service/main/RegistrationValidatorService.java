@@ -49,7 +49,7 @@ public class RegistrationValidatorService {
 
     public Optional<String> validateCode(RegistrationUserDto registrationUserDto){
         Optional<EmailVerification> emailVerification = emailVerificationService.findByEmail(registrationUserDto.getEmail());
-        if(emailVerification.isEmpty() || emailVerificationService.validateCode(emailVerification.get(),registrationUserDto.getCode())){
+        if(emailVerification.isEmpty() || !emailVerificationService.validateCode(emailVerification.get(),registrationUserDto.getCode())){
             return Optional.of("Неверный код");
         }else if(emailVerificationService.isExpired(emailVerification.get())){
             return Optional.of("Время кода истекло");
