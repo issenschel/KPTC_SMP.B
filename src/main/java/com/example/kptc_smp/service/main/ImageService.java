@@ -1,6 +1,7 @@
 package com.example.kptc_smp.service.main;
 
 import com.example.kptc_smp.dto.image.ImageDto;
+import com.example.kptc_smp.entity.main.User;
 import com.example.kptc_smp.exception.image.ImageException;
 import com.example.kptc_smp.exception.image.ImageNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,6 +39,14 @@ public class ImageService {
             return new ImageDto(Files.readAllBytes(image.toPath()));
         } catch (IOException e){
             throw new ImageNotFoundException();
+        }
+    }
+
+    public String updateOrUploadImage(MultipartFile image, User user){
+        if (user.getUserInformation().getImageName() == null) {
+            return uploadImage(image);
+        } else {
+            return updateImage(image, user.getUserInformation().getImageName());
         }
     }
 

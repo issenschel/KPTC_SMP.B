@@ -31,23 +31,25 @@ public class EmailService {
         userInformationService.findByEmail(emailDto.getEmail()).ifPresent(u -> {
             throw new EmailFoundException();
         });
-        return sendCode(emailDto.getEmail());
+        sendCode(emailDto.getEmail());
+        return new ResponseDto("Код отправлен");
     }
 
     @Transactional
     public ResponseDto sendChangeEmailCode() {
-        User user = userService.findWithUserInformationAndTokenVersionByUsername(SecurityContextHolder.getContext().getAuthentication().getName())
+        User user = userService.findWithInfoAndDataTokenByUsername(SecurityContextHolder.getContext().getAuthentication().getName())
                 .orElseThrow(UserNotFoundException::new);
-        return sendCode(user.getUserInformation().getEmail());
+        sendCode(user.getUserInformation().getEmail());
+        return new ResponseDto("Код отправлен");
     }
 
-    public ResponseDto sendCode(String email) {
+
+    public void sendCode(String email) {
         String key = generateVerificationCode();
         emailVerificationService.createOrUpdate(email, key);
         String subject = "Код подтверждения";
         String message = "Код: " + key;
         sendSimpleMessage(email, subject, message);
-        return new ResponseDto("Код отправлен");
     }
 
     public ResponseDto sendPasswordResetLink(String email, String link) {

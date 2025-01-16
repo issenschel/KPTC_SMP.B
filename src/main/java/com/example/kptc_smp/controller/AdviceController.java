@@ -1,9 +1,13 @@
 package com.example.kptc_smp.controller;
 
 import com.example.kptc_smp.dto.ResponseDto;
+import com.example.kptc_smp.exception.ActionTicketExpireException;
+import com.example.kptc_smp.exception.ActionTicketNotFoundException;
 import com.example.kptc_smp.exception.auth.PasswordResetDateExpiredException;
 import com.example.kptc_smp.exception.auth.PasswordResetUUIDNotFoundException;
+import com.example.kptc_smp.exception.email.CodeExpireException;
 import com.example.kptc_smp.exception.email.EmailFoundException;
+import com.example.kptc_smp.exception.email.EmailNotFoundException;
 import com.example.kptc_smp.exception.guild.OrderNotFoundException;
 import com.example.kptc_smp.exception.image.ImageNotFoundException;
 import com.example.kptc_smp.exception.email.CodeValidationException;
@@ -14,6 +18,7 @@ import com.example.kptc_smp.exception.auth.RegistrationValidationException;
 import com.example.kptc_smp.exception.user.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -105,10 +110,36 @@ public class AdviceController {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
     }
 
+    @ExceptionHandler(EmailNotFoundException.class)
+    public ResponseEntity<ResponseDto> emailNotFoundException(EmailNotFoundException e) {
+        return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
+    }
+
+    @ExceptionHandler(CodeExpireException.class)
+    public ResponseEntity<ResponseDto> codeExpireException(CodeExpireException e) {
+        return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
+    }
+
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public ResponseEntity<ResponseDto> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
+    public ResponseEntity<ResponseDto> handleMethodNotSupported(HttpRequestMethodNotSupportedException e) {
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
-                .body(new ResponseDto("Метод не поддерживается: " + ex.getMethod()));
+                .body(new ResponseDto("Метод не поддерживается: " + e.getMethod()));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ResponseDto> httpMessageNotReadable() {
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                .body(new ResponseDto("Требуемый текст запроса отсутствует"));
+    }
+
+    @ExceptionHandler(ActionTicketNotFoundException.class)
+    public ResponseEntity<ResponseDto> actionTicketNotFoundException(ActionTicketNotFoundException e) {
+        return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
+    }
+
+    @ExceptionHandler(ActionTicketExpireException.class)
+    public ResponseEntity<ResponseDto> actionTicketExpireException(ActionTicketExpireException e) {
+        return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
     }
 
 }

@@ -46,7 +46,7 @@ public class UserService implements UserDetailsService {
     }
 
     public Optional<User> findWithAllDependenciesByUsername(String username) {
-        return userRepository.findWithAllDependenciesByUsername(username);
+        return userRepository.findWithRolesByUsername(username);
     }
 
     public Optional<User> findWithTokenVersionByUsername(String username) {
@@ -57,8 +57,12 @@ public class UserService implements UserDetailsService {
         return userRepository.findWithUserInformationByUsername(username);
     }
 
-    public Optional<User> findWithUserInformationAndTokenVersionByUsername(String username) {
-        return userRepository.findWithUserInformationAndTokenVersionByUsername(username);
+    public Optional<User> findWithInfoAndDataTokenByUsername(String username) {
+        return userRepository.findWithInfoAndDataTokenByUsername(username);
+    }
+
+    public Optional<User> findWithInfoAndTokenAndTicketByUsername(String username) {
+        return userRepository.findWithInfoAndTokenAndTicketByUsername(username);
     }
 
     public Optional<User> findByUsername(String username) {

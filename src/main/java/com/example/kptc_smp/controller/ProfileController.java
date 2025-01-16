@@ -1,7 +1,9 @@
 package com.example.kptc_smp.controller;
 
+import com.example.kptc_smp.dto.ActionTicketDto;
 import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.dto.auth.TokenDto;
+import com.example.kptc_smp.dto.email.CodeDto;
 import com.example.kptc_smp.dto.profile.EmailChangeDto;
 import com.example.kptc_smp.dto.profile.PasswordChangeDto;
 import com.example.kptc_smp.dto.profile.UserInformationDto;
@@ -28,7 +30,6 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/profile")
 public class ProfileController {
     private final ProfileService profileService;
-    private final EmailService emailService;
 
     @PutMapping("/password")
     @Operation(summary = "Смена пароля пользователя")
@@ -39,18 +40,6 @@ public class ProfileController {
     })
     public TokenDto changePassword(@Valid @RequestBody PasswordChangeDto passwordChangeDto) {
         return profileService.changePassword(passwordChangeDto);
-    }
-
-    @PutMapping("/email")
-    @Operation(summary = "Смена почты пользователя")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Почта изменена", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
-            @ApiResponse(responseCode = "400", description = "Неверно заполнены данные | поля", content = {@Content(mediaType = "application/json")}),
-            @ApiResponse(responseCode = "409", description = "Почта занята", content = {@Content(mediaType = "application/json")}),
-    })
-    public TokenDto changeEmail(@Valid @RequestBody EmailChangeDto emailChangeDto) {
-        return profileService.changeEmail(emailChangeDto);
     }
 
     @PutMapping(path = "/image", consumes = "multipart/*")
@@ -82,12 +71,27 @@ public class ProfileController {
         return profileService.getImageName();
     }
 
-    @PostMapping("/email/confirmation-code")
-    @Operation(summary = "Отправка кода на текущую почту")
-    @ApiResponse(responseCode = "200", description = "Письмо отправлено", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))})
-    public ResponseDto sendChangeEmailCode() {
-        return emailService.sendChangeEmailCode();
+    @PutMapping("/email")
+    @Operation(summary = "Смена почты пользователя")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Почта изменена", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
+            @ApiResponse(responseCode = "400", description = "Неверно заполнены данные | поля", content = {@Content(mediaType = "application/json")}),
+            @ApiResponse(responseCode = "409", description = "Почта занята", content = {@Content(mediaType = "application/json")}),
+    })
+    public TokenDto changeEmail(@Valid @RequestBody EmailChangeDto emailChangeDto) {
+        return profileService.changeEmail(emailChangeDto);
+    }
+
+    @PostMapping("/email-ticket")
+    @Operation(summary = "Подтверждение текущей почты с отправкой тикета")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Почта подтверждена", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
+            @ApiResponse(responseCode = "400", description = "Неверно заполнены данные | поля", content = {@Content(mediaType = "application/json")}),
+    })
+    public ActionTicketDto verifyCurrentEmailCode(@Valid @RequestBody CodeDto codeDto) {
+        return profileService.verifyCurrentEmailCode(codeDto);
     }
 
 }
