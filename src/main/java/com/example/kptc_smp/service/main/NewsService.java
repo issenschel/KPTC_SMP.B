@@ -5,9 +5,12 @@ import com.example.kptc_smp.dto.news.HeadlineNewsDto;
 import com.example.kptc_smp.dto.news.HeadlineGroupNewsDto;
 import com.example.kptc_smp.dto.news.NewsDto;
 import com.example.kptc_smp.entity.main.News;
+import com.example.kptc_smp.exception.image.ImageException;
 import com.example.kptc_smp.exception.news.NewsNotFoundException;
 import com.example.kptc_smp.repository.main.NewsRepository;
+import com.example.kptc_smp.service.google.GoogleDriveService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -23,6 +26,10 @@ import java.util.stream.Collectors;
 public class NewsService {
     private final NewsRepository newsRepository;
     private final ImageService imageService;
+    private final GoogleDriveService googleDriveService;
+
+    @Value("${google.drive.folder.news.id}")
+    private String newsFolderId;
 
     public News createNews(NewsDto newsDto, MultipartFile image) {
         News news = new News();
@@ -30,19 +37,21 @@ public class NewsService {
         news.setContent(newsDto.getContent());
         news.setDatePublication(LocalDate.now());
         if (imageService.isValidImage(image)) {
-            news.setImageName(imageService.uploadImage(image));
+            String folderId = googleDriveService.createFolder(String.valueOf(news.getId()),newsFolderId);
+            news.setImageName(imageService.uploadImage(image,folderId));
+            newsRepository.save(news);
+            return news;
         }
-        newsRepository.save(news);
-        return news;
+        throw new ImageException();
     }
 
     public News changeNews(NewsDto newsDto, MultipartFile image, int id) {
         News news = newsRepository.findById(id).orElseThrow(NewsNotFoundException::new);
         news.setTitle(newsDto.getTitle());
         news.setContent(newsDto.getContent());
-        if (imageService.isValidImage(image)) {
-            news.setImageName(imageService.updateImage(image, news.getImageName()));
-        }
+//        if (imageService.isValidImage(image)) {
+//            news.setImageName(imageService.updateImage(image, news.getImageName()));
+//        }
         newsRepository.save(news);
         return news;
     }

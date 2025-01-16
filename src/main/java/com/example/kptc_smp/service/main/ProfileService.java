@@ -21,6 +21,7 @@ import com.example.kptc_smp.exception.user.UserNotFoundException;
 import com.example.kptc_smp.service.minecraft.AuthMeService;
 import com.example.kptc_smp.utility.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -41,6 +42,9 @@ public class ProfileService {
     private final ImageService imageService;
     private final PasswordService passwordService;
     private final ActionTicketService actionTicketService;
+
+    @Value("${google.drive.folder.image.profile.id}")
+    private String imageProfileFolderId;
 
     public UserInformationDto getData() {
         return userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
@@ -65,7 +69,7 @@ public class ProfileService {
         if (imageService.isValidImage(image)) {
             return userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
                     user -> {
-                        String imageName = imageService.updateOrUploadImage(image, user);
+                        String imageName = updateOrUploadImage(image, user);
                         user.getUserInformation().setImageName(imageName);
                         userInformationService.save(user.getUserInformation());
                         return new ResponseDto("Успешное изменение фотографии");
@@ -131,5 +135,18 @@ public class ProfileService {
             throw new CodeExpireException();
         }
         return emailVerification;
+    }
+
+    private String updateOrUploadImage(MultipartFile image, User user){
+        if (user.getUserInformation().getImageName() != null) {
+            return updateImage(image, user.getUserInformation().getImageName());
+        } else {
+            return imageService.uploadImage(image,imageProfileFolderId);
+        }
+    }
+
+    private String updateImage(MultipartFile image, String oldImageName) {
+        imageService.deleteOldImage(oldImageName);
+        return imageService.uploadImage(image,imageProfileFolderId);
     }
 }
