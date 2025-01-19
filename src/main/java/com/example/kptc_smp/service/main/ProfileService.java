@@ -16,17 +16,20 @@ import com.example.kptc_smp.exception.email.CodeValidationException;
 import com.example.kptc_smp.exception.email.EmailFoundException;
 import com.example.kptc_smp.exception.email.EmailNotFoundException;
 import com.example.kptc_smp.exception.image.ImageException;
-import com.example.kptc_smp.exception.image.ImageNotFoundException;
+import com.example.kptc_smp.exception.file.FileNotFoundException;
 import com.example.kptc_smp.exception.user.UserNotFoundException;
 import com.example.kptc_smp.service.minecraft.AuthMeService;
 import com.example.kptc_smp.utility.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Path;
 import java.util.UUID;
 
 @Service
@@ -42,6 +45,9 @@ public class ProfileService {
     private final PasswordService passwordService;
     private final ActionTicketService actionTicketService;
 
+    @Value("${upload.path.image.profile}")
+    private Path profileImagesDirectory ;
+
     public UserInformationDto getData() {
         return userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
                 user -> new UserInformationDto(user.getId(), user.getUsername(), user.getUserInformation().getEmail())
@@ -55,23 +61,9 @@ public class ProfileService {
                     if (imageName != null) {
                         return new ResponseDto(imageName);
                     }
-                    throw new ImageNotFoundException();
+                    throw new FileNotFoundException();
                 }
         ).orElseThrow(UserNotFoundException::new);
-    }
-
-    @Transactional
-    public ResponseDto changeImage(MultipartFile image) {
-        if (imageService.isValidImage(image)) {
-            return userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
-                    user -> {
-                        String imageName = imageService.updateOrUploadImage(image, user);
-                        user.getUserInformation().setImageName(imageName);
-                        userInformationService.save(user.getUserInformation());
-                        return new ResponseDto("Успешное изменение фотографии");
-                    }).orElseThrow(UserNotFoundException::new);
-        }
-        throw new ImageException();
     }
 
     @Transactional
@@ -103,6 +95,15 @@ public class ProfileService {
                 }).orElseThrow(UserNotFoundException::new);
     }
 
+    private TokenDto updateAndGenerateToken(User user) {
+        UUID tokenUUID = UUID.randomUUID();
+        user.getUserDataToken().setTokenUUID(tokenUUID);
+        userDataTokenService.save(user.getUserDataToken());
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String token = jwtTokenUtils.generateToken(authentication, tokenUUID);
+        return new TokenDto(token);
+    }
+
     @Transactional
     public ActionTicketDto verifyCurrentEmailCode(CodeDto codeDto){
         return userService.findWithInfoAndDataTokenByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
@@ -114,15 +115,6 @@ public class ProfileService {
                 }).orElseThrow(UserNotFoundException::new);
     }
 
-    private TokenDto updateAndGenerateToken(User user) {
-        UUID tokenUUID = UUID.randomUUID();
-        user.getUserDataToken().setTokenUUID(tokenUUID);
-        userDataTokenService.save(user.getUserDataToken());
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String token = jwtTokenUtils.generateToken(authentication, tokenUUID);
-        return new TokenDto(token);
-    }
-
     private EmailVerification getValidatedEmailVerification (String email, String code) {
         EmailVerification emailVerification = emailVerificationService.findByEmail(email).orElseThrow(EmailNotFoundException::new);
         if(!emailVerificationService.validateCode(emailVerification, code)){
@@ -131,5 +123,37 @@ public class ProfileService {
             throw new CodeExpireException();
         }
         return emailVerification;
+    }
+
+    @Transactional
+    public ResponseDto changeImage(MultipartFile image) {
+        if (imageService.isValidImage(image)) {
+            return userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
+                    user -> {
+                        String imageName = updateOrUploadImage(image, user);
+                        user.getUserInformation().setImageName(imageName);
+                        userInformationService.save(user.getUserInformation());
+                        return new ResponseDto("Успешное изменение фотографии");
+                    }).orElseThrow(UserNotFoundException::new);
+        }
+        throw new ImageException();
+    }
+
+    private String updateOrUploadImage(MultipartFile image, User user){
+        if (user.getUserInformation().getImageName() != null) {
+            return updateImage(image, user.getUserInformation().getImageName());
+        } else {
+            return imageService.uploadImage(image,profileImagesDirectory);
+        }
+    }
+
+    private String updateImage(MultipartFile image, String oldImageName) {
+        imageService.deleteOldImage(profileImagesDirectory.resolve(oldImageName));
+        return imageService.uploadImage(image,profileImagesDirectory);
+    }
+
+    public Resource getImageAsResource(String imageName){
+        Path path = profileImagesDirectory.resolve(imageName);
+        return imageService.getImageAsResource(path);
     }
 }

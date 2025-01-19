@@ -1,4 +1,4 @@
-package com.example.kptc_smp.exception;
+package com.example.kptc_smp.exception.actionticket;
 
 public class ActionTicketNotFoundException extends RuntimeException {
     public ActionTicketNotFoundException() {
