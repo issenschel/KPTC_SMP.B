@@ -1,5 +1,6 @@
-package com.example.kptc_smp.service.google;
+package com.example.kptc_smp.service.main;
 
+import com.example.kptc_smp.exception.google.GoogleDriveException;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.FileContent;
@@ -7,12 +8,10 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
-import org.springframework.beans.factory.annotation.Value;
+import com.google.api.services.drive.model.FileList;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
@@ -22,44 +21,48 @@ import java.util.Collections;
 public class GoogleDriveService {
 
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
-    private static final String SERVICE_ACOUNT_KEY_PATH = getPathToGoodleCredentials();
+    private static final String SERVICE_ACOUNT_KEY_PATH = getPathToGoogleCredentials();
 
-    @Value("${google.drive.folder.image.profile.id}")
-    private String imageProfileFolderId;
-
-    @Value("${google.drive.folder.news.id}")
-    private String newsFolderId;
-
-    private static String getPathToGoodleCredentials() {
+    private static String getPathToGoogleCredentials() {
         String currentDirectory = System.getProperty("user.dir");
         Path filePath = Paths.get(currentDirectory, "google.json");
         return filePath.toString();
     }
 
-    public void uploadImageToDrive(File file,String folderId) throws IOException {
-        try{
+    public void uploadZipToDrive(File file, String folderId) {
+        try {
             Drive drive = createDriveService();
             com.google.api.services.drive.model.File fileMetaData = new com.google.api.services.drive.model.File();
             fileMetaData.setName(file.getName());
             fileMetaData.setParents(Collections.singletonList(folderId));
-            FileContent mediaContent = new FileContent("image/jpeg", file);
+            FileContent mediaContent = new FileContent("application/zip", file);
             drive.files().create(fileMetaData, mediaContent).setFields("id").execute();
-        }catch (Exception e){
-
+        } catch (Exception e) {
+            throw new GoogleDriveException("Не удалось загрузить файл на гугл диск: " + e.getMessage());
         }
     }
 
-    public String createFolder(String folderName, String folderId){
+    public void downloadFileByName(String fileName, Path destinationPath) {
         try {
             Drive drive = createDriveService();
-            com.google.api.services.drive.model.File fileMetaData = new com.google.api.services.drive.model.File();
-            fileMetaData.setName(folderName);
-            fileMetaData.setMimeType("application/vnd.google-apps.folder");
-            fileMetaData.setParents(Collections.singletonList(folderId));
-            com.google.api.services.drive.model.File folder = drive.files().create(fileMetaData).setFields("id").execute();
-            return folder.getId();
-        }catch (Exception ignored){
-            return null;
+
+            FileList result = drive.files().list()
+                    .setQ("name='" + fileName + "'")
+                    .setSpaces("drive")
+                    .setFields("files(id, name)")
+                    .execute();
+
+            if (result.getFiles().isEmpty()) {
+                throw new FileNotFoundException("Файл не найден: " + fileName);
+            }
+
+            String fileId = result.getFiles().getFirst().getId();
+
+            OutputStream outputStream = new FileOutputStream(destinationPath.resolve(result.getFiles().getFirst().getName()).toFile());
+            drive.files().get(fileId).executeMediaAndDownloadTo(outputStream);
+            outputStream.close();
+        } catch (Exception e) {
+            throw new GoogleDriveException("Не удалось скачать файл: " + e.getMessage());
         }
     }
 

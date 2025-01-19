@@ -13,6 +13,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -83,5 +86,15 @@ public class NewsController {
     })
     public News getNews(@PathVariable int newsId) {
         return newsService.getNews(newsId);
+    }
+
+    @GetMapping("/{newsId}/resource")
+    @Operation(summary = "Получение изображение новости")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Фото отправлено", content = {@Content(mediaType = "image/jpeg")}),
+            @ApiResponse(responseCode = "404", description = "Фото не найдено", content = {@Content(mediaType = "application/json")})
+    })
+    public ResponseEntity<Resource> getImageAsResource(@PathVariable int newsId, @RequestParam(name = "imageName") String imageName) {
+        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(newsService.getImageAsResource(newsId,imageName));
     }
 }

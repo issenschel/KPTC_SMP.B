@@ -1,21 +1,24 @@
 package com.example.kptc_smp.controller;
 
 import com.example.kptc_smp.dto.ResponseDto;
-import com.example.kptc_smp.exception.ActionTicketExpireException;
-import com.example.kptc_smp.exception.ActionTicketNotFoundException;
+import com.example.kptc_smp.exception.actionticket.ActionTicketExpireException;
+import com.example.kptc_smp.exception.actionticket.ActionTicketNotFoundException;
 import com.example.kptc_smp.exception.auth.PasswordResetDateExpiredException;
 import com.example.kptc_smp.exception.auth.PasswordResetUUIDNotFoundException;
 import com.example.kptc_smp.exception.email.CodeExpireException;
 import com.example.kptc_smp.exception.email.EmailFoundException;
 import com.example.kptc_smp.exception.email.EmailNotFoundException;
+import com.example.kptc_smp.exception.google.GoogleDriveException;
 import com.example.kptc_smp.exception.guild.OrderNotFoundException;
-import com.example.kptc_smp.exception.image.ImageNotFoundException;
+import com.example.kptc_smp.exception.file.FileNotFoundException;
 import com.example.kptc_smp.exception.email.CodeValidationException;
+import com.example.kptc_smp.exception.image.ImageTransferException;
 import com.example.kptc_smp.exception.news.NewsNotFoundException;
 import com.example.kptc_smp.exception.profile.PasswordValidationException;
 import com.example.kptc_smp.exception.image.ImageException;
 import com.example.kptc_smp.exception.auth.RegistrationValidationException;
 import com.example.kptc_smp.exception.user.UserNotFoundException;
+import com.example.kptc_smp.exception.zip.ZipException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -23,6 +26,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.multipart.MultipartException;
@@ -95,8 +99,8 @@ public class AdviceController {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
     }
 
-    @ExceptionHandler(ImageNotFoundException.class)
-    public ResponseEntity<ResponseDto> imageNotFoundException(ImageNotFoundException e) {
+    @ExceptionHandler(FileNotFoundException.class)
+    public ResponseEntity<ResponseDto> imageNotFoundException(FileNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDto(e.getMessage()));
     }
 
@@ -132,6 +136,11 @@ public class AdviceController {
                 .body(new ResponseDto("Требуемый текст запроса отсутствует"));
     }
 
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ResponseDto> httpMessageNotReadable(MissingServletRequestParameterException e) {
+        return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
+    }
+
     @ExceptionHandler(ActionTicketNotFoundException.class)
     public ResponseEntity<ResponseDto> actionTicketNotFoundException(ActionTicketNotFoundException e) {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
@@ -140,6 +149,21 @@ public class AdviceController {
     @ExceptionHandler(ActionTicketExpireException.class)
     public ResponseEntity<ResponseDto> actionTicketExpireException(ActionTicketExpireException e) {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
+    }
+
+    @ExceptionHandler(GoogleDriveException.class)
+    public ResponseEntity<ResponseDto> googleDriveException(GoogleDriveException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ResponseDto(e.getMessage()));
+    }
+
+    @ExceptionHandler(ZipException.class)
+    public ResponseEntity<ResponseDto> zipException(ZipException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ResponseDto(e.getMessage()));
+    }
+
+    @ExceptionHandler(ImageTransferException.class)
+    public ResponseEntity<ResponseDto> imageTransferException(ImageTransferException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ResponseDto(e.getMessage()));
     }
 
 }
