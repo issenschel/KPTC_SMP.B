@@ -7,37 +7,29 @@ import com.example.kptc_smp.dto.auth.TokenDto;
 import com.example.kptc_smp.dto.email.CodeDto;
 import com.example.kptc_smp.dto.profile.EmailChangeDto;
 import com.example.kptc_smp.dto.profile.PasswordChangeDto;
-import com.example.kptc_smp.dto.profile.UserInformationDto;
+import com.example.kptc_smp.dto.profile.UserAccountDetailsDto;
+import com.example.kptc_smp.dto.profile.UserProfileDto;
 import com.example.kptc_smp.entity.main.ActionTicket;
 import com.example.kptc_smp.entity.main.EmailVerification;
 import com.example.kptc_smp.entity.main.User;
-import com.example.kptc_smp.exception.email.CodeExpireException;
-import com.example.kptc_smp.exception.email.CodeValidationException;
 import com.example.kptc_smp.exception.email.EmailFoundException;
-import com.example.kptc_smp.exception.email.EmailNotFoundException;
-import com.example.kptc_smp.exception.image.ImageException;
-import com.example.kptc_smp.exception.file.FileNotFoundException;
+import com.example.kptc_smp.exception.image.ImageInvalidFormatException;
 import com.example.kptc_smp.exception.user.UserNotFoundException;
 import com.example.kptc_smp.service.minecraft.AuthMeService;
-import com.example.kptc_smp.utility.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Path;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class ProfileService {
     private final UserService userService;
     private final UserInformationService userInformationService;
-    private final JwtTokenUtils jwtTokenUtils;
     private final EmailVerificationService emailVerificationService;
     private final UserDataTokenService userDataTokenService;
     private final AuthMeService authMeService;
@@ -46,24 +38,20 @@ public class ProfileService {
     private final ActionTicketService actionTicketService;
 
     @Value("${upload.path.image.profile}")
-    private Path profileImagesDirectory ;
+    private Path profileImagesDirectory;
 
-    public UserInformationDto getData() {
+    public UserAccountDetailsDto getUserAccountDetails() {
         return userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
-                user -> new UserInformationDto(user.getId(), user.getUsername(), user.getUserInformation().getEmail())
+                user -> new UserAccountDetailsDto(user.getId(), user.getUsername(), user.getUserInformation().getEmail(),
+                        user.getUserInformation().getRegistrationDate())
         ).orElseThrow(UserNotFoundException::new);
     }
 
-    public ResponseDto getImageName() {
+    public UserProfileDto getUserProfileInfo() {
         return userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
-                user -> {
-                    String imageName = user.getUserInformation().getImageName();
-                    if (imageName != null) {
-                        return new ResponseDto(imageName);
-                    }
-                    throw new FileNotFoundException();
-                }
-        ).orElseThrow(UserNotFoundException::new);
+                user -> new UserProfileDto(user.getUsername(),
+                        imageService.getImageUrl(profileImagesDirectory.resolve(user.getUserInformation().getImageName()))))
+                .orElseThrow(UserNotFoundException::new);
     }
 
     @Transactional
@@ -76,7 +64,7 @@ public class ProfileService {
                     user.setPassword(password);
                     authMeService.updatePassword(user.getUsername(), password);
                     userService.saveUser(user);
-                    return updateAndGenerateToken(user);
+                    return userDataTokenService.updateAndGenerateToken(user);
                 }).orElseThrow(UserNotFoundException::new);
     }
 
@@ -84,45 +72,18 @@ public class ProfileService {
     public TokenDto changeEmail(EmailChangeDto emailChangeDto) {
         return userService.findWithInfoAndTokenAndTicketByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
                 user -> {
-                    ActionTicket actionTicket = actionTicketService.getValidateActionTicket(user.getActionTicket(),emailChangeDto.getActionTicket());
-                    userInformationService.findByEmail(emailChangeDto.getEmail()).ifPresent(t -> {throw new EmailFoundException();});
-                    EmailVerification emailVerification = getValidatedEmailVerification(emailChangeDto.getEmail(), emailChangeDto.getCode());
+                    ActionTicket actionTicket = actionTicketService.getValidateActionTicket(user.getActionTicket(), emailChangeDto.getActionTicket());
+                    userInformationService.findByEmail(emailChangeDto.getEmail()).ifPresent(t -> {
+                        throw new EmailFoundException();
+                    });
+                    EmailVerification emailVerification = emailVerificationService.getValidatedEmailVerification
+                            (emailChangeDto.getEmail(), emailChangeDto.getCode());
                     emailVerificationService.delete(emailVerification);
                     actionTicketService.delete(actionTicket);
                     user.getUserInformation().setEmail(emailChangeDto.getEmail());
                     userInformationService.save(user.getUserInformation());
-                    return updateAndGenerateToken(user);
+                    return userDataTokenService.updateAndGenerateToken(user);
                 }).orElseThrow(UserNotFoundException::new);
-    }
-
-    private TokenDto updateAndGenerateToken(User user) {
-        UUID tokenUUID = UUID.randomUUID();
-        user.getUserDataToken().setTokenUUID(tokenUUID);
-        userDataTokenService.save(user.getUserDataToken());
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String token = jwtTokenUtils.generateToken(authentication, tokenUUID);
-        return new TokenDto(token);
-    }
-
-    @Transactional
-    public ActionTicketDto verifyCurrentEmailCode(CodeDto codeDto){
-        return userService.findWithInfoAndDataTokenByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
-                user -> {
-                    EmailVerification emailVerification = getValidatedEmailVerification(user.getUserInformation().getEmail(), codeDto.getCode());
-                    ActionTicket actionTicket = actionTicketService.createActionTicket(user);
-                    emailVerificationService.delete(emailVerification);
-                    return new ActionTicketDto(actionTicket.getTicket());
-                }).orElseThrow(UserNotFoundException::new);
-    }
-
-    private EmailVerification getValidatedEmailVerification (String email, String code) {
-        EmailVerification emailVerification = emailVerificationService.findByEmail(email).orElseThrow(EmailNotFoundException::new);
-        if(!emailVerificationService.validateCode(emailVerification, code)){
-            throw new CodeValidationException();
-        } else if (emailVerificationService.isExpired(emailVerification)) {
-            throw new CodeExpireException();
-        }
-        return emailVerification;
     }
 
     @Transactional
@@ -136,24 +97,15 @@ public class ProfileService {
                         return new ResponseDto("Успешное изменение фотографии");
                     }).orElseThrow(UserNotFoundException::new);
         }
-        throw new ImageException();
+        throw new ImageInvalidFormatException();
     }
 
-    private String updateOrUploadImage(MultipartFile image, User user){
+    private String updateOrUploadImage(MultipartFile image, User user) {
         if (user.getUserInformation().getImageName() != null) {
-            return updateImage(image, user.getUserInformation().getImageName());
-        } else {
-            return imageService.uploadImage(image,profileImagesDirectory);
+            return imageService.updateImage(image, user.getUserInformation().getImageName(),profileImagesDirectory.toAbsolutePath());
         }
+
+        return imageService.uploadImage(image, profileImagesDirectory.toAbsolutePath());
     }
 
-    private String updateImage(MultipartFile image, String oldImageName) {
-        imageService.deleteOldImage(profileImagesDirectory.resolve(oldImageName));
-        return imageService.uploadImage(image,profileImagesDirectory);
-    }
-
-    public Resource getImageAsResource(String imageName){
-        Path path = profileImagesDirectory.resolve(imageName);
-        return imageService.getImageAsResource(path);
-    }
 }

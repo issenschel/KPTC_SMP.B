@@ -12,5 +12,5 @@ public class GuildOrderGroupDto {
     @Schema(description = "Список заказов")
     List<GuildOrder> guildOrders;
     @Schema(description = "Количество страниц с заказами")
-    int count;
+    int countPage;
 }

@@ -10,8 +10,10 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,9 +25,9 @@ import org.springframework.web.bind.annotation.*;
 public class GuildController {
     private final GuildOrderService guildOrderService;
 
-
     @PostMapping("/order")
     @Operation(summary = "Создание заказов")
+    @SecurityRequirement(name = "bearerAuth")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Заказ добавлен", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = GuildOrder.class))}),
@@ -36,8 +38,9 @@ public class GuildController {
         return guildOrderService.createNewOrder(guildOrderDto);
     }
 
-    @PutMapping("/order")
+    @PutMapping("/order/{id}")
     @Operation(summary = "Изменений заказа")
+    @SecurityRequirement(name = "bearerAuth")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Заказ изменен", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = GuildOrder.class))}),
@@ -45,12 +48,13 @@ public class GuildController {
             @ApiResponse(responseCode = "403", description = "Недостаточно прав", content = {@Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "404", description = "Заказ не найден", content = {@Content(mediaType = "application/json")})
     })
-    public GuildOrder changeOrder(@RequestParam(name = "id") int id, @Valid @RequestBody GuildOrderDto guildOrderDto) {
+    public GuildOrder changeOrder(@PathVariable @Min(1) int id, @Valid @RequestBody GuildOrderDto guildOrderDto) {
         return guildOrderService.changeOrder(guildOrderDto, id);
     }
 
-    @DeleteMapping("/order")
+    @DeleteMapping("/order/{id}")
     @Operation(summary = "Удаление заказа")
+    @SecurityRequirement(name = "bearerAuth")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Заказ удален", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
@@ -58,7 +62,7 @@ public class GuildController {
             @ApiResponse(responseCode = "403", description = "Недостаточно прав", content = {@Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "404", description = "Заказ не найден", content = {@Content(mediaType = "application/json")})
     })
-    public ResponseDto deleteOrder(@RequestParam(name = "id") int id) {
+    public ResponseDto deleteOrder(@PathVariable @Min(1) int id) {
         return guildOrderService.deleteOrder(id);
     }
 
@@ -66,7 +70,7 @@ public class GuildController {
     @Operation(summary = "Получение заказов")
     @ApiResponse(responseCode = "200", description = "Список заказов получен", content = {
             @Content(mediaType = "application/json", schema = @Schema(implementation = GuildOrderGroupDto.class))})
-    public GuildOrderGroupDto getOrders(@RequestParam(name = "page") int page) {
+    public GuildOrderGroupDto getOrders(@RequestParam(name = "page", defaultValue = "1") @Min(1) int page) {
         return guildOrderService.getOrders(page);
     }
 }

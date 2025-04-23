@@ -1,7 +1,11 @@
 package com.example.kptc_smp.service.main;
 
+import com.example.kptc_smp.dto.ActionTicketDto;
 import com.example.kptc_smp.dto.ResponseDto;
+import com.example.kptc_smp.dto.email.CodeDto;
 import com.example.kptc_smp.dto.email.EmailDto;
+import com.example.kptc_smp.entity.main.ActionTicket;
+import com.example.kptc_smp.entity.main.EmailVerification;
 import com.example.kptc_smp.entity.main.User;
 import com.example.kptc_smp.exception.email.EmailFoundException;
 import com.example.kptc_smp.exception.user.UserNotFoundException;
@@ -22,6 +26,7 @@ public class EmailService {
     private final EmailVerificationService emailVerificationService;
     private final UserInformationService userInformationService;
     private final UserService userService;
+    private final ActionTicketService actionTicketService;
 
     @Value("${spring.mail.username}")
     private String email;
@@ -41,6 +46,18 @@ public class EmailService {
                 .orElseThrow(UserNotFoundException::new);
         sendCode(user.getUserInformation().getEmail());
         return new ResponseDto("Код отправлен");
+    }
+
+    @Transactional
+    public ActionTicketDto verifyCurrentEmailCode(CodeDto codeDto) {
+        return userService.findWithInfoAndDataTokenByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
+                user -> {
+                    EmailVerification emailVerification = emailVerificationService.getValidatedEmailVerification
+                            (user.getUserInformation().getEmail(), codeDto.getCode());
+                    ActionTicket actionTicket = actionTicketService.createActionTicket(user);
+                    emailVerificationService.delete(emailVerification);
+                    return new ActionTicketDto(actionTicket.getTicket());
+                }).orElseThrow(UserNotFoundException::new);
     }
 
 

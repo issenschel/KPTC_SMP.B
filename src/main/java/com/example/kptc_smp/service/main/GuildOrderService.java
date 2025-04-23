@@ -41,11 +41,11 @@ public class GuildOrderService {
 
     public GuildOrderGroupDto getOrders(int page) {
         GuildOrderGroupDto guildOrderGroupDto = new GuildOrderGroupDto();
-        PageRequest pageRequest = PageRequest.of(page, 6);
+        PageRequest pageRequest = PageRequest.of(page-1, 6);
         Page<GuildOrder> ordersPage = guildOrderRepository.findAll(pageRequest);
         int totalPages = ordersPage.getTotalPages();
         guildOrderGroupDto.setGuildOrders(ordersPage.getContent());
-        guildOrderGroupDto.setCount(totalPages);
+        guildOrderGroupDto.setCountPage(totalPages);
         return guildOrderGroupDto;
     }
 }

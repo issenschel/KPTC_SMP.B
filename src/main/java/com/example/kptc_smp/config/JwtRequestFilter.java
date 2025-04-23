@@ -2,8 +2,7 @@ package com.example.kptc_smp.config;
 
 import com.example.kptc_smp.service.main.UserDataTokenService;
 import com.example.kptc_smp.utility.JwtTokenUtils;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,7 +25,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     private final UserDataTokenService userDataTokenService;
 
     @Override
-    protected  void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String authHeader = request.getHeader("Authorization");
         String username;
         String jwt;
@@ -34,25 +33,19 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             jwt = authHeader.substring(7);
             if (jwt.split("\\.").length == 3) {
-                try {
-                    username = jwtTokenUtils.getUsername(jwt);
-                    if (username != null && SecurityContextHolder.getContext().getAuthentication() == null &&
-                            (userDataTokenService.findByTokenUUID(jwtTokenUtils.getTokenUUID(jwt))).isPresent()) {
-                        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
-                                username, null, jwtTokenUtils.getRoles(jwt).stream().map(SimpleGrantedAuthority::new).toList());
-                        SecurityContextHolder.getContext().setAuthentication(token);
-                    }
-                } catch (ExpiredJwtException e) {
-                    log.debug("Вермя жизни токена вышло");
-                } catch (SignatureException e) {
-                    log.debug("Подпись неправильная");
+                username = jwtTokenUtils.getUsername(jwt);
+                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null &&
+                    (userDataTokenService.findByTokenUUID(jwtTokenUtils.getTokenUUID(jwt))).isPresent()) {
+                    UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
+                            username, null, jwtTokenUtils.getRoles(jwt).stream().map(SimpleGrantedAuthority::new).toList());
+                    SecurityContextHolder.getContext().setAuthentication(token);
                 }
             } else {
-                log.debug("JWT не содержит трёх частей");
+                throw new MalformedJwtException("Invalid JWT");
             }
         }
 
-        filterChain.doFilter(request,response);
+        filterChain.doFilter(request, response);
 
     }
 }

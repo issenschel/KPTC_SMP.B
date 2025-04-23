@@ -34,7 +34,7 @@ public class PostgreSQLConfig {
     public DataSource dataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setUrl(environment.getProperty("postgreSQL.datasource.url"));
-        dataSource.setDriverClassName(environment.getProperty("mySQL.datasource.driver-class-name"));
+        dataSource.setDriverClassName(environment.getProperty("postgreSQL.datasource.driver-class-name"));
         dataSource.setUsername(environment.getProperty("postgreSQL.datasource.username"));
         dataSource.setPassword(environment.getProperty("postgreSQL.datasource.password"));
         return dataSource;

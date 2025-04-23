@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +21,7 @@ public class DataBackupController {
 
     @PostMapping("/data")
     @Operation(summary = "Создание бэкапа")
+    @SecurityRequirement(name = "bearerAuth")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Бэкап создан", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
@@ -30,7 +32,8 @@ public class DataBackupController {
         return new ResponseDto("Всё прошло успешно");
     }
 
-    @PostMapping("/restore-data")
+    @PostMapping("/data/restore")
+    @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Восстановление бэкапа")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Восстановление успешно", content = {
@@ -42,7 +45,8 @@ public class DataBackupController {
         return dataBackupService.restoreBackupData(zipFileName);
     }
 
-    @GetMapping("/download")
+    @GetMapping("/data/download")
+    @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Скачивание бэкапа")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Скачивание успешно", content = {
@@ -50,8 +54,8 @@ public class DataBackupController {
             @ApiResponse(responseCode = "404", description = "Бэкап не найден", content = {@Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "409", description = "Не удалось скачать архив", content = {@Content(mediaType = "application/json")}),
     })
-    public ResponseDto downloadBackupData(@RequestParam(name = "zipFileName") String imageName) {
-        return dataBackupService.downloadBackupData(imageName);
+    public ResponseDto downloadBackupData(@RequestParam(name = "zipFileName") String zipFileName) {
+        return dataBackupService.downloadBackupData(zipFileName);
     }
 
 }

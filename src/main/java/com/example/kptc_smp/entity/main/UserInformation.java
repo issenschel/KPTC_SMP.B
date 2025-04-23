@@ -3,6 +3,8 @@ package com.example.kptc_smp.entity.main;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDate;
+
 @Entity
 @Data
 @Table(name = "user_information")
@@ -21,4 +23,7 @@ public class UserInformation {
 
     @Column(name = "image_name")
     private String imageName;
+
+    @Column(name = "registration_date")
+    private LocalDate registrationDate;
 }
