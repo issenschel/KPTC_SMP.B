@@ -30,14 +30,18 @@ public class ImageService {
     @Value("${upload.path.image.news}")
     private Path newsImagesDirectory;
 
-    public Resource getProfileImageAsResource(String imageName){
-        Path path = profileImagesDirectory.resolve(imageName);
-        return getImageAsResource(path);
+    @Value("${standard.image.news}")
+    private String standardImageNewsName;
+
+    @Value("${standard.image.profile}")
+    private String standardImageProfileName;
+
+    public Resource getProfileImageAsResource(String imageName) {
+        return getImageAsResource(profileImagesDirectory.resolve(imageName));
     }
 
-    public Resource getNewsImageAsResource(String imageName){
-        Path imagePath = newsImagesDirectory.resolve(imageName);
-        return getImageAsResource(imagePath);
+    public Resource getNewsImageAsResource(String imageName) {
+        return getImageAsResource(newsImagesDirectory.resolve(imageName));
     }
 
     private Resource getImageAsResource(Path imagePath) {
@@ -51,9 +55,17 @@ public class ImageService {
         }
     }
 
-    public String getImageUrl(Path imagePath) {
+    public String getNewsImageUrl(Path imagePath) {
+        return getImageUrlWithFallback(imagePath, standardImageNewsName);
+    }
+
+    public String getProfileImageUrl(Path imagePath) {
+        return getImageUrlWithFallback(imagePath, standardImageProfileName);
+    }
+
+    private String getImageUrlWithFallback(Path imagePath, String defaultImageName) {
         if (!Files.exists(imagePath)) {
-            throw new FileNotFoundException();
+            imagePath = imagePath.resolveSibling(defaultImageName);
         }
 
         Path parent = imagePath.getParent().getParent();

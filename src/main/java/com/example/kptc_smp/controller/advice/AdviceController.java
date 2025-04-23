@@ -8,9 +8,6 @@ import com.example.kptc_smp.exception.google.GoogleDriveException;
 import com.example.kptc_smp.exception.guild.OrderNotFoundException;
 import com.example.kptc_smp.exception.news.NewsNotFoundException;
 import com.example.kptc_smp.exception.zip.ZipException;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -51,21 +48,6 @@ public class AdviceController {
 
     @ExceptionHandler(ZipException.class)
     public ResponseEntity<ResponseDto> zipException(ZipException e) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ResponseDto(e.getMessage()));
-    }
-
-    @ExceptionHandler(ExpiredJwtException.class)
-    public ResponseEntity<ResponseDto> expiredJwtException(ExpiredJwtException e) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ResponseDto(e.getMessage()));
-    }
-
-    @ExceptionHandler(SignatureException.class)
-    public ResponseEntity<ResponseDto> signatureException(SignatureException e) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ResponseDto(e.getMessage()));
-    }
-
-    @ExceptionHandler(MalformedJwtException.class)
-    public ResponseEntity<ResponseDto> malformedJwtException(MalformedJwtException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ResponseDto(e.getMessage()));
     }
 }

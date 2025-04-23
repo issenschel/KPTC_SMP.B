@@ -87,7 +87,7 @@ public class NewsService {
                     headlineNewsDto.setId(news.getId());
                     headlineNewsDto.setTitle(news.getTitle());
                     headlineNewsDto.setDatePublication(news.getDatePublication());
-                    headlineNewsDto.setPhotoUrl(imageService.getImageUrl(newsImagesDirectory.resolve(news.getImageName()).toAbsolutePath()));
+                    headlineNewsDto.setPhotoUrl(imageService.getNewsImageUrl(newsImagesDirectory.resolve(news.getImageName()).toAbsolutePath()));
                     return headlineNewsDto;
                 }).collect(Collectors.toList());
     }

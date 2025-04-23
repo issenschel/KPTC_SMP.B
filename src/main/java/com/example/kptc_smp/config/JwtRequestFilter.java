@@ -2,7 +2,8 @@ package com.example.kptc_smp.config;
 
 import com.example.kptc_smp.service.main.UserDataTokenService;
 import com.example.kptc_smp.utility.JwtTokenUtils;
-import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,15 +34,21 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             jwt = authHeader.substring(7);
             if (jwt.split("\\.").length == 3) {
-                username = jwtTokenUtils.getUsername(jwt);
-                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null &&
-                    (userDataTokenService.findByTokenUUID(jwtTokenUtils.getTokenUUID(jwt))).isPresent()) {
-                    UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
-                            username, null, jwtTokenUtils.getRoles(jwt).stream().map(SimpleGrantedAuthority::new).toList());
-                    SecurityContextHolder.getContext().setAuthentication(token);
+                try {
+                    username = jwtTokenUtils.getUsername(jwt);
+                    if (username != null && SecurityContextHolder.getContext().getAuthentication() == null &&
+                        (userDataTokenService.findByTokenUUID(jwtTokenUtils.getTokenUUID(jwt))).isPresent()) {
+                        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
+                                username, null, jwtTokenUtils.getRoles(jwt).stream().map(SimpleGrantedAuthority::new).toList());
+                        SecurityContextHolder.getContext().setAuthentication(token);
+                    }
+                } catch (ExpiredJwtException e) {
+                    log.debug("Вермя жизни токена вышло");
+                } catch (SignatureException e) {
+                    log.debug("Подпись неправильная");
                 }
             } else {
-                throw new MalformedJwtException("Invalid JWT");
+                log.debug("JWT не содержит трёх частей");
             }
         }
 

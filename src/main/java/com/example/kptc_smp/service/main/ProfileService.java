@@ -1,10 +1,8 @@
 package com.example.kptc_smp.service.main;
 
 
-import com.example.kptc_smp.dto.ActionTicketDto;
 import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.dto.auth.TokenDto;
-import com.example.kptc_smp.dto.email.CodeDto;
 import com.example.kptc_smp.dto.profile.EmailChangeDto;
 import com.example.kptc_smp.dto.profile.PasswordChangeDto;
 import com.example.kptc_smp.dto.profile.UserAccountDetailsDto;
@@ -49,8 +47,8 @@ public class ProfileService {
 
     public UserProfileDto getUserProfileInfo() {
         return userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
-                user -> new UserProfileDto(user.getUsername(),
-                        imageService.getImageUrl(profileImagesDirectory.resolve(user.getUserInformation().getImageName()))))
+                        user -> new UserProfileDto(user.getUsername(),
+                                imageService.getProfileImageUrl(profileImagesDirectory.resolve(user.getUserInformation().getImageName()))))
                 .orElseThrow(UserNotFoundException::new);
     }
 
@@ -102,7 +100,7 @@ public class ProfileService {
 
     private String updateOrUploadImage(MultipartFile image, User user) {
         if (user.getUserInformation().getImageName() != null) {
-            return imageService.updateImage(image, user.getUserInformation().getImageName(),profileImagesDirectory.toAbsolutePath());
+            return imageService.updateImage(image, user.getUserInformation().getImageName(), profileImagesDirectory.toAbsolutePath());
         }
 
         return imageService.uploadImage(image, profileImagesDirectory.toAbsolutePath());
