@@ -4,11 +4,10 @@ import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.dto.auth.JwtRequestDto;
 import com.example.kptc_smp.dto.auth.JwtResponseDto;
 import com.example.kptc_smp.dto.auth.PasswordResetDto;
+import com.example.kptc_smp.dto.auth.RegistrationUserDto;
 import com.example.kptc_smp.dto.email.EmailDto;
-import com.example.kptc_smp.dto.profile.UserInformationDto;
-import com.example.kptc_smp.dto.registration.RegistrationUserDto;
+import com.example.kptc_smp.dto.profile.UserAccountDetailsDto;
 import com.example.kptc_smp.service.main.AuthService;
-import com.example.kptc_smp.service.main.EmailService;
 import com.example.kptc_smp.service.main.PasswordResetService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -47,10 +46,10 @@ public class AuthController {
     @Operation(summary = "Регистрация")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Пользователь создан", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = UserInformationDto.class))}),
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = UserAccountDetailsDto.class))}),
             @ApiResponse(responseCode = "409", description = "Данные уже заняты", content = {@Content(mediaType = "application/json")})
     })
-    public UserInformationDto registrationUser(@Valid @RequestBody RegistrationUserDto registrationUserDto) {
+    public UserAccountDetailsDto registrationUser(@Valid @RequestBody RegistrationUserDto registrationUserDto) {
         return authService.registrationUser(registrationUserDto);
     }
 
@@ -69,7 +68,7 @@ public class AuthController {
     @Operation(summary = "Смена пароля")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Пароль изменён", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = UserInformationDto.class))}),
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
             @ApiResponse(responseCode = "404", description = "Неверный UUID | Время истекло", content = {@Content(mediaType = "application/json")})
     })
     public ResponseDto resetPassword(@RequestParam("uuid") UUID linkUUID, @Valid @RequestBody PasswordResetDto passwordResetDto) {

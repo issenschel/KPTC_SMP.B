@@ -7,7 +7,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Components;
-import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 
 import java.util.List;
@@ -15,8 +14,8 @@ import java.util.List;
 @Configuration
 public class SwaggerConfig {
 
-    @Value("${swagger.server.url}")
-    private String swaggerUrl;
+    @Value("${server.url}")
+    private String serverUrl;
 
     @Bean
     public OpenAPI customOpenAPI() {
@@ -26,9 +25,7 @@ public class SwaggerConfig {
                         new Info()
                                 .title("KPTC_SMP")
                                 .version("v 1.0")
-
                 )
-                .addSecurityItem(new SecurityRequirement().addList(secSchemeName))
                 .components(new Components()
                         .addSecuritySchemes(secSchemeName,
                                 new SecurityScheme()
@@ -36,6 +33,6 @@ public class SwaggerConfig {
                                         .type(SecurityScheme.Type.HTTP)
                                         .scheme("bearer")
                                         .bearerFormat("JWT")))
-        .servers(List.of(new Server().url(swaggerUrl)));
+                .servers(List.of(new Server().url(serverUrl)));
     }
 }

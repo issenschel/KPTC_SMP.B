@@ -6,19 +6,18 @@ import com.example.kptc_smp.dto.auth.TokenDto;
 import com.example.kptc_smp.dto.email.CodeDto;
 import com.example.kptc_smp.dto.profile.EmailChangeDto;
 import com.example.kptc_smp.dto.profile.PasswordChangeDto;
-import com.example.kptc_smp.dto.profile.UserInformationDto;
+import com.example.kptc_smp.dto.profile.UserAccountDetailsDto;
+import com.example.kptc_smp.dto.profile.UserProfileDto;
 import com.example.kptc_smp.service.main.ProfileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.Resource;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,6 +34,7 @@ public class ProfileController {
 
     @PutMapping("/password")
     @Operation(summary = "Смена пароля пользователя")
+    @SecurityRequirement(name = "bearerAuth")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Пароль изменен", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
@@ -46,6 +46,7 @@ public class ProfileController {
 
     @PutMapping(path = "/image", consumes = "multipart/*")
     @Operation(summary = "Смена фотографии пользователя")
+    @SecurityRequirement(name = "bearerAuth")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Фото изменено", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
@@ -55,26 +56,27 @@ public class ProfileController {
         return profileService.changeImage(image);
     }
 
-    @GetMapping("/information")
-    @Operation(summary = "Получение данных пользователя")
+    @GetMapping("/account-details")
+    @Operation(summary = "Получение данных об аккаунте пользователя в профиле")
+    @SecurityRequirement(name = "bearerAuth")
     @ApiResponse(responseCode = "200", description = "Данные получены", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = UserInformationDto.class))})
-    public UserInformationDto getData() {
-        return profileService.getData();
+            @Content(mediaType = "application/json", schema = @Schema(implementation = UserAccountDetailsDto.class))})
+    public UserAccountDetailsDto getUserAccountDetails() {
+        return profileService.getUserAccountDetails();
     }
 
-    @GetMapping("/image-name")
-    @Operation(summary = "Получение названия изображения пользователя")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Фото отправлено", content = {@Content(mediaType = "application/json")}),
-            @ApiResponse(responseCode = "404", description = "Фото не найдено", content = {@Content(mediaType = "application/json")})
-    })
-    public ResponseDto getImageName() {
-        return profileService.getImageName();
+    @GetMapping("/user-profile")
+    @Operation(summary = "Получение логина и ссылки на аватарку для профиля")
+    @SecurityRequirement(name = "bearerAuth")
+    @ApiResponse(responseCode = "200", description = "Данные получены", content = {
+            @Content(mediaType = "application/json", schema = @Schema(implementation = UserProfileDto.class))})
+    public UserProfileDto getUserProfileInfo() {
+        return profileService.getUserProfileInfo();
     }
 
     @PutMapping("/email")
     @Operation(summary = "Смена почты пользователя")
+    @SecurityRequirement(name = "bearerAuth")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Почта изменена", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
@@ -85,26 +87,8 @@ public class ProfileController {
         return profileService.changeEmail(emailChangeDto);
     }
 
-    @PostMapping("/email-ticket")
-    @Operation(summary = "Подтверждение текущей почты с отправкой тикета")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Почта подтверждена", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
-            @ApiResponse(responseCode = "400", description = "Неверно заполнены данные | поля", content = {@Content(mediaType = "application/json")}),
-    })
-    public ActionTicketDto verifyCurrentEmailCode(@Valid @RequestBody CodeDto codeDto) {
-        return profileService.verifyCurrentEmailCode(codeDto);
-    }
 
-    @GetMapping("/resource")
-    @Operation(summary = "Получение фото пользователя")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Фото отправлено", content = {@Content(mediaType = "image/jpeg")}),
-            @ApiResponse(responseCode = "404", description = "Фото не найдено", content = {@Content(mediaType = "application/json")})
-    })
-    public ResponseEntity<Resource> getImageAsResource(@RequestParam(name = "imageName") String imageName) {
-        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(profileService.getImageAsResource(imageName));
-    }
+
 
 }
 

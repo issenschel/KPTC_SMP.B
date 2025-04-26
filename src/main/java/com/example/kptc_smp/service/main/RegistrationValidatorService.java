@@ -1,6 +1,6 @@
 package com.example.kptc_smp.service.main;
 
-import com.example.kptc_smp.dto.registration.RegistrationUserDto;
+import com.example.kptc_smp.dto.auth.RegistrationUserDto;
 import com.example.kptc_smp.entity.main.EmailVerification;
 import com.example.kptc_smp.interfaces.ValidationRule;
 import jakarta.annotation.PostConstruct;

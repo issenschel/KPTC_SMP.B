@@ -40,15 +40,11 @@ public class PasswordResetService {
     }
 
     public void createOrUpdatePasswordReset(User user, UUID linkUUID) {
-        if (user.getPasswordReset() != null) {
-            updatePasswordReset(user, linkUUID);
-        } else {
-            createPasswordReset(user, linkUUID);
-        }
+        passwordResetRepository.findByUser(user).ifPresentOrElse(passwordReset -> updatePasswordReset(passwordReset,linkUUID),
+                ()-> createPasswordReset(user,linkUUID));
     }
 
-    public void updatePasswordReset(User user, UUID linkUUID) {
-        PasswordReset passwordReset = user.getPasswordReset();
+    public void updatePasswordReset(PasswordReset passwordReset, UUID linkUUID) {
         passwordReset.setLinkUUID(linkUUID);
         passwordReset.setExpiresAt(LocalDateTime.now().plusMinutes(10));
         passwordResetRepository.save(passwordReset);

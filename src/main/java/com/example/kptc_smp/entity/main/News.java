@@ -3,7 +3,7 @@ package com.example.kptc_smp.entity.main;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Data
@@ -24,5 +24,5 @@ public class News {
     private String imageName;
 
     @Column(name = "date_publication")
-    private LocalDate datePublication;
+    private LocalDateTime datePublication;
 }

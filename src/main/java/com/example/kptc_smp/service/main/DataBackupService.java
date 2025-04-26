@@ -29,18 +29,18 @@ public class DataBackupService {
 
     @Scheduled(cron = "0 0 2 * * SAT")
     public void createBackupData() {
-        File zipArchive = zipUtils.createZipArchive(sourceDirectoryPath, backupDirectoryPath);
+        File zipArchive = zipUtils.createZipArchive(sourceDirectoryPath.toAbsolutePath(), backupDirectoryPath.toAbsolutePath());
         googleDriveService.uploadZipToDrive(zipArchive, googleFolderId);
     }
 
     public ResponseDto restoreBackupData(String zipFileName) {
-        Path zipArchivePath = backupDirectoryPath.resolve(zipFileName + ".zip");
-        zipUtils.unzipArchive(sourceDirectoryPath, zipArchivePath);
+        Path zipArchivePath = backupDirectoryPath.toAbsolutePath().resolve(zipFileName + ".zip");
+        zipUtils.unzipArchive(sourceDirectoryPath.toAbsolutePath(), zipArchivePath);
         return new ResponseDto("Распаковка прошла успешно");
     }
 
     public ResponseDto downloadBackupData(String zipFileName) {
-        googleDriveService.downloadFileByName(zipFileName, backupDirectoryPath);
+        googleDriveService.downloadFileByName(zipFileName, backupDirectoryPath.toAbsolutePath());
         return new ResponseDto("Архив скачен");
     }
 

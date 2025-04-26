@@ -1,8 +1,9 @@
 package com.example.kptc_smp.service.main;
-import com.example.kptc_smp.dto.auth.JwtResponseDto;
+
 import com.example.kptc_smp.dto.auth.JwtRequestDto;
-import com.example.kptc_smp.dto.profile.UserInformationDto;
-import com.example.kptc_smp.dto.registration.RegistrationUserDto;
+import com.example.kptc_smp.dto.auth.JwtResponseDto;
+import com.example.kptc_smp.dto.auth.RegistrationUserDto;
+import com.example.kptc_smp.dto.profile.UserAccountDetailsDto;
 import com.example.kptc_smp.entity.main.User;
 import com.example.kptc_smp.entity.main.UserInformation;
 import com.example.kptc_smp.exception.auth.RegistrationValidationException;
@@ -21,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -39,25 +39,24 @@ public class AuthService {
 
     @Transactional
     public JwtResponseDto createAuthToken(@RequestBody JwtRequestDto authRequest) {
-            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
-            Optional<User> user = userService.findWithTokenVersionByUsername(authRequest.getUsername());
-            UUID tokenUUID = user.orElseThrow(() -> new BadCredentialsException("")).getUserDataToken().getTokenUUID();
-            String token = jwtTokenUtils.generateToken(authentication, tokenUUID);
-            List<String> roles = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
-            return new JwtResponseDto(token,roles);
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
+        User user = userService.findWithTokenVersionByUsername(authRequest.getUsername()).orElseThrow(() -> new BadCredentialsException(""));
+        UUID tokenUUID = user.getUserDataToken().getTokenUUID();
+        String token = jwtTokenUtils.generateToken(authentication, tokenUUID);
+        List<String> roles = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+        return new JwtResponseDto(token, roles);
     }
 
     @Transactional
-    public UserInformationDto registrationUser(@RequestBody RegistrationUserDto registrationUserDto) {
-            validateRegistration(registrationUserDto);
-            User user = userService.createNewUser(registrationUserDto.getUsername(), registrationUserDto.getPassword());
-            UserInformation userInformation = userInformationService.createNewUserInformation(registrationUserDto, user);
-            minecraftRegistrationActions(user);
-            UUID tokenUUID = UUID.randomUUID();
-            userDataTokenService.createUserDataToken(user,tokenUUID);
-            emailVerificationService.deleteByEmail(registrationUserDto.getEmail());
-            return new UserInformationDto(userInformation.getId(), userInformation.getUser().getUsername(),
-                    userInformation.getEmail());
+    public UserAccountDetailsDto registrationUser(@RequestBody RegistrationUserDto registrationUserDto) {
+        validateRegistration(registrationUserDto);
+        User user = userService.createNewUser(registrationUserDto.getUsername(), registrationUserDto.getPassword());
+        UserInformation userInformation = userInformationService.createNewUserInformation(registrationUserDto, user);
+        registrationMinecraftUser(user);
+        createUserDataToken(user);
+        emailVerificationService.deleteByEmail(registrationUserDto.getEmail());
+        return new UserAccountDetailsDto(userInformation.getId(), userInformation.getUser().getUsername(),
+                userInformation.getEmail(), userInformation.getRegistrationDate());
     }
 
     private void validateRegistration(RegistrationUserDto registrationUserDto) {
@@ -67,9 +66,14 @@ public class AuthService {
         }
     }
 
-    private void minecraftRegistrationActions(User user) {
+    private void registrationMinecraftUser(User user) {
         authMeService.createAuthMe(user);
         whitelistService.createWhitelist(user.getUsername());
     }
-    
+
+    private void createUserDataToken(User user) {
+        UUID tokenUUID = UUID.randomUUID();
+        userDataTokenService.createUserDataToken(user, tokenUUID);
+    }
+
 }
