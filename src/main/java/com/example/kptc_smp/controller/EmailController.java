@@ -4,7 +4,7 @@ import com.example.kptc_smp.dto.ActionTicketDto;
 import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.dto.email.CodeDto;
 import com.example.kptc_smp.dto.email.EmailDto;
-import com.example.kptc_smp.service.main.EmailService;
+import com.example.kptc_smp.service.main.email.EmailService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

@@ -1,4 +1,4 @@
-package com.example.kptc_smp.service.main;
+package com.example.kptc_smp.service.main.email;
 
 import com.example.kptc_smp.dto.ActionTicketDto;
 import com.example.kptc_smp.dto.ResponseDto;
@@ -9,6 +9,9 @@ import com.example.kptc_smp.entity.main.EmailVerification;
 import com.example.kptc_smp.entity.main.User;
 import com.example.kptc_smp.exception.email.EmailFoundException;
 import com.example.kptc_smp.exception.user.UserNotFoundException;
+import com.example.kptc_smp.service.main.user.ActionTicketService;
+import com.example.kptc_smp.service.main.user.UserInformationService;
+import com.example.kptc_smp.service.main.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;

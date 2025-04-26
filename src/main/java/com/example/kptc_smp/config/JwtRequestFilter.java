@@ -1,6 +1,6 @@
 package com.example.kptc_smp.config;
 
-import com.example.kptc_smp.service.main.UserDataTokenService;
+import com.example.kptc_smp.service.main.user.UserDataTokenService;
 import com.example.kptc_smp.utility.JwtTokenUtils;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.SignatureException;

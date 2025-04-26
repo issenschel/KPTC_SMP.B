@@ -1,8 +1,11 @@
-package com.example.kptc_smp.service.main;
+package com.example.kptc_smp.service.main.auth;
 
 import com.example.kptc_smp.dto.auth.RegistrationUserDto;
 import com.example.kptc_smp.entity.main.EmailVerification;
 import com.example.kptc_smp.interfaces.ValidationRule;
+import com.example.kptc_smp.service.main.email.EmailVerificationService;
+import com.example.kptc_smp.service.main.user.UserInformationService;
+import com.example.kptc_smp.service.main.user.UserService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

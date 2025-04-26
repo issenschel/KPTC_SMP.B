@@ -3,19 +3,21 @@ package com.example.kptc_smp.service.main;
 import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.dto.news.HeadlineNewsDto;
 import com.example.kptc_smp.dto.news.HeadlineNewsGroupDto;
-import com.example.kptc_smp.dto.news.NewsDto;
+import com.example.kptc_smp.dto.news.NewsRequestDto;
+import com.example.kptc_smp.dto.news.NewsResponseDto;
 import com.example.kptc_smp.entity.main.News;
+import com.example.kptc_smp.enums.ImageType;
+import com.example.kptc_smp.exception.image.ImageInvalidFormatException;
 import com.example.kptc_smp.exception.news.NewsNotFoundException;
 import com.example.kptc_smp.repository.main.NewsRepository;
+import com.example.kptc_smp.service.main.image.ImageService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,45 +28,45 @@ public class NewsService {
     private final NewsRepository newsRepository;
     private final ImageService imageService;
 
-    @Value("${upload.path.image.news}")
-    private Path newsImagesDirectory;
-
-    @Value("${standard.image.news}")
-    private String standardImageNewsName;
-
-    public News createNews(NewsDto newsDto, MultipartFile image) {
+    public NewsResponseDto createNews(NewsRequestDto newsRequestDto, MultipartFile image) {
         News news = new News();
-        news.setTitle(newsDto.getTitle());
-        news.setContent(newsDto.getContent());
+        news.setTitle(newsRequestDto.getTitle());
+        news.setContent(newsRequestDto.getContent());
         news.setDatePublication(LocalDateTime.now());
-        if (imageService.isValidImage(image)) {
-            news.setImageName(imageService.uploadImage(image, newsImagesDirectory.resolve(String.valueOf(news.getId())).toAbsolutePath()));
-        } else {
-            news.setImageName(standardImageNewsName);
-        }
+        news.setImageName(imageService.uploadImage(ImageType.NEWS,image));
         newsRepository.save(news);
-        return news;
+        return getNewsResponseDto(news);
     }
 
-    public News changeNews(NewsDto newsDto, MultipartFile image, int id) {
+    public NewsResponseDto changeNews(NewsRequestDto newsRequestDto, MultipartFile image, int id) {
         News news = newsRepository.findById(id).orElseThrow(NewsNotFoundException::new);
-        news.setTitle(newsDto.getTitle());
-        news.setContent(newsDto.getContent());
+        news.setTitle(newsRequestDto.getTitle());
+        news.setContent(newsRequestDto.getContent());
         if (imageService.isValidImage(image)) {
-            String imageName = imageService.updateImage(image, news.getImageName(), newsImagesDirectory);
-            news.setImageName(imageName);
+            news.setImageName(imageService.updateImage(ImageType.NEWS,image, news.getImageName()));
         }
         newsRepository.save(news);
-        return news;
+        return getNewsResponseDto(news);
     }
 
+    public NewsResponseDto getNews(int newsId) {
+        News news = newsRepository.findById(newsId).orElseThrow(NewsNotFoundException::new);
+        return getNewsResponseDto(news);
+    }
 
-    public News getNews(int newsId) {
-        return newsRepository.findById(newsId).orElseThrow(NewsNotFoundException::new);
+    private NewsResponseDto getNewsResponseDto(News news){
+        NewsResponseDto newsResponseDto = new NewsResponseDto();
+        newsResponseDto.setId(news.getId());
+        newsResponseDto.setTitle(news.getTitle());
+        newsResponseDto.setContent(news.getContent());
+        newsResponseDto.setDatePublication(news.getDatePublication());
+        newsResponseDto.setPhotoUrl(imageService.getImageUrl(ImageType.NEWS, news.getImageName()));
+        return newsResponseDto;
     }
 
     public ResponseDto deleteNews(int id) {
         News news = newsRepository.findById(id).orElseThrow(NewsNotFoundException::new);
+        imageService.deleteImage(ImageType.NEWS,news.getImageName());
         newsRepository.delete(news);
         return new ResponseDto("Новость удалена");
     }
@@ -87,7 +89,7 @@ public class NewsService {
                     headlineNewsDto.setId(news.getId());
                     headlineNewsDto.setTitle(news.getTitle());
                     headlineNewsDto.setDatePublication(news.getDatePublication());
-                    headlineNewsDto.setPhotoUrl(imageService.getNewsImageUrl(newsImagesDirectory.resolve(news.getImageName()).toAbsolutePath()));
+                    headlineNewsDto.setPhotoUrl(imageService.getImageUrl(ImageType.NEWS, news.getImageName()));
                     return headlineNewsDto;
                 }).collect(Collectors.toList());
     }

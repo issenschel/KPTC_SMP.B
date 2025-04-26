@@ -1,4 +1,4 @@
-package com.example.kptc_smp.service.main;
+package com.example.kptc_smp.service.main.user;
 
 import com.example.kptc_smp.dto.auth.RegistrationUserDto;
 import com.example.kptc_smp.entity.main.User;

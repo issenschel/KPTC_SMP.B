@@ -1,8 +1,8 @@
 package com.example.kptc_smp.controller;
 
-import com.example.kptc_smp.service.main.ImageService;
+import com.example.kptc_smp.enums.ImageType;
+import com.example.kptc_smp.service.main.image.ImageService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
@@ -24,11 +24,11 @@ public class ImageController {
     @GetMapping("/profile/{filename:.+}")
     @Operation(summary = "Получение фото профиля по ссылке")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Фото отправлено", content = {@Content(mediaType = "image/jpeg")}),
-            @ApiResponse(responseCode = "404", description = "Фото не найдено", content = {@Content(mediaType = "application/json")})
+            @ApiResponse(responseCode = "200", description = "Фото отправлено"),
+            @ApiResponse(responseCode = "404", description = "Фото не найдено")
     })
     public ResponseEntity<Resource> getProfileImage(@PathVariable String filename) {
-        Resource resource = imageService.getProfileImageAsResource(filename);
+        Resource resource = imageService.getImageAsResource(ImageType.PROFILE, filename);
         return ResponseEntity.ok()
                 .contentType(MediaType.IMAGE_JPEG)
                 .body(resource);
@@ -37,11 +37,11 @@ public class ImageController {
     @GetMapping("/news/{filename:.+}")
     @Operation(summary = "Получение фото новости по ссылке")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Фото отправлено", content = {@Content(mediaType = "image/jpeg")}),
-            @ApiResponse(responseCode = "404", description = "Фото не найдено", content = {@Content(mediaType = "application/json")})
+            @ApiResponse(responseCode = "200", description = "Фото отправлено"),
+            @ApiResponse(responseCode = "404", description = "Фото не найдено")
     })
     public ResponseEntity<Resource> getNewsImage(@PathVariable String filename) {
-        Resource resource = imageService.getNewsImageAsResource(filename);
+        Resource resource = imageService.getImageAsResource(ImageType.NEWS, filename);
         return ResponseEntity.ok()
                 .contentType(MediaType.IMAGE_JPEG)
                 .body(resource);

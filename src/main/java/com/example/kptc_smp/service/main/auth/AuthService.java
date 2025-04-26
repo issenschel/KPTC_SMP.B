@@ -1,4 +1,4 @@
-package com.example.kptc_smp.service.main;
+package com.example.kptc_smp.service.main.auth;
 
 import com.example.kptc_smp.dto.auth.JwtRequestDto;
 import com.example.kptc_smp.dto.auth.JwtResponseDto;
@@ -7,6 +7,10 @@ import com.example.kptc_smp.dto.profile.UserAccountDetailsDto;
 import com.example.kptc_smp.entity.main.User;
 import com.example.kptc_smp.entity.main.UserInformation;
 import com.example.kptc_smp.exception.auth.RegistrationValidationException;
+import com.example.kptc_smp.service.main.email.EmailVerificationService;
+import com.example.kptc_smp.service.main.user.UserDataTokenService;
+import com.example.kptc_smp.service.main.user.UserInformationService;
+import com.example.kptc_smp.service.main.user.UserService;
 import com.example.kptc_smp.service.minecraft.AuthMeService;
 import com.example.kptc_smp.service.minecraft.WhitelistService;
 import com.example.kptc_smp.utility.JwtTokenUtils;

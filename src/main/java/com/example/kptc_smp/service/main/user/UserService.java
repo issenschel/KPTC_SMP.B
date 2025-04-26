@@ -1,4 +1,4 @@
-package com.example.kptc_smp.service.main;
+package com.example.kptc_smp.service.main.user;
 
 import com.example.kptc_smp.entity.main.User;
 import com.example.kptc_smp.exception.user.UserNotFoundException;

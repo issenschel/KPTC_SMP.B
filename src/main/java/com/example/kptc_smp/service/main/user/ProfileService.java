@@ -1,4 +1,4 @@
-package com.example.kptc_smp.service.main;
+package com.example.kptc_smp.service.main.user;
 
 
 import com.example.kptc_smp.dto.ResponseDto;
@@ -10,9 +10,13 @@ import com.example.kptc_smp.dto.profile.UserProfileDto;
 import com.example.kptc_smp.entity.main.ActionTicket;
 import com.example.kptc_smp.entity.main.EmailVerification;
 import com.example.kptc_smp.entity.main.User;
+import com.example.kptc_smp.enums.ImageType;
 import com.example.kptc_smp.exception.email.EmailFoundException;
 import com.example.kptc_smp.exception.image.ImageInvalidFormatException;
 import com.example.kptc_smp.exception.user.UserNotFoundException;
+import com.example.kptc_smp.service.main.email.EmailVerificationService;
+import com.example.kptc_smp.service.main.auth.PasswordService;
+import com.example.kptc_smp.service.main.image.ImageService;
 import com.example.kptc_smp.service.minecraft.AuthMeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,9 +39,6 @@ public class ProfileService {
     private final PasswordService passwordService;
     private final ActionTicketService actionTicketService;
 
-    @Value("${upload.path.image.profile}")
-    private Path profileImagesDirectory;
-
     public UserAccountDetailsDto getUserAccountDetails() {
         return userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
                 user -> new UserAccountDetailsDto(user.getId(), user.getUsername(), user.getUserInformation().getEmail(),
@@ -48,7 +49,7 @@ public class ProfileService {
     public UserProfileDto getUserProfileInfo() {
         return userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
                         user -> new UserProfileDto(user.getUsername(),
-                                imageService.getProfileImageUrl(profileImagesDirectory.resolve(user.getUserInformation().getImageName()))))
+                                imageService.getImageUrl(ImageType.PROFILE, user.getUserInformation().getImageName())))
                 .orElseThrow(UserNotFoundException::new);
     }
 
@@ -100,10 +101,9 @@ public class ProfileService {
 
     private String updateOrUploadImage(MultipartFile image, User user) {
         if (user.getUserInformation().getImageName() != null) {
-            return imageService.updateImage(image, user.getUserInformation().getImageName(), profileImagesDirectory.toAbsolutePath());
+            return imageService.updateImage(ImageType.PROFILE,image, user.getUserInformation().getImageName());
         }
-
-        return imageService.uploadImage(image, profileImagesDirectory.toAbsolutePath());
+        return imageService.uploadImage(ImageType.PROFILE,image);
     }
 
 }
