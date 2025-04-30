@@ -13,11 +13,10 @@ import com.example.kptc_smp.entity.main.ImageRegistry;
 import com.example.kptc_smp.entity.main.User;
 import com.example.kptc_smp.enums.ImageCategory;
 import com.example.kptc_smp.exception.email.EmailFoundException;
-import com.example.kptc_smp.exception.image.ImageException;
 import com.example.kptc_smp.exception.image.ImageInvalidFormatException;
 import com.example.kptc_smp.exception.user.UserNotFoundException;
-import com.example.kptc_smp.service.main.email.EmailVerificationService;
 import com.example.kptc_smp.service.main.auth.PasswordService;
+import com.example.kptc_smp.service.main.email.EmailVerificationService;
 import com.example.kptc_smp.service.main.image.ImageStorageService;
 import com.example.kptc_smp.service.main.image.ImageValidator;
 import com.example.kptc_smp.service.minecraft.AuthMeService;
@@ -27,7 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -104,21 +102,17 @@ public class ProfileService {
                 }).orElseThrow(UserNotFoundException::new);
     }
 
-    private UUID updateOrUploadImage(MultipartFile image, User user){
-        try {
-            ImageResponse imageResponse;
-            if (user.getUserInformation().getImageName() != null) {
-                Optional<ImageRegistry> fileRegistry = imageStorageService.findById(user.getUserInformation().getImageName());
-                if(fileRegistry.isPresent()){
-                    imageResponse = imageStorageService.updateFile(image, fileRegistry.get());
-                    return imageResponse.getId();
-                }
+    private UUID updateOrUploadImage(MultipartFile image, User user) {
+        ImageResponse imageResponse;
+        if (user.getUserInformation().getImageName() != null) {
+            Optional<ImageRegistry> fileRegistry = imageStorageService.findById(user.getUserInformation().getImageName());
+            if (fileRegistry.isPresent()) {
+                imageResponse = imageStorageService.updateImage(image, fileRegistry.get());
+                return imageResponse.getId();
             }
-            imageResponse = imageStorageService.uploadAndAttachFile(image, ImageCategory.PROFILE, user.getId());
-            return imageResponse.getId();
-        } catch (IOException e){
-            throw new ImageException();
         }
+        imageResponse = imageStorageService.uploadAndAttachImage(image, ImageCategory.PROFILE, user.getId());
+        return imageResponse.getId();
     }
 
 }

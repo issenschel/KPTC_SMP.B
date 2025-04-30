@@ -6,21 +6,19 @@ import com.example.kptc_smp.enums.ImageCategory;
 import com.example.kptc_smp.enums.ImageStatus;
 import com.example.kptc_smp.exception.file.FileNotFoundException;
 import com.example.kptc_smp.exception.image.ImageException;
-import com.example.kptc_smp.repository.main.FileRegistryRepository;
+import com.example.kptc_smp.repository.main.ImageRegistryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -30,7 +28,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 public class ImageStorageService {
-    private final FileRegistryRepository fileRegistryRepository;
+    private final ImageRegistryRepository imageRegistryRepository;
     private final ImageStorageManager storageManager;
     private final ImagePathBuilder pathBuilder;
     private final ImageValidator imageValidator;
@@ -43,99 +41,97 @@ public class ImageStorageService {
     private String serverUrl;
 
     @Transactional
-    public ImageResponse uploadTempFile(MultipartFile image){
+    public ImageResponse uploadTempImage(MultipartFile image){
         imageValidator.validateImage(image);
 
         UUID fileId = UUID.randomUUID();
         String extension = pathBuilder.getExtension(image.getOriginalFilename());
-        String relativePath = pathBuilder.buildTempPath(fileId, extension);
+        String objectKey = pathBuilder.buildTempPath(fileId, extension);
         try {
-            Path path = storageManager.storeFile(image, relativePath);
-            return registryManager.createTempRegistry(image, fileId, path);
+            storageManager.storeImage(image, objectKey);
+            return registryManager.createTempRegistry(image, fileId, objectKey);
         } catch (IOException e) {
             throw new ImageException();
         }
     }
 
-    public ImageResponse uploadAndAttachFile(MultipartFile file, ImageCategory category, Integer ownerId) throws IOException {
+    @Transactional
+    public ImageResponse uploadAndAttachImage(MultipartFile image, ImageCategory category, Integer ownerId) {
         UUID fileId = UUID.randomUUID();
-        String extension = pathBuilder.getExtension(file.getOriginalFilename());
-        String relativePath = pathBuilder.buildPermanentPath(category, ownerId, fileId, extension);
-
-        Path path = storageManager.storeFile(file, relativePath);
-        return registryManager.createAttachedRegistry(file, fileId, path, category, ownerId);
+        String extension = pathBuilder.getExtension(image.getOriginalFilename());
+        String objectKey = pathBuilder.buildPermanentPath(category, ownerId, fileId, extension);
+        try {
+            storageManager.storeImage(image, objectKey);
+            return registryManager.createAttachedRegistry(image, fileId, objectKey, category, ownerId);
+        } catch (IOException e){
+                throw new ImageException();
+        }
     }
 
-    public ImageResponse updateFile(MultipartFile file, ImageRegistry imageRegistry) throws IOException {
-        ImageResponse response = uploadAndAttachFile(file, imageRegistry.getImageCategory(), imageRegistry.getOwnerId());
+    @Transactional
+    public ImageResponse updateImage(MultipartFile image, ImageRegistry imageRegistry)  {
+        ImageResponse response = uploadAndAttachImage(image, imageRegistry.getImageCategory(), imageRegistry.getOwnerId());
         deleteImage(imageRegistry);
         return response;
     }
 
-    public void attachFile(UUID fileId, ImageCategory category, Integer ownerId) throws IOException {
-        ImageRegistry file = fileRegistryRepository.findById(fileId)
+    @Transactional
+    public void attachImage(UUID fileId, ImageCategory category, Integer ownerId)  {
+        ImageRegistry file = imageRegistryRepository.findById(fileId)
                 .orElseThrow(FileNotFoundException::new);
 
         if (file.getStatus() != ImageStatus.TEMP) {
-            throw new ImageException("Only temp files can be attached");
+            throw new ImageException();
         }
 
         String extension = pathBuilder.getExtension(file.getOriginalName());
-        String newRelativePath = pathBuilder.buildPermanentPath(category, ownerId, fileId, extension);
-        storageManager.moveFile(file.getStoragePath(), newRelativePath);
-
-        registryManager.updateRegistry(file, newRelativePath, category);
+        String newObjectKey = pathBuilder.buildPermanentPath(category, ownerId, fileId, extension);
+        storageManager.moveImage(file.getStoragePath(), newObjectKey);
+        registryManager.updateRegistry(file, newObjectKey, category);
     }
 
-    public void deleteImage(ImageRegistry imageRegistry) throws IOException {
-        storageManager.deleteFile(imageRegistry.getStoragePath());
-        fileRegistryRepository.delete(imageRegistry);
+    public void deleteImage(ImageRegistry imageRegistry) {
+        storageManager.deleteImage(imageRegistry.getStoragePath());
+        imageRegistryRepository.delete(imageRegistry);
     }
 
-    public void deleteOwnerImage(ImageRegistry imageRegistry) throws IOException {
-        storageManager.deleteOwnerImage(imageRegistry.getStoragePath());
-        fileRegistryRepository.delete(imageRegistry);
+    @Transactional
+    public void deleteFolder(List<ImageRegistry> imagesRegistry) {
+        storageManager.deleteFilesByRegistryList(imagesRegistry);
+        imageRegistryRepository.deleteAll(imagesRegistry);
     }
 
-    public Optional<ImageRegistry> findById(UUID fileId) {
-        return fileRegistryRepository.findById(fileId);
-    }
-
-    public Resource getFileAsResource(UUID fileId) throws FileNotFoundException {
-        ImageRegistry file = fileRegistryRepository.findById(fileId)
-                .orElseThrow(FileNotFoundException::new);
-
+    public Resource getFileAsResource(UUID fileId)  {
+        ImageRegistry file = imageRegistryRepository.findById(fileId).orElseThrow(FileNotFoundException::new);
         try {
-            Path filePath = Path.of(file.getStoragePath()).toAbsolutePath();
-            if (!Files.exists(filePath)) {
-                throw new FileNotFoundException();
-            }
-            return new UrlResource(filePath.toUri());
-        } catch (MalformedURLException e) {
+            InputStream inputStream = storageManager.getFileStream(file.getStoragePath());
+            return new InputStreamResource(inputStream);
+        }catch (Exception e){
             throw new FileNotFoundException();
         }
     }
 
-    public String getImageUrl(UUID fileId) {
-        if(fileId == null){
-            return "null";
-        }
-        return serverUrl + "/image/" + fileId;
+    public String getImageUrl(UUID id){
+        return pathBuilder.getImageUrl(id);
+    }
+
+    public Optional<ImageRegistry> findById(UUID fileId) {
+        return imageRegistryRepository.findById(fileId);
+    }
+
+    public List<ImageRegistry> findByOwnerId(Integer ownerId) {
+        return imageRegistryRepository.findByOwnerId(ownerId);
     }
 
     @Scheduled(cron = "0 0 3 * * ?")
     @Transactional
     public void cleanupTempFiles() {
         LocalDateTime threshold = LocalDateTime.now().minusHours(tempExpirationHours);
-        List<ImageRegistry> oldTempFiles = fileRegistryRepository.findByStatusAndUploadedAtBefore(ImageStatus.TEMP, threshold);
+        List<ImageRegistry> oldTempFiles = imageRegistryRepository.findByStatusAndUploadedAtBefore(ImageStatus.TEMP, threshold);
 
         oldTempFiles.forEach(file -> {
-            try {
-                storageManager.deleteFile(file.getStoragePath());
-                fileRegistryRepository.delete(file);
-            } catch (IOException e) {
-                log.debug("Ошибка при очистке изображений: " + e.getMessage());
-            }
+            storageManager.deleteImage(file.getStoragePath());
+            imageRegistryRepository.delete(file);
         });
     }
 

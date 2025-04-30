@@ -8,8 +8,6 @@ import com.example.kptc_smp.dto.news.NewsResponseDto;
 import com.example.kptc_smp.entity.main.ImageRegistry;
 import com.example.kptc_smp.entity.main.News;
 import com.example.kptc_smp.enums.ImageCategory;
-import com.example.kptc_smp.exception.file.FileNotFoundException;
-import com.example.kptc_smp.exception.image.ImageException;
 import com.example.kptc_smp.exception.news.NewsNotFoundException;
 import com.example.kptc_smp.repository.main.NewsRepository;
 import com.example.kptc_smp.service.main.image.ImageStorageService;
@@ -24,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -44,12 +43,9 @@ public class NewsService {
         news.setDatePublication(LocalDateTime.now());
         newsRepository.save(news);
 
-        try {
-            ImageResponse imageResponse = imageStorageService.uploadAndAttachFile(image, ImageCategory.NEWS, news.getId());
-            news.setImageName(imageResponse.getId());
-        } catch (IOException e) {
-            throw new ImageException(e.getMessage());
-        }
+        ImageResponse imageResponse = imageStorageService.uploadAndAttachImage(image, ImageCategory.NEWS, news.getId());
+        news.setImageName(imageResponse.getId());
+
         return newsMapper.toNewsResponseDto(news);
     }
 
@@ -67,19 +63,18 @@ public class NewsService {
         imageValidator.validateImage(image);
         News news = newsRepository.findById(id).orElseThrow(NewsNotFoundException::new);
         Optional<ImageRegistry> fileRegistry = imageStorageService.findById(news.getImageName());
-        try {
-            ImageResponse imageResponse;
-            if(fileRegistry.isPresent()){
-                imageResponse = imageStorageService.updateFile(image, fileRegistry.get());
-            }else {
-                imageResponse = imageStorageService.uploadAndAttachFile(image, ImageCategory.NEWS, news.getId());
-            }
-            news.setImageName(imageResponse.getId());
-            newsRepository.save(news);
-            return newsMapper.toNewsResponseDto(news);
-        } catch (IOException e) {
-            throw new ImageException();
+
+        ImageResponse imageResponse;
+        if (fileRegistry.isPresent()) {
+            imageResponse = imageStorageService.updateImage(image, fileRegistry.get());
+        } else {
+            imageResponse = imageStorageService.uploadAndAttachImage(image, ImageCategory.NEWS, news.getId());
         }
+
+        news.setImageName(imageResponse.getId());
+        newsRepository.save(news);
+        return newsMapper.toNewsResponseDto(news);
+
     }
 
     public NewsResponseDto getNews(int newsId) {
@@ -90,12 +85,8 @@ public class NewsService {
     @Transactional
     public ResponseDto deleteNews(int id) {
         News news = newsRepository.findById(id).orElseThrow(NewsNotFoundException::new);
-        ImageRegistry imageRegistry = imageStorageService.findById(news.getImageName()).orElseThrow(FileNotFoundException::new);
-        try {
-            imageStorageService.deleteOwnerImage(imageRegistry);
-        } catch (IOException ignored) {
-
-        }
+        List<ImageRegistry> imageRegistry = imageStorageService.findByOwnerId(news.getId());
+        imageStorageService.deleteFolder(imageRegistry);
         newsRepository.delete(news);
         return new ResponseDto("Новость удалена");
     }

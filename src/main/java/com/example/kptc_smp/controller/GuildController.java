@@ -4,7 +4,7 @@ import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.dto.guild.GuildOrderDto;
 import com.example.kptc_smp.dto.guild.GuildOrderGroupDto;
 import com.example.kptc_smp.entity.main.GuildOrder;
-import com.example.kptc_smp.service.main.GuildOrderService;
+import com.example.kptc_smp.service.main.guild.GuildOrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

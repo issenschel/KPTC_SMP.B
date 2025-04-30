@@ -42,6 +42,7 @@ public class PasswordResetService {
         return emailService.sendPasswordResetLink(emailDto.getEmail(), link);
     }
 
+    @Transactional
     public void createOrUpdatePasswordReset(User user, UUID linkUUID) {
         passwordResetRepository.findByUser(user).ifPresentOrElse(passwordReset -> updatePasswordReset(passwordReset,linkUUID),
                 ()-> createPasswordReset(user,linkUUID));

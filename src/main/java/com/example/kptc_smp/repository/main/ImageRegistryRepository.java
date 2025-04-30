@@ -11,7 +11,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface FileRegistryRepository extends JpaRepository<ImageRegistry, Long> {
+public interface ImageRegistryRepository extends JpaRepository<ImageRegistry, Long> {
     Optional<ImageRegistry> findById(UUID Id);
     List<ImageRegistry> findByStatusAndUploadedAtBefore(ImageStatus status, LocalDateTime date);
+    List<ImageRegistry> findByOwnerId(Integer ownerId);
 }
