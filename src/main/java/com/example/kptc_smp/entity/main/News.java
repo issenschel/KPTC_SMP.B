@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Data
@@ -21,7 +22,7 @@ public class News {
     private String content;
 
     @Column(name = "image_name")
-    private String imageName;
+    private UUID imageName;
 
     @Column(name = "date_publication")
     private LocalDateTime datePublication;

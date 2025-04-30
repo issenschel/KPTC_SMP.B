@@ -1,31 +1,35 @@
 package com.example.kptc_smp.service.main.user;
 
 
-import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.dto.auth.TokenDto;
+import com.example.kptc_smp.dto.image.ImageResponse;
 import com.example.kptc_smp.dto.profile.EmailChangeDto;
 import com.example.kptc_smp.dto.profile.PasswordChangeDto;
 import com.example.kptc_smp.dto.profile.UserAccountDetailsDto;
 import com.example.kptc_smp.dto.profile.UserProfileDto;
 import com.example.kptc_smp.entity.main.ActionTicket;
 import com.example.kptc_smp.entity.main.EmailVerification;
+import com.example.kptc_smp.entity.main.ImageRegistry;
 import com.example.kptc_smp.entity.main.User;
-import com.example.kptc_smp.enums.ImageType;
+import com.example.kptc_smp.enums.ImageCategory;
 import com.example.kptc_smp.exception.email.EmailFoundException;
+import com.example.kptc_smp.exception.image.ImageException;
 import com.example.kptc_smp.exception.image.ImageInvalidFormatException;
 import com.example.kptc_smp.exception.user.UserNotFoundException;
 import com.example.kptc_smp.service.main.email.EmailVerificationService;
 import com.example.kptc_smp.service.main.auth.PasswordService;
-import com.example.kptc_smp.service.main.image.ImageService;
+import com.example.kptc_smp.service.main.image.ImageStorageService;
+import com.example.kptc_smp.service.main.image.ImageValidator;
 import com.example.kptc_smp.service.minecraft.AuthMeService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.Path;
+import java.io.IOException;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +39,8 @@ public class ProfileService {
     private final EmailVerificationService emailVerificationService;
     private final UserDataTokenService userDataTokenService;
     private final AuthMeService authMeService;
-    private final ImageService imageService;
+    private final ImageStorageService imageStorageService;
+    private final ImageValidator imageValidator;
     private final PasswordService passwordService;
     private final ActionTicketService actionTicketService;
 
@@ -49,7 +54,7 @@ public class ProfileService {
     public UserProfileDto getUserProfileInfo() {
         return userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
                         user -> new UserProfileDto(user.getUsername(),
-                                imageService.getImageUrl(ImageType.PROFILE, user.getUserInformation().getImageName())))
+                                imageStorageService.getImageUrl(user.getUserInformation().getImageName())))
                 .orElseThrow(UserNotFoundException::new);
     }
 
@@ -86,24 +91,34 @@ public class ProfileService {
     }
 
     @Transactional
-    public ResponseDto changeImage(MultipartFile image) {
-        if (imageService.isValidImage(image)) {
-            return userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
-                    user -> {
-                        String imageName = updateOrUploadImage(image, user);
-                        user.getUserInformation().setImageName(imageName);
-                        userInformationService.save(user.getUserInformation());
-                        return new ResponseDto("Успешное изменение фотографии");
-                    }).orElseThrow(UserNotFoundException::new);
+    public UserProfileDto changeImage(MultipartFile image) {
+        if (!imageValidator.isValidImage(image)) {
+            throw new ImageInvalidFormatException();
         }
-        throw new ImageInvalidFormatException();
+        return userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
+                user -> {
+                    UUID imageName = updateOrUploadImage(image, user);
+                    user.getUserInformation().setImageName(imageName);
+                    userInformationService.save(user.getUserInformation());
+                    return new UserProfileDto(user.getUsername(), imageStorageService.getImageUrl(user.getUserInformation().getImageName()));
+                }).orElseThrow(UserNotFoundException::new);
     }
 
-    private String updateOrUploadImage(MultipartFile image, User user) {
-        if (user.getUserInformation().getImageName() != null) {
-            return imageService.updateImage(ImageType.PROFILE,image, user.getUserInformation().getImageName());
+    private UUID updateOrUploadImage(MultipartFile image, User user){
+        try {
+            ImageResponse imageResponse;
+            if (user.getUserInformation().getImageName() != null) {
+                Optional<ImageRegistry> fileRegistry = imageStorageService.findById(user.getUserInformation().getImageName());
+                if(fileRegistry.isPresent()){
+                    imageResponse = imageStorageService.updateFile(image, fileRegistry.get());
+                    return imageResponse.getId();
+                }
+            }
+            imageResponse = imageStorageService.uploadAndAttachFile(image, ImageCategory.PROFILE, user.getId());
+            return imageResponse.getId();
+        } catch (IOException e){
+            throw new ImageException();
         }
-        return imageService.uploadImage(ImageType.PROFILE,image);
     }
 
 }

@@ -50,7 +50,7 @@ public class ProfileController {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
             @ApiResponse(responseCode = "400", description = "С фото что-то не так", content = {@Content(mediaType = "application/json")}),
     })
-    public ResponseDto changeImage(@RequestParam("image") MultipartFile image) {
+    public UserProfileDto changeImage(@RequestParam("image") MultipartFile image) {
         return profileService.changeImage(image);
     }
 
