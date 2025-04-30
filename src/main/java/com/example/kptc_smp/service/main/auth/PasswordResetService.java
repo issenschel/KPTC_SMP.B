@@ -1,4 +1,4 @@
-package com.example.kptc_smp.service.main;
+package com.example.kptc_smp.service.main.auth;
 
 import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.dto.auth.PasswordResetDto;
@@ -10,6 +10,9 @@ import com.example.kptc_smp.exception.auth.PasswordResetDateExpiredException;
 import com.example.kptc_smp.exception.auth.PasswordResetUUIDNotFoundException;
 import com.example.kptc_smp.exception.user.UserNotFoundException;
 import com.example.kptc_smp.repository.main.PasswordResetRepository;
+import com.example.kptc_smp.service.main.email.EmailService;
+import com.example.kptc_smp.service.main.user.UserInformationService;
+import com.example.kptc_smp.service.main.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

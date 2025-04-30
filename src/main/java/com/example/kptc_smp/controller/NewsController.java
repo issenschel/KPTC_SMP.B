@@ -2,9 +2,9 @@ package com.example.kptc_smp.controller;
 
 import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.dto.news.HeadlineNewsGroupDto;
-import com.example.kptc_smp.dto.news.NewsDto;
-import com.example.kptc_smp.entity.main.News;
-import com.example.kptc_smp.service.main.NewsService;
+import com.example.kptc_smp.dto.news.NewsRequestDto;
+import com.example.kptc_smp.dto.news.NewsResponseDto;
+import com.example.kptc_smp.service.main.news.NewsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -31,29 +31,42 @@ public class NewsController {
     @SecurityRequirement(name = "bearerAuth")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Новость добавлена", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = News.class))}),
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = NewsResponseDto.class))}),
             @ApiResponse(responseCode = "401", description = "Вы не авторизованы", content = {@Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "403", description = "Недостаточно прав", content = {@Content(mediaType = "application/json")})
     })
-    public News createNews(@Valid @ModelAttribute NewsDto newsDto,
-                           @RequestParam(value = "image", required = false) MultipartFile image) {
-        return newsService.createNews(newsDto, image);
+    public NewsResponseDto createNews(@Valid @ModelAttribute NewsRequestDto newsRequestDto,
+                           @RequestParam(value = "image") MultipartFile image) {
+        return newsService.createNews(newsRequestDto, image);
     }
 
-    @PutMapping(consumes = "multipart/*", value = "/{newsId}")
+    @PutMapping(value = "/{newsId}")
     @Operation(summary = "Изменение новости")
     @SecurityRequirement(name = "bearerAuth")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Новость изменена", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = News.class))}),
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = NewsResponseDto.class))}),
             @ApiResponse(responseCode = "401", description = "Вы не авторизованы", content = {@Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "403", description = "Недостаточно прав", content = {@Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "404", description = "Новость не найдена", content = {@Content(mediaType = "application/json")})
     })
-    public News changeNews(@PathVariable @Min(1) int newsId,
-                           @Valid @ModelAttribute NewsDto newsDto,
-                           @RequestParam(value = "image", required = false) MultipartFile image) {
-        return newsService.changeNews(newsDto, image, newsId);
+    public NewsResponseDto updateNews(@PathVariable @Min(1) int newsId,
+                           @Valid @RequestBody NewsRequestDto newsRequestDto) {
+        return newsService.updateNews(newsRequestDto, newsId);
+    }
+
+    @PutMapping(consumes = "multipart/*", value = "/{newsId}/preview")
+    @Operation(summary = "Изменение новости")
+    @SecurityRequirement(name = "bearerAuth")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Новость изменена", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = NewsResponseDto.class))}),
+            @ApiResponse(responseCode = "401", description = "Вы не авторизованы", content = {@Content(mediaType = "application/json")}),
+            @ApiResponse(responseCode = "403", description = "Недостаточно прав", content = {@Content(mediaType = "application/json")}),
+            @ApiResponse(responseCode = "404", description = "Новость не найдена", content = {@Content(mediaType = "application/json")})
+    })
+    public NewsResponseDto updateNewsPreview(@PathVariable @Min(1) int newsId, @RequestParam(value = "image") MultipartFile image) {
+        return newsService.updateNewsPreview(image, newsId);
     }
 
     @DeleteMapping(value = "/{newsId}")
@@ -82,11 +95,11 @@ public class NewsController {
     @Operation(summary = "Получение конкретной новости")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Новости получены", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = News.class))}),
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = NewsResponseDto.class))}),
             @ApiResponse(responseCode = "404", description = "Новость не найдена", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = News.class))}),
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
     })
-    public News getNews(@PathVariable @Min(1) int newsId) {
+    public NewsResponseDto getNews(@PathVariable @Min(1) int newsId) {
         return newsService.getNews(newsId);
     }
 

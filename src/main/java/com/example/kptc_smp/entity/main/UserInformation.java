@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Entity
 @Data
@@ -22,7 +23,7 @@ public class UserInformation {
     private String email;
 
     @Column(name = "image_name")
-    private String imageName;
+    private UUID imageName;
 
     @Column(name = "registration_date")
     private LocalDate registrationDate;

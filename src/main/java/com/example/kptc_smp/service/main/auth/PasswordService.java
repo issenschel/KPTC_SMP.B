@@ -1,4 +1,4 @@
-package com.example.kptc_smp.service.main;
+package com.example.kptc_smp.service.main.auth;
 
 import com.example.kptc_smp.exception.profile.PasswordValidationException;
 import lombok.AllArgsConstructor;

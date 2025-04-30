@@ -1,4 +1,4 @@
-package com.example.kptc_smp.service.main;
+package com.example.kptc_smp.service.main.email;
 
 import com.example.kptc_smp.entity.main.EmailVerification;
 import com.example.kptc_smp.exception.email.CodeExpireException;

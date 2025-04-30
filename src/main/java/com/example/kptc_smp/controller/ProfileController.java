@@ -1,14 +1,12 @@
 package com.example.kptc_smp.controller;
 
-import com.example.kptc_smp.dto.ActionTicketDto;
 import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.dto.auth.TokenDto;
-import com.example.kptc_smp.dto.email.CodeDto;
 import com.example.kptc_smp.dto.profile.EmailChangeDto;
 import com.example.kptc_smp.dto.profile.PasswordChangeDto;
 import com.example.kptc_smp.dto.profile.UserAccountDetailsDto;
 import com.example.kptc_smp.dto.profile.UserProfileDto;
-import com.example.kptc_smp.service.main.ProfileService;
+import com.example.kptc_smp.service.main.user.ProfileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -52,7 +50,7 @@ public class ProfileController {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
             @ApiResponse(responseCode = "400", description = "С фото что-то не так", content = {@Content(mediaType = "application/json")}),
     })
-    public ResponseDto changeImage(@RequestParam("image") MultipartFile image) {
+    public UserProfileDto changeImage(@RequestParam("image") MultipartFile image) {
         return profileService.changeImage(image);
     }
 

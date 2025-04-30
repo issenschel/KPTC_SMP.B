@@ -23,7 +23,7 @@ public class AdviceController {
 
     @ExceptionHandler(NewsNotFoundException.class)
     public ResponseEntity<ResponseDto> newsNotFoundException(NewsNotFoundException e) {
-        return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDto(e.getMessage()));
     }
 
     @ExceptionHandler(FileNotFoundException.class)
