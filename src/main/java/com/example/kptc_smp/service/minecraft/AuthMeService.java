@@ -30,6 +30,7 @@ public class AuthMeService {
     public void updatePassword(String username,String password){
         AuthMe authMe = authMeRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
         authMe.setPassword(password);
+        authMe.setHasSession(false);
         authMeRepository.save(authMe);
     }
 }

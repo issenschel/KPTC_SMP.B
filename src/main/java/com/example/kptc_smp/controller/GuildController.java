@@ -15,12 +15,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
 @ApiResponse(responseCode = "400", description = "Неверно заполнены данные | поля", content = {@Content(mediaType = "application/json")})
 @RequestMapping("/guild")
+@Validated
 @Tag(name = "Guild")
 public class GuildController {
     private final GuildOrderService guildOrderService;
@@ -48,7 +50,7 @@ public class GuildController {
             @ApiResponse(responseCode = "403", description = "Недостаточно прав", content = {@Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "404", description = "Заказ не найден", content = {@Content(mediaType = "application/json")})
     })
-    public GuildOrder changeOrder(@PathVariable @Min(1) int id, @Valid @RequestBody GuildOrderDto guildOrderDto) {
+    public GuildOrder changeOrder(@Valid @RequestBody GuildOrderDto guildOrderDto, @PathVariable @Min(1) int id ) {
         return guildOrderService.changeOrder(guildOrderDto, id);
     }
 

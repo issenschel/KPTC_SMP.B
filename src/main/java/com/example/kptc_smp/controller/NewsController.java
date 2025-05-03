@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @ApiResponse(responseCode = "400", description = "Неверно заполнены данные | поля", content = {@Content(mediaType = "application/json")})
 @RequestMapping("/news")
+@Validated
 @Tag(name = "News")
 public class NewsController {
     private final NewsService newsService;
@@ -50,8 +52,7 @@ public class NewsController {
             @ApiResponse(responseCode = "403", description = "Недостаточно прав", content = {@Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "404", description = "Новость не найдена", content = {@Content(mediaType = "application/json")})
     })
-    public NewsResponseDto updateNews(@PathVariable @Min(1) int newsId,
-                           @Valid @RequestBody NewsRequestDto newsRequestDto) {
+    public NewsResponseDto updateNews(@PathVariable @Min(1) int newsId, @Valid @RequestBody NewsRequestDto newsRequestDto) {
         return newsService.updateNews(newsRequestDto, newsId);
     }
 

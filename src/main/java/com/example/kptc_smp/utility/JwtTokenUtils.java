@@ -46,9 +46,14 @@ public class JwtTokenUtils {
         return getAllClaimsFromToken(token).get("roles", List.class);
     }
 
-    public UUID getTokenUUID(String token) {
+    public Optional<UUID> getTokenUUID(String token) {
         String tokenUUIDString = getAllClaimsFromToken(token).get("tokenUUID", String.class);
-        return UUID.fromString(tokenUUIDString);
+        if(tokenUUIDString != null){
+           return Optional.of(UUID.fromString(tokenUUIDString));
+        }
+        else {
+            return Optional.empty();
+        }
     }
 
     private Claims getAllClaimsFromToken(String token) {

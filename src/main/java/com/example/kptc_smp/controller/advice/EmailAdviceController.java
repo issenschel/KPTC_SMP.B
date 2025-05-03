@@ -4,6 +4,7 @@ import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.exception.email.CodeExpireException;
 import com.example.kptc_smp.exception.email.EmailFoundException;
 import com.example.kptc_smp.exception.email.EmailNotFoundException;
+import com.example.kptc_smp.exception.email.EmailSendException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -24,6 +25,11 @@ public class EmailAdviceController {
 
     @ExceptionHandler(CodeExpireException.class)
     public ResponseEntity<ResponseDto> codeExpireException(CodeExpireException e) {
+        return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
+    }
+
+    @ExceptionHandler(EmailSendException.class)
+    public ResponseEntity<ResponseDto> emailSendException(EmailSendException e) {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
     }
 }

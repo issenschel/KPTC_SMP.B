@@ -7,15 +7,19 @@ import com.example.kptc_smp.dto.email.EmailDto;
 import com.example.kptc_smp.entity.main.ActionTicket;
 import com.example.kptc_smp.entity.main.EmailVerification;
 import com.example.kptc_smp.entity.main.User;
+import com.example.kptc_smp.enums.EmailTemplateType;
 import com.example.kptc_smp.exception.email.EmailFoundException;
 import com.example.kptc_smp.exception.user.UserNotFoundException;
 import com.example.kptc_smp.service.main.user.ActionTicketService;
 import com.example.kptc_smp.service.main.user.UserInformationService;
 import com.example.kptc_smp.service.main.user.UserService;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,71 +29,61 @@ import java.util.Random;
 @Service
 @RequiredArgsConstructor
 public class EmailService {
-    private final JavaMailSender javaMailSender;
     private final EmailVerificationService emailVerificationService;
     private final UserInformationService userInformationService;
     private final UserService userService;
     private final ActionTicketService actionTicketService;
-
-    @Value("${spring.mail.username}")
-    private String email;
+    private final EmailSender emailSender;
+    private final EmailCodeGenerator codeGenerator;
+    private final EmailMessageComposer emailComposer;
 
     @Transactional
-    public ResponseDto sendRegistrationCode(EmailDto emailDto) {
-        userInformationService.findByEmail(emailDto.getEmail()).ifPresent(u -> {
-            throw new EmailFoundException();
-        });
-        sendCode(emailDto.getEmail());
+    public ResponseDto sendEmailCode(EmailDto emailDto) {
+        userInformationService.findByEmail(emailDto.getEmail()).ifPresent(u -> { throw new EmailFoundException(); });
+
+        sendVerificationEmail(emailDto.getEmail(), EmailTemplateType.REGISTRATION);
         return new ResponseDto("Код отправлен");
     }
 
     @Transactional
     public ResponseDto sendChangeEmailCode() {
-        User user = userService.findWithInfoAndDataTokenByUsername(SecurityContextHolder.getContext().getAuthentication().getName())
-                .orElseThrow(UserNotFoundException::new);
-        sendCode(user.getUserInformation().getEmail());
+        User user = getAuthenticatedUser();
+        sendVerificationEmail(
+                user.getUserInformation().getEmail(),
+                EmailTemplateType.EMAIL_CHANGE
+        );
         return new ResponseDto("Код отправлен");
     }
 
     @Transactional
     public ActionTicketDto verifyCurrentEmailCode(CodeDto codeDto) {
-        return userService.findWithInfoAndDataTokenByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
-                user -> {
-                    EmailVerification emailVerification = emailVerificationService.getValidatedEmailVerification
-                            (user.getUserInformation().getEmail(), codeDto.getCode());
-                    ActionTicket actionTicket = actionTicketService.createActionTicket(user);
-                    emailVerificationService.delete(emailVerification);
-                    return new ActionTicketDto(actionTicket.getTicket());
-                }).orElseThrow(UserNotFoundException::new);
-    }
+        User user = getAuthenticatedUser();
+        String email = user.getUserInformation().getEmail();
 
+        EmailVerification verification = emailVerificationService.getValidatedEmailVerification(email, codeDto.getCode());
 
-    public void sendCode(String email) {
-        String key = generateVerificationCode();
-        emailVerificationService.createOrUpdate(email, key);
-        String subject = "Код подтверждения";
-        String message = "Код: " + key;
-        sendSimpleMessage(email, subject, message);
+        ActionTicket actionTicket = actionTicketService.createActionTicket(user);
+        emailVerificationService.delete(verification);
+
+        return new ActionTicketDto(actionTicket.getTicket());
     }
 
     public ResponseDto sendPasswordResetLink(String email, String link) {
-        String subject = "Ссылка для смены пароля";
-        String message = "Ссылка: " + link;
-        sendSimpleMessage(email, subject, message);
+        String message = emailComposer.composePasswordResetEmail(link);
+        emailSender.sendHtmlEmail(email, "Восстановление пароля", message);
         return new ResponseDto("Письмо отправлено");
     }
 
-    public void sendSimpleMessage(String to, String subject, String text) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(email);
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(text);
-        javaMailSender.send(message);
+    private void sendVerificationEmail(String email, EmailTemplateType templateType) {
+        String code = codeGenerator.generateVerificationCode();
+        emailVerificationService.createOrUpdate(email, code);
+
+        String message = emailComposer.composeVerificationEmail(code, templateType);
+        emailSender.sendHtmlEmail(email, templateType.getHeader(), message);
     }
 
-    private String generateVerificationCode() {
-        return String.valueOf(new Random().nextInt(899999) + 100000);
+    private User getAuthenticatedUser() {
+        return userService.findWithInfoAndDataTokenByUsername(SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(UserNotFoundException::new);
     }
-
 }
