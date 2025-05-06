@@ -35,7 +35,7 @@ public class SecurityConfig {
                         .requestMatchers("/profile/**").authenticated()
                         .requestMatchers("/email/confirmation-code/current").authenticated()
                         .requestMatchers("/backup/**").hasRole("ADMIN")
-                        .requestMatchers("/guild/order").hasRole("ADMIN")
+                        .requestMatchers("/guild/order/**").hasRole("ADMIN")
                         .requestMatchers("/news/**").hasRole("ADMIN")
                         .anyRequest().permitAll()).sessionManagement(sessionManagementCustomizer -> sessionManagementCustomizer
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)).exceptionHandling(exceptionHandlingCustomizer ->

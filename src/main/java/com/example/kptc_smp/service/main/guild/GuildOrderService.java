@@ -1,4 +1,4 @@
-package com.example.kptc_smp.service.main;
+package com.example.kptc_smp.service.main.guild;
 
 import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.dto.guild.GuildOrderGroupDto;

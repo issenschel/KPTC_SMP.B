@@ -32,7 +32,7 @@ public class EmailController {
             @ApiResponse(responseCode = "404", description = "Пользователь не найден | Время истекло", content = {@Content(mediaType = "application/json")})
     })
     public ResponseDto sendCode(@Valid @RequestBody EmailDto emailDto) {
-        return emailService.sendRegistrationCode(emailDto);
+        return emailService.sendEmailCode(emailDto);
     }
 
     @PostMapping("/confirmation-code/current")

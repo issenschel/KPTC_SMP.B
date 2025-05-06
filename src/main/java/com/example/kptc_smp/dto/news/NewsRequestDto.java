@@ -11,7 +11,7 @@ public class NewsRequestDto {
 
     @Schema(description = "Заголовок", example = "Крутые новости")
     @NotBlank(message = "Заголовок не может быть пустым")
-    @Size(min = 3, max = 200, message = "Заголовок не может быть меньше 3 или больше 200")
+    @Size(min = 3, max = 100, message = "Заголовок не может быть меньше 3 или больше 100")
     private String title;
 
     @Schema(description = "Сообщение новости", example = "L или Кира")

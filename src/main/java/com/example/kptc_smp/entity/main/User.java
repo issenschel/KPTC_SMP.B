@@ -28,15 +28,15 @@ public class User {
     )
     private Collection<Role> roles;
 
-    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, optional = false)
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true, optional = false)
     private UserInformation userInformation;
 
-    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, optional = false)
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true, optional = false)
     private UserDataToken userDataToken;
 
-    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, optional = false)
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true, optional = false)
     private PasswordReset passwordReset;
 
-    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, optional = false)
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true, optional = false)
     private ActionTicket actionTicket;
 }

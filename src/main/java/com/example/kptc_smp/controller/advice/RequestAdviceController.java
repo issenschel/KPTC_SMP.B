@@ -9,6 +9,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 @ControllerAdvice
 public class RequestAdviceController {
@@ -31,7 +32,12 @@ public class RequestAdviceController {
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ResponseEntity<ResponseDto> httpMessageNotReadable(MissingServletRequestParameterException e) {
+    public ResponseEntity<ResponseDto> missingServletRequestParameterException(MissingServletRequestParameterException e) {
+        return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
+    }
+
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<ResponseDto> missingServletRequestPartException(MissingServletRequestPartException e) {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
     }
 }

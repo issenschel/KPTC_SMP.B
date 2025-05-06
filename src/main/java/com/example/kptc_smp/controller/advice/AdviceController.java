@@ -40,14 +40,4 @@ public class AdviceController {
     public ResponseEntity<ResponseDto> actionTicketExpireException(ActionTicketExpireException e) {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
     }
-
-    @ExceptionHandler(GoogleDriveException.class)
-    public ResponseEntity<ResponseDto> googleDriveException(GoogleDriveException e) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ResponseDto(e.getMessage()));
-    }
-
-    @ExceptionHandler(ZipException.class)
-    public ResponseEntity<ResponseDto> zipException(ZipException e) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ResponseDto(e.getMessage()));
-    }
 }

@@ -2,9 +2,11 @@ package com.example.kptc_smp.entity.main;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.BatchSize;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.Collection;
 
 @Entity
 @Data
@@ -21,9 +23,10 @@ public class News {
     @Column(name = "content")
     private String content;
 
-    @Column(name = "image_name")
-    private UUID imageName;
-
     @Column(name = "date_publication")
     private LocalDateTime datePublication;
+
+    @BatchSize(size = 20)
+    @OneToMany(mappedBy = "news", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Collection<NewsImage> images = new ArrayList<>();
 }

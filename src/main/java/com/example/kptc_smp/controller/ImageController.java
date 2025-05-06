@@ -31,8 +31,8 @@ public class ImageController {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ImageResponse.class))}),
             @ApiResponse(responseCode = "400", description = "С фото что-то не так", content = {@Content(mediaType = "application/json")}),
     })
-    public ResponseEntity<ImageResponse> uploadTempImage(@RequestParam("file") MultipartFile file) {
-        return ResponseEntity.ok(imageStorageService.uploadTempFile(file));
+    public ResponseEntity<ImageResponse> uploadTempImage(@RequestParam("image") MultipartFile file) {
+        return ResponseEntity.ok(imageStorageService.uploadTempImage(file));
     }
 
     @GetMapping("/{imageId}")
