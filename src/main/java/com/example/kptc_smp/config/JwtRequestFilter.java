@@ -46,7 +46,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                         SecurityContextHolder.getContext().setAuthentication(token);
                     }
                 } catch (ExpiredJwtException e) {
-                    log.debug("Вермя жизни токена вышло");
+                    log.debug("Время жизни токена вышло");
                 } catch (SignatureException e) {
                     log.debug("Подпись неправильная");
                 }

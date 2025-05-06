@@ -2,18 +2,13 @@ package com.example.kptc_smp.service.main.user;
 
 
 import com.example.kptc_smp.dto.auth.TokenDto;
-import com.example.kptc_smp.dto.image.ImageResponse;
 import com.example.kptc_smp.dto.profile.EmailChangeDto;
 import com.example.kptc_smp.dto.profile.PasswordChangeDto;
 import com.example.kptc_smp.dto.profile.UserAccountDetailsDto;
 import com.example.kptc_smp.dto.profile.UserProfileDto;
-import com.example.kptc_smp.entity.main.ActionTicket;
-import com.example.kptc_smp.entity.main.EmailVerification;
-import com.example.kptc_smp.entity.main.ImageRegistry;
-import com.example.kptc_smp.entity.main.User;
+import com.example.kptc_smp.entity.main.*;
 import com.example.kptc_smp.enums.ImageCategory;
 import com.example.kptc_smp.exception.email.EmailFoundException;
-import com.example.kptc_smp.exception.image.ImageInvalidFormatException;
 import com.example.kptc_smp.exception.user.UserNotFoundException;
 import com.example.kptc_smp.service.main.auth.PasswordService;
 import com.example.kptc_smp.service.main.email.EmailVerificationService;
@@ -50,9 +45,14 @@ public class ProfileService {
     }
 
     public UserProfileDto getUserProfileInfo() {
-        return userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
-                        user -> new UserProfileDto(user.getUsername(),
-                                imageStorageService.getImageUrl(user.getUserInformation().getImageName())))
+        return userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName())
+                .map(user -> {
+                    UUID imageId = Optional.ofNullable(user.getUserInformation())
+                            .map(UserInformation::getImageRegistry)
+                            .map(ImageRegistry::getId)
+                            .orElse(null);
+                    return new UserProfileDto(user.getUsername(), imageStorageService.getImageUrl(imageId));
+                })
                 .orElseThrow(UserNotFoundException::new);
     }
 
@@ -90,29 +90,23 @@ public class ProfileService {
 
     @Transactional
     public UserProfileDto changeImage(MultipartFile image) {
-        if (!imageValidator.isValidImage(image)) {
-            throw new ImageInvalidFormatException();
-        }
+        imageValidator.validateImage(image);
+
         return userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
                 user -> {
-                    UUID imageName = updateOrUploadImage(image, user);
-                    user.getUserInformation().setImageName(imageName);
+                    ImageRegistry imageRegistry = updateOrUploadImage(image, user);
+                    user.getUserInformation().setImageRegistry(imageRegistry);
                     userInformationService.save(user.getUserInformation());
-                    return new UserProfileDto(user.getUsername(), imageStorageService.getImageUrl(user.getUserInformation().getImageName()));
+                    return new UserProfileDto(user.getUsername(), imageStorageService.getImageUrl(imageRegistry.getId()));
                 }).orElseThrow(UserNotFoundException::new);
     }
 
-    private UUID updateOrUploadImage(MultipartFile image, User user) {
-        ImageResponse imageResponse;
-        if (user.getUserInformation().getImageName() != null) {
-            Optional<ImageRegistry> fileRegistry = imageStorageService.findById(user.getUserInformation().getImageName());
-            if (fileRegistry.isPresent()) {
-                imageResponse = imageStorageService.updateImage(image, fileRegistry.get());
-                return imageResponse.getId();
-            }
+    private ImageRegistry updateOrUploadImage(MultipartFile image, User user) {
+        ImageRegistry imageRegistry = user.getUserInformation().getImageRegistry();
+        if (imageRegistry != null) {
+                return imageStorageService.updateImage(image, user.getUserInformation().getImageRegistry());
         }
-        imageResponse = imageStorageService.uploadAndAttachImage(image, ImageCategory.PROFILE, user.getId());
-        return imageResponse.getId();
+        return imageStorageService.uploadAndAttachImage(image, ImageCategory.PROFILE, user.getId());
     }
 
 }

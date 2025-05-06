@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 @Entity
 @Data
@@ -13,7 +12,7 @@ public class UserInformation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private Integer  id;
+    private Integer id;
 
     @OneToOne
     @MapsId
@@ -22,8 +21,9 @@ public class UserInformation {
     @Column(name = "email")
     private String email;
 
-    @Column(name = "image_name")
-    private UUID imageName;
+    @OneToOne
+    @JoinColumn(name = "image_registry_id")
+    private ImageRegistry imageRegistry;
 
     @Column(name = "registration_date")
     private LocalDate registrationDate;

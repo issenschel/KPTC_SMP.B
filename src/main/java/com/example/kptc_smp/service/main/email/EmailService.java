@@ -13,18 +13,12 @@ import com.example.kptc_smp.exception.user.UserNotFoundException;
 import com.example.kptc_smp.service.main.user.ActionTicketService;
 import com.example.kptc_smp.service.main.user.UserInformationService;
 import com.example.kptc_smp.service.main.user.UserService;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
+import com.example.kptc_smp.utility.email.EmailCodeGenerator;
+import com.example.kptc_smp.utility.email.EmailMessageComposer;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Random;
 
 @Service
 @RequiredArgsConstructor

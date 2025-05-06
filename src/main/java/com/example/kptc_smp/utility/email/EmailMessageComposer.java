@@ -1,4 +1,4 @@
-package com.example.kptc_smp.service.main.email;
+package com.example.kptc_smp.utility.email;
 
 import com.example.kptc_smp.enums.EmailTemplateType;
 import org.springframework.stereotype.Component;

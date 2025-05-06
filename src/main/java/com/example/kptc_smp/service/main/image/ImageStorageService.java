@@ -37,11 +37,8 @@ public class ImageStorageService {
     @Value("${file.storage.temp-expiration-hours}")
     private int tempExpirationHours;
 
-    @Value("${server.url}")
-    private String serverUrl;
-
     @Transactional
-    public ImageResponse uploadTempImage(MultipartFile image){
+    public ImageResponse uploadTempImage(MultipartFile image) {
         imageValidator.validateImage(image);
 
         UUID fileId = UUID.randomUUID();
@@ -55,28 +52,27 @@ public class ImageStorageService {
         }
     }
 
-    @Transactional
-    public ImageResponse uploadAndAttachImage(MultipartFile image, ImageCategory category, Integer ownerId) {
+    public ImageRegistry uploadAndAttachImage(MultipartFile image, ImageCategory category, Integer ownerId) {
         UUID fileId = UUID.randomUUID();
         String extension = pathBuilder.getExtension(image.getOriginalFilename());
         String objectKey = pathBuilder.buildPermanentPath(category, ownerId, fileId, extension);
         try {
+            ImageRegistry imageRegistry = registryManager.createAttachedRegistry(image, fileId, objectKey, category, ownerId);
             storageManager.storeImage(image, objectKey);
-            return registryManager.createAttachedRegistry(image, fileId, objectKey, category, ownerId);
-        } catch (IOException e){
-                throw new ImageException();
+            return imageRegistry;
+        } catch (IOException e) {
+            throw new ImageException();
         }
     }
 
-    @Transactional
-    public ImageResponse updateImage(MultipartFile image, ImageRegistry imageRegistry)  {
-        ImageResponse response = uploadAndAttachImage(image, imageRegistry.getImageCategory(), imageRegistry.getOwnerId());
+    public ImageRegistry updateImage(MultipartFile image, ImageRegistry imageRegistry) {
+        ImageRegistry updatedImageRegistry = uploadAndAttachImage(image, imageRegistry.getImageCategory(), imageRegistry.getOwnerId());
         deleteImage(imageRegistry);
-        return response;
+        return updatedImageRegistry;
     }
 
     @Transactional
-    public void attachImage(UUID fileId, ImageCategory category, Integer ownerId)  {
+    public void attachImage(UUID fileId, ImageCategory category, Integer ownerId) {
         ImageRegistry file = imageRegistryRepository.findById(fileId)
                 .orElseThrow(FileNotFoundException::new);
 
@@ -91,8 +87,8 @@ public class ImageStorageService {
     }
 
     public void deleteImage(ImageRegistry imageRegistry) {
-        storageManager.deleteImage(imageRegistry.getStoragePath());
         imageRegistryRepository.delete(imageRegistry);
+        storageManager.deleteImage(imageRegistry.getStoragePath());
     }
 
     @Transactional
@@ -101,17 +97,17 @@ public class ImageStorageService {
         imageRegistryRepository.deleteAll(imagesRegistry);
     }
 
-    public Resource getFileAsResource(UUID fileId)  {
+    public Resource getFileAsResource(UUID fileId) {
         ImageRegistry file = imageRegistryRepository.findById(fileId).orElseThrow(FileNotFoundException::new);
         try {
             InputStream inputStream = storageManager.getFileStream(file.getStoragePath());
             return new InputStreamResource(inputStream);
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new FileNotFoundException();
         }
     }
 
-    public String getImageUrl(UUID id){
+    public String getImageUrl(UUID id) {
         return pathBuilder.getImageUrl(id);
     }
 

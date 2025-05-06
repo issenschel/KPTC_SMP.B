@@ -3,6 +3,7 @@ package com.example.kptc_smp.service.main.news;
 import com.example.kptc_smp.dto.news.HeadlineNewsDto;
 import com.example.kptc_smp.dto.news.NewsResponseDto;
 import com.example.kptc_smp.entity.main.News;
+import com.example.kptc_smp.enums.NewsImageRole;
 import com.example.kptc_smp.service.main.image.ImageStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -21,7 +22,11 @@ public class NewsMapper {
                 .title(news.getTitle())
                 .content(news.getContent())
                 .datePublication(news.getDatePublication())
-                .previewUrl(imageStorageService.getImageUrl(news.getImageName()))
+                .previewUrl(news.getImages().stream()
+                        .filter(t -> NewsImageRole.PREVIEW.equals(t.getNewsImageRole()))
+                        .findFirst()
+                        .map(img -> imageStorageService.getImageUrl(img.getImageRegistry().getId()))
+                        .orElse(null))
                 .build();
     }
 
@@ -36,7 +41,11 @@ public class NewsMapper {
                 .id(news.getId())
                 .title(news.getTitle())
                 .datePublication(news.getDatePublication())
-                .previewUrl(imageStorageService.getImageUrl(news.getImageName()))
+                .previewUrl(news.getImages().stream()
+                        .filter(t -> NewsImageRole.PREVIEW.equals(t.getNewsImageRole()))
+                        .findFirst()
+                        .map(img -> imageStorageService.getImageUrl(img.getImageRegistry().getId()))
+                        .orElse(null))
                 .build();
     }
 }

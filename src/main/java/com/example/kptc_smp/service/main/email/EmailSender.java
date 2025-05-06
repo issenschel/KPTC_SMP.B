@@ -5,12 +5,11 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 @RequiredArgsConstructor
 public class EmailSender {
     private final JavaMailSender javaMailSender;
@@ -26,7 +25,7 @@ public class EmailSender {
             helper.setFrom(fromEmail);
             helper.setTo(to);
             helper.setSubject(subject);
-            helper.setText(htmlContent, true);  // ← true означает, что это HTML
+            helper.setText(htmlContent, true);
 
             javaMailSender.send(message);
         } catch (MessagingException e) {

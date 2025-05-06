@@ -11,5 +11,5 @@ public class UserProfileDto {
     @Schema(description = "Имя пользователя", example = "Keecth_Krut")
     private String username;
     @Schema(description = "Ссылка на аватарку", example = "localhost:5174/bambam")
-    private String imageUrl;
+    private String avatarUrl;
 }

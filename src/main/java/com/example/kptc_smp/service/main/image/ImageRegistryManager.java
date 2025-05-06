@@ -16,7 +16,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ImageRegistryManager {
     private final ImageRegistryRepository imageRegistryRepository;
-    private final ImagePathBuilder imagePathBuilder;
+    private final ImageMapper imageMapper;
 
     public ImageResponse createTempRegistry(MultipartFile file, UUID fileId, String storagePath) {
         ImageRegistry registry = new ImageRegistry();
@@ -29,10 +29,10 @@ public class ImageRegistryManager {
         registry.setUploadedAt(LocalDateTime.now());
 
         imageRegistryRepository.save(registry);
-        return toImageResponse(registry);
+        return imageMapper.toImageResponse(registry);
     }
 
-    public ImageResponse createAttachedRegistry(MultipartFile file, UUID fileId, String objectKey,
+    public ImageRegistry createAttachedRegistry(MultipartFile file, UUID fileId, String objectKey,
                                                 ImageCategory category, Integer ownerId) {
         ImageRegistry registry = new ImageRegistry();
         registry.setId(fileId);
@@ -46,8 +46,7 @@ public class ImageRegistryManager {
         registry.setUploadedAt(LocalDateTime.now());
         registry.setAttachedAt(LocalDateTime.now());
 
-        imageRegistryRepository.save(registry);
-        return toImageResponse(registry);
+        return imageRegistryRepository.save(registry);
     }
 
     public void updateRegistry(ImageRegistry file, String newStoragePath, ImageCategory category) {
@@ -58,14 +57,4 @@ public class ImageRegistryManager {
         imageRegistryRepository.save(file);
     }
 
-    private ImageResponse toImageResponse(ImageRegistry registry) {
-        return ImageResponse.builder()
-                .id(registry.getId())
-                .originalName(registry.getOriginalName())
-                .mimeType(registry.getMimeType())
-                .size(registry.getSize())
-                .uploadedAt(registry.getUploadedAt())
-                .downloadUrl(imagePathBuilder.getImageUrl(registry.getId()))
-                .build();
-    }
 }
