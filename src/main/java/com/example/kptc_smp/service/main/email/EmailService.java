@@ -53,10 +53,9 @@ public class EmailService {
 
     @Transactional
     public ActionTicketDto verifyCurrentEmailCode(CodeDto codeDto) {
-        User user = userService.findWithInfoAndTokenAndTicketByUsername(
+        User user = userService.findWithUserInformationByUsername(
                 SecurityContextHolder.getContext().getAuthentication().getName())
                 .orElseThrow(UserNotFoundException::new);
-
         String email = user.getUserInformation().getEmail();
         EmailVerification verification = emailVerificationService.getValidatedEmailVerification(email, codeDto.getCode());
 

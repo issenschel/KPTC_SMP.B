@@ -4,6 +4,7 @@ import com.example.kptc_smp.entity.main.User;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -14,11 +15,8 @@ public interface UserRepository extends CrudRepository<User, Integer> {
     @EntityGraph(attributePaths = {"userDataToken","userInformation","actionTicket"})
     Optional<User> findWithInfoAndTokenAndTicketByUsername(String username);
 
-    @EntityGraph(attributePaths = {"userDataToken","userInformation"})
-    Optional<User> findWithInfoAndDataTokenByUsername(String username);
-
     @EntityGraph(attributePaths = "userDataToken")
-    Optional<User> findWithTokenVersionByUsername(String username);
+    Optional<User> findWithUserDataTokenByUsername(String username);
 
     @EntityGraph(attributePaths = "userInformation")
     Optional<User> findWithUserInformationByUsername(String username);

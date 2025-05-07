@@ -50,11 +50,11 @@ public class AuthService {
     public AuthResponseDto authenticate(@RequestBody JwtRequestDto authRequest) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
-        User user = userService.findWithTokenVersionByUsername(authRequest.getUsername()).orElseThrow(() -> new BadCredentialsException(""));
+        User user = userService.findWithUserDataTokenByUsername(authRequest.getUsername()).orElseThrow(() -> new BadCredentialsException(""));
 
         UUID tokenUUID = user.getUserDataToken().getTokenUUID();
         UserSession userSession = userSessionService.createSession(user);
-        String accessToken = jwtTokenUtils.generateAccessToken(tokenUUID);
+        String accessToken = jwtTokenUtils.generateAccessToken(user.getUsername(),tokenUUID);
         List<String> roles = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
 
         return new AuthResponseDto(new JwtTokenPairDto(userSession.getRefreshToken(), accessToken), roles);
@@ -72,8 +72,8 @@ public class AuthService {
         UserSession userSession = user.getUserSessions().stream().filter(t -> t.getRefreshToken().equals(refreshToken))
                 .findFirst().orElseThrow(UserNotFoundException::new);
 
-        String newAccessToken = jwtTokenUtils.generateAccessToken(user.getUserDataToken().getTokenUUID());
-        String newRefreshToken = jwtTokenUtils.generateRefreshToken();
+        String newAccessToken = jwtTokenUtils.generateAccessToken(username,user.getUserDataToken().getTokenUUID());
+        String newRefreshToken = jwtTokenUtils.generateRefreshToken(username);
 
         userSession.setRefreshToken(newRefreshToken);
 

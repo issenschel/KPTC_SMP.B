@@ -27,10 +27,10 @@ public class JwtTokenUtils {
     @Value("${jwt.refresh.expiration}")
     private Duration refreshExpirationMs;
 
-    public String generateAccessToken(UUID tokenUUID) {
+    public String generateAccessToken(String username,UUID tokenUUID) {
         Date issuedDate = new Date();
         return Jwts.builder()
-                .setSubject(SecurityContextHolder.getContext().getAuthentication().getName())
+                .setSubject(username)
                 .setIssuedAt(issuedDate)
                 .claim("uuid", tokenUUID)
                 .setExpiration(new Date(issuedDate.getTime() + accessExpirationMs.toMillis()))
@@ -38,10 +38,10 @@ public class JwtTokenUtils {
                 .compact();
     }
 
-    public String generateRefreshToken() {
+    public String generateRefreshToken(String username) {
         Date issuedDate = new Date();
         return Jwts.builder()
-                .setSubject((SecurityContextHolder.getContext().getAuthentication().getName()))
+                .setSubject(username)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(issuedDate.getTime() + refreshExpirationMs.toMillis()))
                 .signWith(SignatureAlgorithm.HS256, secret)

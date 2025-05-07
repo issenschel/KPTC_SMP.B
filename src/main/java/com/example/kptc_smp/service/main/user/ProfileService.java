@@ -65,7 +65,7 @@ public class ProfileService {
 
     @Transactional(transactionManager = "chainedTransactionManager")
     public JwtTokenPairDto changePassword(PasswordChangeDto passwordChangeDto) {
-        return userService.findWithTokenVersionByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
+        return userService.findWithUserDataTokenByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
                 user -> {
                     passwordService.validatePasswordEquals(passwordChangeDto.getPassword(), passwordChangeDto.getConfirmPassword());
                     passwordService.validateEncodedPasswordMatch(passwordChangeDto.getOldPassword(), user.getPassword());
@@ -83,7 +83,7 @@ public class ProfileService {
     public JwtTokenPairDto changeEmail(EmailChangeDto emailChangeDto) {
         return userService.findWithInfoAndTokenAndTicketByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
                 user -> {
-                    ActionTicket actionTicket = actionTicketService.getValidateActionTicket(user.getActionTicket(), emailChangeDto.getActionTicket());
+                    ActionTicket actionTicket = actionTicketService.getValidateActionTicket(user.getActionTickets().getFirst(), emailChangeDto.getActionTicket());
                     userInformationService.findByEmail(emailChangeDto.getEmail()).ifPresent(t -> {
                         throw new EmailFoundException();
                     });
@@ -104,7 +104,7 @@ public class ProfileService {
         userSessionService.deleteAllSessionsByUser(user);
         UserSession userSession = userSessionService.createSession(user);
 
-        String accessToken = jwtTokenUtils.generateAccessToken(userDataToken.getTokenUUID());
+        String accessToken = jwtTokenUtils.generateAccessToken(user.getUsername(),userDataToken.getTokenUUID());
 
         return new JwtTokenPairDto(accessToken, userSession.getRefreshToken());
     }

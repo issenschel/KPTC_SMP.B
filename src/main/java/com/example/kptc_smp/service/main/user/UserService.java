@@ -26,8 +26,8 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public Optional<User> findWithTokenVersionByUsername(String username) {
-        return userRepository.findWithTokenVersionByUsername(username);
+    public Optional<User> findWithUserDataTokenByUsername(String username) {
+        return userRepository.findWithUserDataTokenByUsername(username);
     }
 
     public Optional<User> findWithUserInformationByUsername(String username) {

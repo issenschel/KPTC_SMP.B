@@ -38,8 +38,8 @@ public class User {
     @OneToOne(mappedBy = "user", fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true, optional = false)
     private PasswordReset passwordReset;
 
-    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true, optional = false)
-    private ActionTicket actionTicket;
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ActionTicket> actionTickets;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserSession> userSessions;

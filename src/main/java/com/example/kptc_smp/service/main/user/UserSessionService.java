@@ -38,7 +38,7 @@ public class UserSessionService {
         UserSession userSession = new UserSession();
 
         userSession.setUser(user);
-        userSession.setRefreshToken(jwtTokenUtils.generateRefreshToken());
+        userSession.setRefreshToken(jwtTokenUtils.generateRefreshToken(user.getUsername()));
         userSession.setUserAgent(userAgent);
         userSession.setIpAddress(ipAddress);
         userSession.setCreatedAt(Instant.now());

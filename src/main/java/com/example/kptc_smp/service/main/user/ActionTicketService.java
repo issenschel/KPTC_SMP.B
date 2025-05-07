@@ -31,7 +31,7 @@ public class ActionTicketService {
     }
 
     public ActionTicket updateOrCreateActionTicket(User user) {
-        ActionTicket actionTicket = user.getActionTicket();
+        ActionTicket actionTicket = user.getActionTickets().getFirst();
         if (actionTicket != null) {
             return updateActionTicket(actionTicket);
         } else {

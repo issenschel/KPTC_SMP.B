@@ -14,8 +14,8 @@ public class ActionTicket {
     @Column(name = "id")
     private Integer id;
 
-    @OneToOne
-    @MapsId
+    @ManyToOne
+    @JoinColumn(name = "user_id")
     private User user;
 
     @Column(name = "ticket")
