@@ -1,5 +1,6 @@
 package com.example.kptc_smp.config;
 
+import com.example.kptc_smp.service.main.auth.AuthUserDetailsService;
 import com.example.kptc_smp.service.main.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -45,10 +46,10 @@ public class SecurityConfig {
     }
 
     @Bean
-    public DaoAuthenticationProvider authenticationProvider(UserService userService) {
+    public DaoAuthenticationProvider authenticationProvider(AuthUserDetailsService authUserDetailsService) {
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
-        daoAuthenticationProvider.setUserDetailsService(userService);
+        daoAuthenticationProvider.setUserDetailsService(authUserDetailsService);
         return daoAuthenticationProvider;
 
     }

@@ -17,7 +17,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserDataTokenService {
     private final UserDataTokenRepository userDataTokenRepository;
-    private final JwtTokenUtils jwtTokenUtils;
 
     public Optional<UserDataToken> findByTokenUUID(UUID tokenUUID) {
         return userDataTokenRepository.findByTokenUUID(tokenUUID);
@@ -25,18 +24,20 @@ public class UserDataTokenService {
 
     public void createUserDataToken(User user, UUID tokenUUID) {
         UserDataToken userDataToken = new UserDataToken();
+
         userDataToken.setUser(user);
         userDataToken.setTokenUUID(tokenUUID);
+
         userDataTokenRepository.save(userDataToken);
     }
 
-    public TokenDto updateAndGenerateToken(User user) {
+    public UserDataToken updateUserDataToken(User user) {
         UUID tokenUUID = UUID.randomUUID();
-        user.getUserDataToken().setTokenUUID(tokenUUID);
-        save(user.getUserDataToken());
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String token = jwtTokenUtils.generateToken(authentication, tokenUUID);
-        return new TokenDto(token);
+
+        UserDataToken userDataToken = user.getUserDataToken();
+        userDataToken.setTokenUUID(tokenUUID);
+
+        return userDataToken;
     }
 
     public void save(UserDataToken userDataToken) {

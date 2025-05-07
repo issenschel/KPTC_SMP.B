@@ -36,27 +36,32 @@ public class EmailService {
         userInformationService.findByEmail(emailDto.getEmail()).ifPresent(u -> { throw new EmailFoundException(); });
 
         sendVerificationEmail(emailDto.getEmail(), EmailTemplateType.REGISTRATION);
+
         return new ResponseDto("Код отправлен");
     }
 
     @Transactional
     public ResponseDto sendChangeEmailCode() {
-        User user = getAuthenticatedUser();
-        sendVerificationEmail(
-                user.getUserInformation().getEmail(),
-                EmailTemplateType.EMAIL_CHANGE
-        );
+        User user = userService.findWithUserInformationByUsername(
+                SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(UserNotFoundException::new);
+
+        sendVerificationEmail(user.getUserInformation().getEmail(), EmailTemplateType.EMAIL_CHANGE);
+
         return new ResponseDto("Код отправлен");
     }
 
     @Transactional
     public ActionTicketDto verifyCurrentEmailCode(CodeDto codeDto) {
-        User user = getAuthenticatedUser();
-        String email = user.getUserInformation().getEmail();
+        User user = userService.findWithInfoAndTokenAndTicketByUsername(
+                SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(UserNotFoundException::new);
 
+        String email = user.getUserInformation().getEmail();
         EmailVerification verification = emailVerificationService.getValidatedEmailVerification(email, codeDto.getCode());
 
-        ActionTicket actionTicket = actionTicketService.createActionTicket(user);
+        ActionTicket actionTicket = actionTicketService.updateOrCreateActionTicket(user);
+
         emailVerificationService.delete(verification);
 
         return new ActionTicketDto(actionTicket.getTicket());
@@ -76,8 +81,4 @@ public class EmailService {
         emailSender.sendHtmlEmail(email, templateType.getHeader(), message);
     }
 
-    private User getAuthenticatedUser() {
-        return userService.findWithInfoAndDataTokenByUsername(SecurityContextHolder.getContext().getAuthentication().getName())
-                .orElseThrow(UserNotFoundException::new);
-    }
 }

@@ -1,10 +1,9 @@
 package com.example.kptc_smp.controller;
 
+import com.example.kptc_smp.dto.JwtTokenPairDto;
+import com.example.kptc_smp.dto.RefreshTokenRequestDto;
 import com.example.kptc_smp.dto.ResponseDto;
-import com.example.kptc_smp.dto.auth.JwtRequestDto;
-import com.example.kptc_smp.dto.auth.JwtResponseDto;
-import com.example.kptc_smp.dto.auth.PasswordResetDto;
-import com.example.kptc_smp.dto.auth.RegistrationUserDto;
+import com.example.kptc_smp.dto.auth.*;
 import com.example.kptc_smp.dto.email.EmailDto;
 import com.example.kptc_smp.dto.profile.UserAccountDetailsDto;
 import com.example.kptc_smp.service.main.auth.AuthService;
@@ -15,6 +14,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -38,8 +38,8 @@ public class AuthController {
             @ApiResponse(responseCode = "401", description = "Неверный логин или пароль", content = {@Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "404", description = "Пользователь не найден", content = {@Content(mediaType = "application/json")})
     })
-    public JwtResponseDto createAuthToken(@Valid @RequestBody JwtRequestDto authRequest) {
-        return authService.createAuthToken(authRequest);
+    public AuthResponseDto authenticate(@Valid @RequestBody JwtRequestDto authRequest) {
+        return authService.authenticate(authRequest);
     }
 
     @PostMapping("/registration")
@@ -51,6 +51,17 @@ public class AuthController {
     })
     public UserAccountDetailsDto registrationUser(@Valid @RequestBody RegistrationUserDto registrationUserDto) {
         return authService.registrationUser(registrationUserDto);
+    }
+
+    @PostMapping("/refresh-token")
+    @Operation(summary = "Обновление токена")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Токены обновлены", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = JwtResponseDto.class))}),
+            @ApiResponse(responseCode = "401", description = "Недействительный refresh-токен", content = {@Content(mediaType = "application/json")})
+    })
+    public JwtTokenPairDto refreshToken(@Valid @RequestBody RefreshTokenRequestDto refreshTokenRequest) {
+        return authService.refreshToken(refreshTokenRequest.getRefreshToken());
     }
 
     @PostMapping("/password-forgot")
@@ -74,5 +85,7 @@ public class AuthController {
     public ResponseDto resetPassword(@RequestParam("uuid") UUID linkUUID, @Valid @RequestBody PasswordResetDto passwordResetDto) {
         return passwordResetService.resetPassword(linkUUID, passwordResetDto);
     }
+
+
 
 }

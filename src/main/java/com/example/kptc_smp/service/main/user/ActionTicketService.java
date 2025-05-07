@@ -23,11 +23,28 @@ public class ActionTicketService {
         return actionTicketRepository.save(actionTicket);
     }
 
+    public ActionTicket updateActionTicket(ActionTicket actionTicket) {
+        actionTicket.setTicket(generateTicket());
+        actionTicket.setExpiresAt(LocalDateTime.now().plusMinutes(10));
+
+        return actionTicket;
+    }
+
+    public ActionTicket updateOrCreateActionTicket(User user) {
+        ActionTicket actionTicket = user.getActionTicket();
+        if (actionTicket != null) {
+            return updateActionTicket(actionTicket);
+        } else {
+            return createActionTicket(user);
+        }
+    }
+
     public ActionTicket getValidateActionTicket(ActionTicket actionTicket, String ticket) {
         if (actionTicket == null || !actionTicket.getTicket().equals(ticket)) {
             throw new ActionTicketNotFoundException();
         }
         isTicketExpired(actionTicket);
+
         return actionTicket;
     }
 

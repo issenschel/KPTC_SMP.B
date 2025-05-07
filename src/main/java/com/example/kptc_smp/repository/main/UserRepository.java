@@ -18,15 +18,15 @@ public interface UserRepository extends CrudRepository<User, Integer> {
     Optional<User> findWithInfoAndDataTokenByUsername(String username);
 
     @EntityGraph(attributePaths = "userDataToken")
-    @Query("SELECT u FROM User u WHERE u.username = :username")
     Optional<User> findWithTokenVersionByUsername(String username);
 
     @EntityGraph(attributePaths = "userInformation")
-    @Query("SELECT u FROM User u WHERE u.username = :username")
     Optional<User> findWithUserInformationByUsername(String username);
 
+    @EntityGraph(attributePaths = {"userSessions","userDataToken"})
+    Optional<User> findWithSessionsAndTokenByUsername(String username);
+
     @EntityGraph(attributePaths = {"roles"})
-    @Query("SELECT u FROM User u WHERE u.username = :username")
     Optional<User> findWithRolesByUsername(String username);
 
     Optional<User> findByUsername(String username);

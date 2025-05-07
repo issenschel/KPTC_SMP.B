@@ -2,6 +2,7 @@ package com.example.kptc_smp.service.main.image;
 
 import com.example.kptc_smp.dto.image.ImageResponse;
 import com.example.kptc_smp.entity.main.ImageRegistry;
+import com.example.kptc_smp.entity.main.User;
 import com.example.kptc_smp.enums.ImageCategory;
 import com.example.kptc_smp.enums.ImageStatus;
 import com.example.kptc_smp.exception.file.FileNotFoundException;
@@ -69,6 +70,16 @@ public class ImageStorageService {
         ImageRegistry updatedImageRegistry = uploadAndAttachImage(image, imageRegistry.getImageCategory(), imageRegistry.getOwnerId());
         deleteImage(imageRegistry);
         return updatedImageRegistry;
+    }
+
+    public ImageRegistry updateOrUploadImage(MultipartFile image, User user) {
+        ImageRegistry imageRegistry = user.getUserInformation().getImageRegistry();
+
+        if (imageRegistry != null) {
+            return updateImage(image, user.getUserInformation().getImageRegistry());
+        }
+
+        return uploadAndAttachImage(image, ImageCategory.PROFILE, user.getId());
     }
 
     @Transactional
