@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 @Schema(description = "Модель входа в аккаунт")
-public class JwtRequestDto {
+public class AuthRequestDto {
 
     @Schema(description = "Имя пользователя", example = "bokuNo_Pico")
     @NotBlank(message = "Имя пользователя не может быть пустым")

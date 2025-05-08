@@ -10,12 +10,11 @@ import java.util.UUID;
 @Table(name = "user_data_token")
 public class UserDataToken {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private Integer id;
 
     @OneToOne
     @MapsId
+    @JoinColumn(name = "id")
     private User user;
 
     @Column(name = "token_uuid")

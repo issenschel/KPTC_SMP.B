@@ -1,13 +1,9 @@
 package com.example.kptc_smp.service.main.user;
 
-import com.example.kptc_smp.dto.auth.TokenDto;
 import com.example.kptc_smp.entity.main.User;
 import com.example.kptc_smp.entity.main.UserDataToken;
 import com.example.kptc_smp.repository.main.UserDataTokenRepository;
-import com.example.kptc_smp.utility.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;

@@ -1,14 +1,13 @@
 package com.example.kptc_smp.service.main.user;
 
 
-import com.example.kptc_smp.dto.JwtTokenPairDto;
-import com.example.kptc_smp.dto.auth.TokenDto;
+import com.example.kptc_smp.dto.auth.JwtTokenPairDto;
 import com.example.kptc_smp.dto.profile.EmailChangeDto;
 import com.example.kptc_smp.dto.profile.PasswordChangeDto;
 import com.example.kptc_smp.dto.profile.UserAccountDetailsDto;
 import com.example.kptc_smp.dto.profile.UserProfileDto;
 import com.example.kptc_smp.entity.main.*;
-import com.example.kptc_smp.enums.ImageCategory;
+import com.example.kptc_smp.enums.ActionType;
 import com.example.kptc_smp.exception.email.EmailFoundException;
 import com.example.kptc_smp.exception.user.UserNotFoundException;
 import com.example.kptc_smp.service.main.auth.PasswordService;
@@ -17,9 +16,7 @@ import com.example.kptc_smp.service.main.image.ImageStorageService;
 import com.example.kptc_smp.service.main.image.ImageValidator;
 import com.example.kptc_smp.service.minecraft.AuthMeService;
 import com.example.kptc_smp.utility.JwtTokenUtils;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,7 +39,6 @@ public class ProfileService {
     private final ActionTicketService actionTicketService;
     private final UserSessionService userSessionService;
     private final JwtTokenUtils jwtTokenUtils;
-    private final HttpServletRequest request;
 
     public UserAccountDetailsDto getUserAccountDetails() {
         return userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
@@ -83,11 +79,11 @@ public class ProfileService {
     public JwtTokenPairDto changeEmail(EmailChangeDto emailChangeDto) {
         return userService.findWithInfoAndTokenAndTicketByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
                 user -> {
-                    ActionTicket actionTicket = actionTicketService.getValidateActionTicket(user.getActionTickets().getFirst(), emailChangeDto.getActionTicket());
-                    userInformationService.findByEmail(emailChangeDto.getEmail()).ifPresent(t -> {
-                        throw new EmailFoundException();
-                    });
-                    EmailVerification emailVerification = emailVerificationService.getValidatedEmailVerification
+                    ActionTicket actionTicket = actionTicketService.findValidActionTicketByType
+                            (user, emailChangeDto.getActionTicket(), ActionType.EMAIL_CHANGE);
+                    userInformationService.findByEmail(emailChangeDto.getEmail())
+                            .ifPresent(t -> {throw new EmailFoundException();});
+                    EmailVerification emailVerification = emailVerificationService.findValidEmailVerification
                             (emailChangeDto.getEmail(), emailChangeDto.getCode());
 
                     emailVerificationService.delete(emailVerification);
@@ -106,7 +102,7 @@ public class ProfileService {
 
         String accessToken = jwtTokenUtils.generateAccessToken(user.getUsername(),userDataToken.getTokenUUID());
 
-        return new JwtTokenPairDto(accessToken, userSession.getRefreshToken());
+        return new JwtTokenPairDto(userSession.getRefreshToken(),accessToken);
     }
 
     @Transactional

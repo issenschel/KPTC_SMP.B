@@ -7,6 +7,7 @@ import com.example.kptc_smp.dto.email.EmailDto;
 import com.example.kptc_smp.entity.main.ActionTicket;
 import com.example.kptc_smp.entity.main.EmailVerification;
 import com.example.kptc_smp.entity.main.User;
+import com.example.kptc_smp.enums.ActionType;
 import com.example.kptc_smp.enums.EmailTemplateType;
 import com.example.kptc_smp.exception.email.EmailFoundException;
 import com.example.kptc_smp.exception.user.UserNotFoundException;
@@ -57,9 +58,9 @@ public class EmailService {
                 SecurityContextHolder.getContext().getAuthentication().getName())
                 .orElseThrow(UserNotFoundException::new);
         String email = user.getUserInformation().getEmail();
-        EmailVerification verification = emailVerificationService.getValidatedEmailVerification(email, codeDto.getCode());
+        EmailVerification verification = emailVerificationService.findValidEmailVerification(email, codeDto.getCode());
 
-        ActionTicket actionTicket = actionTicketService.updateOrCreateActionTicket(user);
+        ActionTicket actionTicket = actionTicketService.updateOrCreateActionTicket(user, ActionType.EMAIL_CHANGE);
 
         emailVerificationService.delete(verification);
 

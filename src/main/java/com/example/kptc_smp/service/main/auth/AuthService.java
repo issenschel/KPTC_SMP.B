@@ -1,8 +1,8 @@
 package com.example.kptc_smp.service.main.auth;
 
-import com.example.kptc_smp.dto.JwtTokenPairDto;
+import com.example.kptc_smp.dto.auth.JwtTokenPairDto;
 import com.example.kptc_smp.dto.auth.AuthResponseDto;
-import com.example.kptc_smp.dto.auth.JwtRequestDto;
+import com.example.kptc_smp.dto.auth.AuthRequestDto;
 import com.example.kptc_smp.dto.auth.RegistrationUserDto;
 import com.example.kptc_smp.dto.profile.UserAccountDetailsDto;
 import com.example.kptc_smp.entity.main.User;
@@ -47,7 +47,7 @@ public class AuthService {
     private final UserSessionService userSessionService;
 
     @Transactional
-    public AuthResponseDto authenticate(@RequestBody JwtRequestDto authRequest) {
+    public AuthResponseDto authenticate(@RequestBody AuthRequestDto authRequest) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
         User user = userService.findWithUserDataTokenByUsername(authRequest.getUsername()).orElseThrow(() -> new BadCredentialsException(""));

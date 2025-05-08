@@ -8,5 +8,6 @@ import lombok.Data;
 @AllArgsConstructor
 @Schema(description = "Тикет действия")
 public class ActionTicketDto {
+    @Schema(description = "Сам тикет")
     private String actionTicket;
 }
