@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class WhitelistService {
     private final WhitelistRepository whitelistRepository;
 
-    @Transactional(transactionManager = "mySQLTransactionManager")
     public void createWhitelist(String username) {
         Whitelist whitelist = new Whitelist();
         whitelist.setUser(username);

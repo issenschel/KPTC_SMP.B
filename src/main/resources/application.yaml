@@ -3,5 +3,8 @@ server:
   servlet:
     context-path:
 jwt:
-  secret: bemsik
-  lifetime: 1200d
+  secret: JQ852
+  access:
+    expiration: 48h
+  refresh:
+    expiration: 60d

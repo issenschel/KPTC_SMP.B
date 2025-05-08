@@ -1,16 +1,20 @@
 package com.example.kptc_smp.service.main.auth;
 
-import com.example.kptc_smp.dto.auth.JwtRequestDto;
-import com.example.kptc_smp.dto.auth.JwtResponseDto;
+import com.example.kptc_smp.dto.auth.JwtTokenPairDto;
+import com.example.kptc_smp.dto.auth.AuthResponseDto;
+import com.example.kptc_smp.dto.auth.AuthRequestDto;
 import com.example.kptc_smp.dto.auth.RegistrationUserDto;
 import com.example.kptc_smp.dto.profile.UserAccountDetailsDto;
 import com.example.kptc_smp.entity.main.User;
 import com.example.kptc_smp.entity.main.UserInformation;
+import com.example.kptc_smp.entity.main.UserSession;
 import com.example.kptc_smp.exception.auth.RegistrationValidationException;
+import com.example.kptc_smp.exception.user.UserNotFoundException;
 import com.example.kptc_smp.service.main.email.EmailVerificationService;
 import com.example.kptc_smp.service.main.user.UserDataTokenService;
 import com.example.kptc_smp.service.main.user.UserInformationService;
 import com.example.kptc_smp.service.main.user.UserService;
+import com.example.kptc_smp.service.main.user.UserSessionService;
 import com.example.kptc_smp.service.minecraft.AuthMeService;
 import com.example.kptc_smp.service.minecraft.WhitelistService;
 import com.example.kptc_smp.utility.JwtTokenUtils;
@@ -40,31 +44,59 @@ public class AuthService {
     private final RegistrationValidatorService registrationValidatorService;
     private final WhitelistService whitelistService;
     private final AuthMeService authMeService;
+    private final UserSessionService userSessionService;
 
     @Transactional
-    public JwtResponseDto createAuthToken(@RequestBody JwtRequestDto authRequest) {
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
-        User user = userService.findWithTokenVersionByUsername(authRequest.getUsername()).orElseThrow(() -> new BadCredentialsException(""));
+    public AuthResponseDto authenticate(@RequestBody AuthRequestDto authRequest) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
+        User user = userService.findWithUserDataTokenByUsername(authRequest.getUsername()).orElseThrow(() -> new BadCredentialsException(""));
+
         UUID tokenUUID = user.getUserDataToken().getTokenUUID();
-        String token = jwtTokenUtils.generateToken(authentication, tokenUUID);
+        UserSession userSession = userSessionService.createSession(user);
+        String accessToken = jwtTokenUtils.generateAccessToken(user.getUsername(),tokenUUID);
         List<String> roles = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
-        return new JwtResponseDto(token, roles);
+
+        return new AuthResponseDto(new JwtTokenPairDto(userSession.getRefreshToken(), accessToken), roles);
     }
 
     @Transactional
+    public JwtTokenPairDto refreshToken(String refreshToken) {
+        if (jwtTokenUtils.isTokenExpired(refreshToken)) {
+            throw new BadCredentialsException("Refresh token expired");
+        }
+
+        String username = jwtTokenUtils.getUsername(refreshToken);
+        User user = userService.findWithSessionsAndTokenByUsername(username).orElseThrow(() -> new BadCredentialsException("User not found"));
+
+        UserSession userSession = user.getUserSessions().stream().filter(t -> t.getRefreshToken().equals(refreshToken))
+                .findFirst().orElseThrow(UserNotFoundException::new);
+
+        String newAccessToken = jwtTokenUtils.generateAccessToken(username,user.getUserDataToken().getTokenUUID());
+        String newRefreshToken = jwtTokenUtils.generateRefreshToken(username);
+
+        userSession.setRefreshToken(newRefreshToken);
+
+        return new JwtTokenPairDto(newRefreshToken, newAccessToken);
+    }
+
+    @Transactional(transactionManager = "chainedTransactionManager")
     public UserAccountDetailsDto registrationUser(@RequestBody RegistrationUserDto registrationUserDto) {
         validateRegistration(registrationUserDto);
-        User user = userService.createNewUser(registrationUserDto.getUsername(), registrationUserDto.getPassword());
+
+        User user = userService.createUser(registrationUserDto.getUsername(), registrationUserDto.getPassword());
         UserInformation userInformation = userInformationService.createNewUserInformation(registrationUserDto, user);
-        registrationMinecraftUser(user);
         createUserDataToken(user);
         emailVerificationService.deleteByEmail(registrationUserDto.getEmail());
+        registrationMinecraftUser(user);
+
         return new UserAccountDetailsDto(userInformation.getId(), userInformation.getUser().getUsername(),
                 userInformation.getEmail(), userInformation.getRegistrationDate());
     }
 
     private void validateRegistration(RegistrationUserDto registrationUserDto) {
         Map<String, String> validationsErrors = registrationValidatorService.validateRegistration(registrationUserDto);
+
         if (!validationsErrors.isEmpty()) {
             throw new RegistrationValidationException(validationsErrors);
         }

@@ -23,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -93,12 +94,14 @@ public class NewsService {
         return new ResponseDto("Новость удалена");
     }
 
+    @Transactional
     public HeadlineNewsGroupDto getHeadlineNews(int page) {
         PageRequest pageRequest = PageRequest.of(page - 1, 9, Sort.by(Sort.Direction.DESC, "id"));
-        Page<News> newsPage = newsRepository.findAllWithImages(pageRequest);
+        Page<Integer> idsPage = newsRepository.findNewsIds(pageRequest);
+        List<News> newsList = newsRepository.findFullNewsByIds(idsPage.getContent());
         return HeadlineNewsGroupDto.builder()
-                .news(newsMapper.toHeadlineNewsDtoList(newsPage.getContent()))
-                .countPage(newsPage.getTotalPages())
+                .news(newsMapper.toHeadlineNewsDtoList(newsList))
+                .countPage(idsPage.getTotalPages())
                 .build();
     }
 }

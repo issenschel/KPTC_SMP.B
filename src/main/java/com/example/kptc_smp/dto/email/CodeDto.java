@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
+@Schema(description = "Модель кода")
 public class CodeDto {
     @Schema(description = "Код", example = "228422")
     @NotNull

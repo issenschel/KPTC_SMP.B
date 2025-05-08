@@ -10,12 +10,11 @@ import java.time.LocalDate;
 @Table(name = "user_information")
 public class UserInformation {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private Integer id;
 
     @OneToOne
     @MapsId
+    @JoinColumn(name = "id")
     private User user;
 
     @Column(name = "email")

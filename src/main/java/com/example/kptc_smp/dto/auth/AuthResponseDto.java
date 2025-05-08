@@ -8,10 +8,10 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
-@Schema(description = "Модель получения токена с ролью")
-public class JwtResponseDto {
-    @Schema(description = "Токен")
-    private String token;
+@Schema(description = "Модель получения токенов с ролью")
+public class AuthResponseDto {
+    @Schema(description = "Модель токенов")
+    private JwtTokenPairDto jwtTokenPairDto;
     @Schema(description = "Список ролей")
-    private List<String> role;
+    private List<String> roles;
 }

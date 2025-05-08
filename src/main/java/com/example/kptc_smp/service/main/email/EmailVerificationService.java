@@ -41,21 +41,27 @@ public class EmailVerificationService {
         emailVerificationRepository.save(emailVerification);
     }
 
-    public EmailVerification getValidatedEmailVerification(String email, String code) {
+    public EmailVerification findValidEmailVerification(String email, String code) {
         EmailVerification emailVerification = findByEmail(email).orElseThrow(EmailNotFoundException::new);
-        if (!validateCode(emailVerification, code)) {
-            throw new CodeValidationException();
-        } else if (isExpired(emailVerification)) {
-            throw new CodeExpireException();
-        }
+
+        validateCode(emailVerification, code);
+
         return emailVerification;
     }
 
-    public boolean validateCode(EmailVerification emailVerification, String code) {
+    public void validateCode(EmailVerification emailVerification, String code) {
+        if (!isCodeValid(emailVerification, code)) {
+            throw new CodeValidationException();
+        } else if (isVerificationExpired(emailVerification)) {
+            throw new CodeExpireException();
+        }
+    }
+
+    public boolean isCodeValid(EmailVerification emailVerification, String code) {
         return emailVerification.getCode().equals(code);
     }
 
-    public boolean isExpired(EmailVerification emailVerification) {
+    public boolean isVerificationExpired(EmailVerification emailVerification) {
         LocalDateTime now = LocalDateTime.now();
         return emailVerification.getExpiresAt().isBefore(now);
     }

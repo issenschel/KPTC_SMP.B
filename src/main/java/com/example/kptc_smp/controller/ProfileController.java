@@ -1,7 +1,7 @@
 package com.example.kptc_smp.controller;
 
+import com.example.kptc_smp.dto.auth.JwtTokenPairDto;
 import com.example.kptc_smp.dto.ResponseDto;
-import com.example.kptc_smp.dto.auth.TokenDto;
 import com.example.kptc_smp.dto.profile.EmailChangeDto;
 import com.example.kptc_smp.dto.profile.PasswordChangeDto;
 import com.example.kptc_smp.dto.profile.UserAccountDetailsDto;
@@ -30,30 +30,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class ProfileController {
     private final ProfileService profileService;
 
-    @PutMapping("/password")
-    @Operation(summary = "Смена пароля пользователя")
-    @SecurityRequirement(name = "bearerAuth")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Пароль изменен", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
-            @ApiResponse(responseCode = "400", description = "Неверно заполнены данные | поля", content = {@Content(mediaType = "application/json")}),
-    })
-    public TokenDto changePassword(@Valid @RequestBody PasswordChangeDto passwordChangeDto) {
-        return profileService.changePassword(passwordChangeDto);
-    }
-
-    @PutMapping(path = "/image", consumes = "multipart/*")
-    @Operation(summary = "Смена фотографии пользователя")
-    @SecurityRequirement(name = "bearerAuth")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Фото изменено", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
-            @ApiResponse(responseCode = "400", description = "С фото что-то не так", content = {@Content(mediaType = "application/json")}),
-    })
-    public UserProfileDto changeImage(@RequestParam("image") MultipartFile image) {
-        return profileService.changeImage(image);
-    }
-
     @GetMapping("/account-details")
     @Operation(summary = "Получение данных об аккаунте пользователя в профиле")
     @SecurityRequirement(name = "bearerAuth")
@@ -72,6 +48,18 @@ public class ProfileController {
         return profileService.getUserProfileInfo();
     }
 
+    @PutMapping("/password")
+    @Operation(summary = "Смена пароля пользователя")
+    @SecurityRequirement(name = "bearerAuth")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Пароль изменен", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
+            @ApiResponse(responseCode = "400", description = "Неверно заполнены данные | поля", content = {@Content(mediaType = "application/json")}),
+    })
+    public JwtTokenPairDto changePassword(@Valid @RequestBody PasswordChangeDto passwordChangeDto) {
+        return profileService.changePassword(passwordChangeDto);
+    }
+
     @PutMapping("/email")
     @Operation(summary = "Смена почты пользователя")
     @SecurityRequirement(name = "bearerAuth")
@@ -81,12 +69,20 @@ public class ProfileController {
             @ApiResponse(responseCode = "400", description = "Неверно заполнены данные | поля", content = {@Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "409", description = "Почта занята", content = {@Content(mediaType = "application/json")}),
     })
-    public TokenDto changeEmail(@Valid @RequestBody EmailChangeDto emailChangeDto) {
+    public JwtTokenPairDto changeEmail(@Valid @RequestBody EmailChangeDto emailChangeDto) {
         return profileService.changeEmail(emailChangeDto);
     }
 
-
-
-
+    @PutMapping(path = "/image", consumes = "multipart/*")
+    @Operation(summary = "Смена фотографии пользователя")
+    @SecurityRequirement(name = "bearerAuth")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Фото изменено", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
+            @ApiResponse(responseCode = "400", description = "С фото что-то не так", content = {@Content(mediaType = "application/json")}),
+    })
+    public UserProfileDto changeImage(@RequestParam("image") MultipartFile image) {
+        return profileService.changeImage(image);
+    }
 }
 

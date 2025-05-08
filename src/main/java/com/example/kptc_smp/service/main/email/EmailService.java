@@ -7,6 +7,7 @@ import com.example.kptc_smp.dto.email.EmailDto;
 import com.example.kptc_smp.entity.main.ActionTicket;
 import com.example.kptc_smp.entity.main.EmailVerification;
 import com.example.kptc_smp.entity.main.User;
+import com.example.kptc_smp.enums.ActionType;
 import com.example.kptc_smp.enums.EmailTemplateType;
 import com.example.kptc_smp.exception.email.EmailFoundException;
 import com.example.kptc_smp.exception.user.UserNotFoundException;
@@ -36,27 +37,31 @@ public class EmailService {
         userInformationService.findByEmail(emailDto.getEmail()).ifPresent(u -> { throw new EmailFoundException(); });
 
         sendVerificationEmail(emailDto.getEmail(), EmailTemplateType.REGISTRATION);
+
         return new ResponseDto("Код отправлен");
     }
 
     @Transactional
     public ResponseDto sendChangeEmailCode() {
-        User user = getAuthenticatedUser();
-        sendVerificationEmail(
-                user.getUserInformation().getEmail(),
-                EmailTemplateType.EMAIL_CHANGE
-        );
+        User user = userService.findWithUserInformationByUsername(
+                SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(UserNotFoundException::new);
+
+        sendVerificationEmail(user.getUserInformation().getEmail(), EmailTemplateType.EMAIL_CHANGE);
+
         return new ResponseDto("Код отправлен");
     }
 
     @Transactional
     public ActionTicketDto verifyCurrentEmailCode(CodeDto codeDto) {
-        User user = getAuthenticatedUser();
+        User user = userService.findWithUserInformationByUsername(
+                SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(UserNotFoundException::new);
         String email = user.getUserInformation().getEmail();
+        EmailVerification verification = emailVerificationService.findValidEmailVerification(email, codeDto.getCode());
 
-        EmailVerification verification = emailVerificationService.getValidatedEmailVerification(email, codeDto.getCode());
+        ActionTicket actionTicket = actionTicketService.updateOrCreateActionTicket(user, ActionType.EMAIL_CHANGE);
 
-        ActionTicket actionTicket = actionTicketService.createActionTicket(user);
         emailVerificationService.delete(verification);
 
         return new ActionTicketDto(actionTicket.getTicket());
@@ -76,8 +81,4 @@ public class EmailService {
         emailSender.sendHtmlEmail(email, templateType.getHeader(), message);
     }
 
-    private User getAuthenticatedUser() {
-        return userService.findWithInfoAndDataTokenByUsername(SecurityContextHolder.getContext().getAuthentication().getName())
-                .orElseThrow(UserNotFoundException::new);
-    }
 }
