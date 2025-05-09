@@ -4,10 +4,11 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.Collection;
+import java.util.List;
 
 @Entity
 @Data
-@Table(name = "auth_user")
+@Table(name = "\"user\"")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,9 +29,15 @@ public class User {
     )
     private Collection<Role> roles;
 
-    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, optional = false)
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true, optional = false)
     private UserInformation userInformation;
 
-    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, optional = false)
-    private Token token;
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true, optional = false)
+    private UserDataToken userDataToken;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ActionTicket> actionTickets;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserSession> userSessions;
 }

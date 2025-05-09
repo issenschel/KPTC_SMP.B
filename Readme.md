@@ -52,7 +52,7 @@
 Если у вас есть вопросы или предложения, вы можете связаться с нами:
 
 - **Email**: [kptcsmp@gmail.com](mailto:kptcsmp@gmail.com)
-- **Discord**: [Ссылка на сервер Discord](https://discord.gg/pbHkX9z3)
+- **Discord**: [Ссылка на сервер Discord](https://discord.gg/e329bETuyU)
 
 ---
 

@@ -1,6 +1,8 @@
 package com.example.kptc_smp.config;
 
-import com.example.kptc_smp.service.main.TokenService;
+import com.example.kptc_smp.service.main.auth.AuthUserDetailsService;
+import com.example.kptc_smp.service.main.user.UserDataTokenService;
+import com.example.kptc_smp.service.main.user.UserService;
 import com.example.kptc_smp.utility.JwtTokenUtils;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.SignatureException;
@@ -13,20 +15,24 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Optional;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class JwtRequestFilter extends OncePerRequestFilter {
     private final JwtTokenUtils jwtTokenUtils;
-    private final TokenService tokenService;
+    private final UserDataTokenService userDataTokenService;
+    private final AuthUserDetailsService authUserDetailsService;
 
     @Override
-    protected  void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String authHeader = request.getHeader("Authorization");
         String username;
         String jwt;
@@ -36,14 +42,20 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             if (jwt.split("\\.").length == 3) {
                 try {
                     username = jwtTokenUtils.getUsername(jwt);
-                    if (username != null && SecurityContextHolder.getContext().getAuthentication() == null &&
-                            (tokenService.findByTokenUUID(jwtTokenUtils.getTokenUUID(jwt))).isPresent()) {
-                        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
-                                username, null, jwtTokenUtils.getRoles(jwt).stream().map(SimpleGrantedAuthority::new).toList());
-                        SecurityContextHolder.getContext().setAuthentication(token);
+                    Optional<UUID> tokenUUID = jwtTokenUtils.getTokenUUID(jwt);
+                    if (username != null && tokenUUID.isPresent() && SecurityContextHolder.getContext().getAuthentication() == null &&
+                        (userDataTokenService.findByTokenUUID(tokenUUID.get()).isPresent())) {
+                        UserDetails userDetails = authUserDetailsService.loadUserByUsername(username);
+                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                                userDetails,
+                                null,
+                                userDetails.getAuthorities()
+                        );
+
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
                     }
                 } catch (ExpiredJwtException e) {
-                    log.debug("Вермя жизни токена вышло");
+                    log.debug("Время жизни токена вышло");
                 } catch (SignatureException e) {
                     log.debug("Подпись неправильная");
                 }
@@ -52,7 +64,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             }
         }
 
-        filterChain.doFilter(request,response);
+        filterChain.doFilter(request, response);
 
     }
 }

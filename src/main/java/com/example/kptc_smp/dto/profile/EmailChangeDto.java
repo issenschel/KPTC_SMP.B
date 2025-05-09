@@ -19,4 +19,8 @@ public class EmailChangeDto {
     @NotBlank(message = "Почта не может быть пустой")
     @Email(message = "Почта должна быть валидной")
     private String email;
+
+    @Schema(description = "Тикет действия", example = "5125125.5")
+    @NotBlank(message = "Тикет не может быть пустым")
+    private String actionTicket;
 }

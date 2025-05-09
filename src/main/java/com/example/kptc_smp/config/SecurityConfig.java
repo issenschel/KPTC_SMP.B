@@ -1,6 +1,7 @@
 package com.example.kptc_smp.config;
 
-import com.example.kptc_smp.service.main.UserService;
+import com.example.kptc_smp.service.main.auth.AuthUserDetailsService;
+import com.example.kptc_smp.service.main.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,6 +26,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtRequestFilter jwtRequestFilter;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -33,20 +35,23 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/news/**").permitAll()
                         .requestMatchers("/profile/**").authenticated()
-                        .requestMatchers("/guild/order").hasRole("ADMIN")
+                        .requestMatchers("/email/confirmation-code/current").authenticated()
+                        .requestMatchers("/backup/**").hasRole("ADMIN")
+                        .requestMatchers("/guild/order/**").hasRole("ADMIN")
                         .requestMatchers("/news/**").hasRole("ADMIN")
                         .anyRequest().permitAll()).sessionManagement(sessionManagementCustomizer -> sessionManagementCustomizer
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)).exceptionHandling(exceptionHandlingCustomizer ->
                         exceptionHandlingCustomizer.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)
-                        )).addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+                        )).exceptionHandling(exception -> exception.authenticationEntryPoint(customAuthenticationEntryPoint))
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
     @Bean
-    public DaoAuthenticationProvider authenticationProvider(UserService userService) {
+    public DaoAuthenticationProvider authenticationProvider(AuthUserDetailsService authUserDetailsService) {
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
-        daoAuthenticationProvider.setUserDetailsService(userService);
+        daoAuthenticationProvider.setUserDetailsService(authUserDetailsService);
         return daoAuthenticationProvider;
 
     }

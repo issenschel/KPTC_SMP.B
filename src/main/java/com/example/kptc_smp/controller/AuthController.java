@@ -1,13 +1,13 @@
 package com.example.kptc_smp.controller;
 
+import com.example.kptc_smp.dto.auth.JwtTokenPairDto;
+import com.example.kptc_smp.dto.auth.RefreshTokenRequestDto;
 import com.example.kptc_smp.dto.ResponseDto;
-import com.example.kptc_smp.dto.auth.AuthTokenDto;
-import com.example.kptc_smp.dto.auth.JwtRequestDto;
-import com.example.kptc_smp.dto.profile.UserInformationDto;
-import com.example.kptc_smp.dto.registration.EmailDto;
-import com.example.kptc_smp.dto.registration.RegistrationUserDto;
-import com.example.kptc_smp.service.main.AuthService;
-import com.example.kptc_smp.service.main.EmailService;
+import com.example.kptc_smp.dto.auth.*;
+import com.example.kptc_smp.dto.email.EmailDto;
+import com.example.kptc_smp.dto.profile.UserAccountDetailsDto;
+import com.example.kptc_smp.service.main.auth.AuthService;
+import com.example.kptc_smp.service.main.auth.PasswordResetService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -16,49 +16,73 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
 @ApiResponse(responseCode = "400", description = "Неверно заполнены данные | поля", content = {@Content(mediaType = "application/json")})
+@RequestMapping("/auth")
 @Tag(name = "Auth")
 public class AuthController {
     private final AuthService authService;
-    private final EmailService emailService;
+    private final PasswordResetService passwordResetService;
 
     @PostMapping("/login")
     @Operation(summary = "Авторизация")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Токен получен", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = AuthTokenDto.class))}),
+            @ApiResponse(responseCode = "200", description = "Токены получены", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponseDto.class))}),
             @ApiResponse(responseCode = "401", description = "Неверный логин или пароль", content = {@Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "404", description = "Пользователь не найден", content = {@Content(mediaType = "application/json")})
     })
-    public AuthTokenDto createAuthToken(@Valid @RequestBody JwtRequestDto authRequest) {
-        return authService.createAuthToken(authRequest);
+    public AuthResponseDto authenticate(@Valid @RequestBody AuthRequestDto authRequest) {
+        return authService.authenticate(authRequest);
     }
 
     @PostMapping("/registration")
     @Operation(summary = "Регистрация")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Пользователь создан", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = UserInformationDto.class))}),
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = UserAccountDetailsDto.class))}),
             @ApiResponse(responseCode = "409", description = "Данные уже заняты", content = {@Content(mediaType = "application/json")})
     })
-    public UserInformationDto createNewUser(@Valid @RequestBody RegistrationUserDto registrationUserDto) {
-        return authService.createNewUser(registrationUserDto);
+    public UserAccountDetailsDto registrationUser(@Valid @RequestBody RegistrationUserDto registrationUserDto) {
+        return authService.registrationUser(registrationUserDto);
     }
 
-    @PostMapping("/registration/confirmation-code")
-    @Operation(summary = "Отправка кода на почту")
+    @PostMapping("/refresh-token")
+    @Operation(summary = "Обновление токена")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Токены обновлены", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = JwtTokenPairDto.class))}),
+            @ApiResponse(responseCode = "401", description = "Недействительный refresh-токен", content = {@Content(mediaType = "application/json")})
+    })
+    public JwtTokenPairDto refreshToken(@Valid @RequestBody RefreshTokenRequestDto refreshTokenRequest) {
+        return authService.refreshToken(refreshTokenRequest.getRefreshToken());
+    }
+
+    @PostMapping("/password-forgot")
+    @Operation(summary = "Отправка ссылки для смены пароля")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Письмо отправлено", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
-            @ApiResponse(responseCode = "409", description = "Почта уже занята", content = {@Content(mediaType = "application/json")})
+            @ApiResponse(responseCode = "404", description = "Пользователь не найден", content = {@Content(mediaType = "application/json")})
     })
-    public ResponseDto sendCode(@Valid @RequestBody EmailDto emailDto) {
-        return emailService.sendRegistrationCode(emailDto);
+    public ResponseDto createPasswordResetLink(@Valid @RequestBody EmailDto emailDto) {
+        return passwordResetService.createPasswordResetLink(emailDto);
     }
+
+    @PostMapping("/password-reset")
+    @Operation(summary = "Смена пароля")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Пароль изменён", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
+            @ApiResponse(responseCode = "404", description = "Неверный UUID | Время истекло", content = {@Content(mediaType = "application/json")})
+    })
+    public ResponseDto resetPassword(@RequestParam("uuid") String linkToken, @Valid @RequestBody PasswordResetDto passwordResetDto) {
+        return passwordResetService.resetPassword(linkToken, passwordResetDto);
+    }
+
+
+
 }

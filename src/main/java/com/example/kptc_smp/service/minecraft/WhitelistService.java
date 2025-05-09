@@ -4,6 +4,7 @@ import com.example.kptc_smp.entity.minecraft.Whitelist;
 import com.example.kptc_smp.repository.minecraft.WhitelistRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor

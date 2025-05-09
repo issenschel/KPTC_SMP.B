@@ -57,6 +57,9 @@ public class AuthMe {
     @Column(name = "isLogged")
     private boolean isLogged;
 
+    @Column(name = "hasSession")
+    private boolean hasSession;
+
     @Column(name = "totp")
     private String totp;
 }

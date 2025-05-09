@@ -1,47 +1,48 @@
 package com.example.kptc_smp.controller;
 
-import com.example.kptc_smp.dto.ImageDto;
-import com.example.kptc_smp.service.main.ImageService;
+import com.example.kptc_smp.dto.image.ImageResponse;
+import com.example.kptc_smp.service.main.image.ImageStorageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.UUID;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/image")
-@Tag(name = "Image")
+@RequiredArgsConstructor
 public class ImageController {
-    private final ImageService imageService;
+    private final ImageStorageService imageStorageService;
 
-    @GetMapping("/resource")
-    @Operation(summary = "Получение фото пользователя")
+    @PostMapping()
+    @Operation(summary = "Отправка фотографии")
+    @SecurityRequirement(name = "bearerAuth")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Фото отправлено", content = {@Content(mediaType = "image/jpeg")}),
-            @ApiResponse(responseCode = "404", description = "Фото не найдено", content = {@Content(mediaType = "application/json")})
+            @ApiResponse(responseCode = "200", description = "Фото изменено", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ImageResponse.class))}),
+            @ApiResponse(responseCode = "400", description = "С фото что-то не так", content = {@Content(mediaType = "application/json")}),
     })
-    public ResponseEntity<Resource> getImageAsResource(@RequestParam(name = "imageName") String imageName) {
-        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(imageService.getImage(imageName));
+    public ResponseEntity<ImageResponse> uploadTempImage(@RequestParam("image") MultipartFile file) {
+        return ResponseEntity.ok(imageStorageService.uploadTempImage(file));
     }
 
-    @GetMapping("/byte")
-    @Operation(summary = "Получение фото пользователя")
+    @GetMapping("/{imageId}")
+    @Operation(summary = "Получение фотографии")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Фото отправлено", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = ImageDto.class))}),
-            @ApiResponse(responseCode = "404", description = "Фото не найдено", content = {@Content(mediaType = "application/json")})
+            @ApiResponse(responseCode = "200", description = "Фото отправлено"),
+            @ApiResponse(responseCode = "404", description = "Фото не найдено")
     })
-    public ImageDto getImageAsBytes(@RequestParam(name = "imageName") String imageName) {
-        return imageService.getImageAsBytes(imageName);
+    public ResponseEntity<Resource> getImage(@PathVariable UUID imageId) {
+        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(imageStorageService.getFileAsResource(imageId));
     }
+
 }
