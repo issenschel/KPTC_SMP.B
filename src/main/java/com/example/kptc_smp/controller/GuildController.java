@@ -1,9 +1,9 @@
 package com.example.kptc_smp.controller;
 
 import com.example.kptc_smp.dto.ResponseDto;
-import com.example.kptc_smp.dto.guild.GuildOrderDto;
-import com.example.kptc_smp.dto.guild.GuildOrderGroupDto;
-import com.example.kptc_smp.entity.main.GuildOrder;
+import com.example.kptc_smp.dto.guild.GuildOrderRequestDto;
+import com.example.kptc_smp.dto.guild.GuildOrderGroupResponseDto;
+import com.example.kptc_smp.model.main.GuildOrder;
 import com.example.kptc_smp.service.main.guild.GuildOrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -36,8 +36,8 @@ public class GuildController {
             @ApiResponse(responseCode = "401", description = "Вы не авторизованы", content = {@Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "403", description = "Недостаточно прав", content = {@Content(mediaType = "application/json")})
     })
-    public GuildOrder createNewOrder(@Valid @RequestBody GuildOrderDto guildOrderDto) {
-        return guildOrderService.createNewOrder(guildOrderDto);
+    public GuildOrder createNewOrder(@Valid @RequestBody GuildOrderRequestDto guildOrderRequestDto) {
+        return guildOrderService.createNewOrder(guildOrderRequestDto);
     }
 
     @PutMapping("/order/{id}")
@@ -50,8 +50,8 @@ public class GuildController {
             @ApiResponse(responseCode = "403", description = "Недостаточно прав", content = {@Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "404", description = "Заказ не найден", content = {@Content(mediaType = "application/json")})
     })
-    public GuildOrder changeOrder(@Valid @RequestBody GuildOrderDto guildOrderDto, @PathVariable @Min(1) int id ) {
-        return guildOrderService.changeOrder(guildOrderDto, id);
+    public GuildOrder changeOrder(@Valid @RequestBody GuildOrderRequestDto guildOrderRequestDto, @PathVariable @Min(1) int id ) {
+        return guildOrderService.changeOrder(guildOrderRequestDto, id);
     }
 
     @DeleteMapping("/order/{id}")
@@ -71,8 +71,8 @@ public class GuildController {
     @GetMapping("/orders")
     @Operation(summary = "Получение заказов")
     @ApiResponse(responseCode = "200", description = "Список заказов получен", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = GuildOrderGroupDto.class))})
-    public GuildOrderGroupDto getOrders(@RequestParam(name = "page", defaultValue = "1") @Min(1) int page) {
+            @Content(mediaType = "application/json", schema = @Schema(implementation = GuildOrderGroupResponseDto.class))})
+    public GuildOrderGroupResponseDto getOrders(@RequestParam(name = "page", defaultValue = "1") @Min(1) int page) {
         return guildOrderService.getOrders(page);
     }
 }

@@ -10,8 +10,8 @@ import java.util.List;
 @AllArgsConstructor
 @Schema(description = "Модель получения токенов с ролью")
 public class AuthResponseDto {
-    @Schema(description = "Модель токенов")
-    private JwtTokenPairDto jwtTokenPairDto;
+    @Schema(description = "Модель пары JWT-токенов доступа и обновления")
+    private JwtTokenPairResponseDto tokens;
     @Schema(description = "Список ролей")
     private List<String> roles;
 }

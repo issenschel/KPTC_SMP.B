@@ -1,5 +1,6 @@
 package com.example.kptc_smp.dto.news;
 
+import com.example.kptc_smp.dto.image.ImageResponseDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -20,6 +21,6 @@ public class NewsResponseDto {
     @Schema(description = "Дата выхода новости")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd.MM.yyyy HH:mm")
     private LocalDateTime datePublication;
-    @Schema(description = "Ссылка на превью")
-    private String previewUrl;
+    @Schema(description = "Ссылка на изображение")
+    private String imageUrl;
 }

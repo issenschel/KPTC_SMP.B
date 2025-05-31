@@ -1,8 +1,8 @@
 package com.example.kptc_smp.service.main.news;
 
-import com.example.kptc_smp.entity.main.ImageRegistry;
-import com.example.kptc_smp.entity.main.News;
-import com.example.kptc_smp.entity.main.NewsImage;
+import com.example.kptc_smp.model.main.ImageRegistry;
+import com.example.kptc_smp.model.main.News;
+import com.example.kptc_smp.model.main.NewsImage;
 import com.example.kptc_smp.enums.NewsImageRole;
 import com.example.kptc_smp.repository.main.NewsImageRepository;
 import lombok.RequiredArgsConstructor;

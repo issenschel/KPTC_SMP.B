@@ -1,12 +1,12 @@
 package com.example.kptc_smp.service.main.email;
 
-import com.example.kptc_smp.dto.ActionTicketDto;
+import com.example.kptc_smp.dto.ActionTicketResponseDto;
 import com.example.kptc_smp.dto.ResponseDto;
-import com.example.kptc_smp.dto.email.CodeDto;
-import com.example.kptc_smp.dto.email.EmailDto;
-import com.example.kptc_smp.entity.main.ActionTicket;
-import com.example.kptc_smp.entity.main.EmailVerification;
-import com.example.kptc_smp.entity.main.User;
+import com.example.kptc_smp.dto.email.CodeRequestDto;
+import com.example.kptc_smp.dto.email.EmailRequestDto;
+import com.example.kptc_smp.model.main.ActionTicket;
+import com.example.kptc_smp.model.main.EmailVerification;
+import com.example.kptc_smp.model.main.User;
 import com.example.kptc_smp.enums.ActionType;
 import com.example.kptc_smp.enums.EmailTemplateType;
 import com.example.kptc_smp.exception.email.EmailFoundException;
@@ -15,8 +15,8 @@ import com.example.kptc_smp.service.main.user.ActionTicketService;
 import com.example.kptc_smp.service.main.user.UserInformationService;
 import com.example.kptc_smp.service.main.user.UserService;
 import com.example.kptc_smp.utility.email.EmailCodeGenerator;
-import com.example.kptc_smp.utility.email.EmailMessageComposer;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,17 +28,26 @@ public class EmailService {
     private final UserInformationService userInformationService;
     private final UserService userService;
     private final ActionTicketService actionTicketService;
-    private final EmailSender emailSender;
+    private final EmailSenderService emailSenderService;
     private final EmailCodeGenerator codeGenerator;
-    private final EmailMessageComposer emailComposer;
+    private final EmailMessageComposerService emailComposer;
+
+    @Value("${message.code.sent}")
+    private String codeSentMessage;
+
+    @Value("${message.email.sent}")
+    private String emailSentMessage;
+
+    @Value("${message.email.password.reset.subject}")
+    private String passwordResetSubject;
 
     @Transactional
-    public ResponseDto sendEmailCode(EmailDto emailDto) {
-        userInformationService.findByEmail(emailDto.getEmail()).ifPresent(u -> { throw new EmailFoundException(); });
+    public ResponseDto sendEmailCode(EmailRequestDto emailRequestDto) {
+        userInformationService.findByEmail(emailRequestDto.getEmail()).ifPresent(u -> { throw new EmailFoundException(); });
 
-        sendVerificationEmail(emailDto.getEmail(), EmailTemplateType.REGISTRATION);
+        sendVerificationEmail(emailRequestDto.getEmail(), EmailTemplateType.REGISTRATION);
 
-        return new ResponseDto("Код отправлен");
+        return new ResponseDto(codeSentMessage);
     }
 
     @Transactional
@@ -49,28 +58,28 @@ public class EmailService {
 
         sendVerificationEmail(user.getUserInformation().getEmail(), EmailTemplateType.EMAIL_CHANGE);
 
-        return new ResponseDto("Код отправлен");
+        return new ResponseDto(codeSentMessage);
     }
 
     @Transactional
-    public ActionTicketDto verifyCurrentEmailCode(CodeDto codeDto) {
+    public ActionTicketResponseDto verifyCurrentEmailCode(CodeRequestDto codeRequestDto) {
         User user = userService.findWithUserInformationByUsername(
                 SecurityContextHolder.getContext().getAuthentication().getName())
                 .orElseThrow(UserNotFoundException::new);
         String email = user.getUserInformation().getEmail();
-        EmailVerification verification = emailVerificationService.findValidEmailVerification(email, codeDto.getCode());
+        EmailVerification verification = emailVerificationService.findValidEmailVerification(email, codeRequestDto.getCode());
 
         ActionTicket actionTicket = actionTicketService.updateOrCreateActionTicket(user, ActionType.EMAIL_CHANGE);
 
         emailVerificationService.delete(verification);
 
-        return new ActionTicketDto(actionTicket.getTicket());
+        return new ActionTicketResponseDto(actionTicket.getTicket());
     }
 
     public ResponseDto sendPasswordResetLink(String email, String link) {
         String message = emailComposer.composePasswordResetEmail(link);
-        emailSender.sendHtmlEmail(email, "Восстановление пароля", message);
-        return new ResponseDto("Письмо отправлено");
+        emailSenderService.sendHtmlEmail(email, passwordResetSubject, message);
+        return new ResponseDto(emailSentMessage);
     }
 
     private void sendVerificationEmail(String email, EmailTemplateType templateType) {
@@ -78,7 +87,7 @@ public class EmailService {
         emailVerificationService.createOrUpdate(email, code);
 
         String message = emailComposer.composeVerificationEmail(code, templateType);
-        emailSender.sendHtmlEmail(email, templateType.getHeader(), message);
+        emailSenderService.sendHtmlEmail(email, templateType.getHeader(), message);
     }
 
 }

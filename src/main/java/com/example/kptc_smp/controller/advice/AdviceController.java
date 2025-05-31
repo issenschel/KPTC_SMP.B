@@ -3,11 +3,9 @@ package com.example.kptc_smp.controller.advice;
 import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.exception.actionticket.ActionTicketExpireException;
 import com.example.kptc_smp.exception.actionticket.ActionTicketNotFoundException;
-import com.example.kptc_smp.exception.file.FileNotFoundException;
-import com.example.kptc_smp.exception.google.GoogleDriveException;
+import com.example.kptc_smp.exception.image.ImageNotFoundException;
 import com.example.kptc_smp.exception.guild.OrderNotFoundException;
 import com.example.kptc_smp.exception.news.NewsNotFoundException;
-import com.example.kptc_smp.exception.zip.ZipException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -26,8 +24,8 @@ public class AdviceController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDto(e.getMessage()));
     }
 
-    @ExceptionHandler(FileNotFoundException.class)
-    public ResponseEntity<ResponseDto> fileNotFoundException(FileNotFoundException e) {
+    @ExceptionHandler(ImageNotFoundException.class)
+    public ResponseEntity<ResponseDto> fileNotFoundException(ImageNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDto(e.getMessage()));
     }
 

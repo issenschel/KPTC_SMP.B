@@ -1,13 +1,14 @@
 package com.example.kptc_smp.service.main.image;
 
-import com.example.kptc_smp.dto.image.ImageResponse;
-import com.example.kptc_smp.entity.main.ImageRegistry;
-import com.example.kptc_smp.entity.main.User;
+import com.example.kptc_smp.dto.image.ImageResponseDto;
+import com.example.kptc_smp.model.main.ImageRegistry;
+import com.example.kptc_smp.model.main.User;
 import com.example.kptc_smp.enums.ImageCategory;
 import com.example.kptc_smp.enums.ImageStatus;
-import com.example.kptc_smp.exception.file.FileNotFoundException;
+import com.example.kptc_smp.exception.image.ImageNotFoundException;
 import com.example.kptc_smp.exception.image.ImageException;
 import com.example.kptc_smp.repository.main.ImageRegistryRepository;
+import com.example.kptc_smp.service.main.validator.ImageValidatorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,17 +31,17 @@ import java.util.UUID;
 @Slf4j
 public class ImageStorageService {
     private final ImageRegistryRepository imageRegistryRepository;
-    private final ImageStorageManager storageManager;
-    private final ImagePathBuilder pathBuilder;
-    private final ImageValidator imageValidator;
-    private final ImageRegistryManager registryManager;
+    private final ImageStorageManagerService storageManager;
+    private final ImagePathBuilderService pathBuilder;
+    private final ImageValidatorService imageValidatorService;
+    private final ImageRegistryManagerService registryManager;
 
     @Value("${file.storage.temp-expiration-hours}")
     private int tempExpirationHours;
 
     @Transactional
-    public ImageResponse uploadTempImage(MultipartFile image) {
-        imageValidator.validateImage(image);
+    public ImageResponseDto uploadTempImage(MultipartFile image) {
+        imageValidatorService.validateImage(image);
 
         UUID fileId = UUID.randomUUID();
         String extension = pathBuilder.getExtension(image.getOriginalFilename());
@@ -85,7 +86,7 @@ public class ImageStorageService {
     @Transactional
     public void attachImage(UUID fileId, ImageCategory category, Integer ownerId) {
         ImageRegistry file = imageRegistryRepository.findById(fileId)
-                .orElseThrow(FileNotFoundException::new);
+                .orElseThrow(ImageNotFoundException::new);
 
         if (file.getStatus() != ImageStatus.TEMP) {
             throw new ImageException();
@@ -109,12 +110,12 @@ public class ImageStorageService {
     }
 
     public Resource getFileAsResource(UUID fileId) {
-        ImageRegistry file = imageRegistryRepository.findById(fileId).orElseThrow(FileNotFoundException::new);
+        ImageRegistry file = imageRegistryRepository.findById(fileId).orElseThrow(ImageNotFoundException::new);
         try {
             InputStream inputStream = storageManager.getFileStream(file.getStoragePath());
             return new InputStreamResource(inputStream);
         } catch (Exception e) {
-            throw new FileNotFoundException();
+            throw new ImageNotFoundException();
         }
     }
 
@@ -130,7 +131,7 @@ public class ImageStorageService {
         return imageRegistryRepository.findByOwnerId(ownerId);
     }
 
-    @Scheduled(cron = "0 0 3 * * ?")
+    @Scheduled(cron = "${scheduled.image.cleanup.cron}")
     @Transactional
     public void cleanupTempFiles() {
         LocalDateTime threshold = LocalDateTime.now().minusHours(tempExpirationHours);

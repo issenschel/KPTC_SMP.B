@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Verification Email</title>
+    <style>
+        .email-container {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+        }
+        .header {
+            color: #2c3e50;
+        }
+        .code-box {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 24px;
+            letter-spacing: 2px;
+            border-radius: 4px;
+        }
+        .footer-note {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="email-container">
+    <h2 class="header" th:text="${header}">Header</h2>
+    <p th:text="${description}">Description</p>
+
+    <div class="code-box">
+        <strong th:text="${code}">CODE</strong>
+    </div>
+
+    <p>Этот код действителен в течение 10 минут.</p>
+    <p class="footer-note">
+        Если вы не запрашивали этот код, пожалуйста, проигнорируйте это письмо.
+    </p>
+</div>
+</body>
+
+</html>

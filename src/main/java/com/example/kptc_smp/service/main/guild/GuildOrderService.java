@@ -1,12 +1,13 @@
 package com.example.kptc_smp.service.main.guild;
 
 import com.example.kptc_smp.dto.ResponseDto;
-import com.example.kptc_smp.dto.guild.GuildOrderGroupDto;
-import com.example.kptc_smp.dto.guild.GuildOrderDto;
-import com.example.kptc_smp.entity.main.GuildOrder;
+import com.example.kptc_smp.dto.guild.GuildOrderGroupResponseDto;
+import com.example.kptc_smp.dto.guild.GuildOrderRequestDto;
+import com.example.kptc_smp.model.main.GuildOrder;
 import com.example.kptc_smp.exception.guild.OrderNotFoundException;
 import com.example.kptc_smp.repository.main.GuildOrderRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -16,19 +17,25 @@ import org.springframework.stereotype.Service;
 public class GuildOrderService {
     private final GuildOrderRepository guildOrderRepository;
 
-    public GuildOrder createNewOrder(GuildOrderDto guildOrderDto) {
+    @Value("${message.order.deleted}")
+    private String orderDeletedMessage;
+
+    @Value("${page.guild.order.size}")
+    private int pageSize;
+
+    public GuildOrder createNewOrder(GuildOrderRequestDto guildOrderRequestDto) {
         GuildOrder guildOrder = new GuildOrder();
-        guildOrder.setHeader(guildOrderDto.getHeader());
-        guildOrder.setMessage(guildOrderDto.getMessage());
-        guildOrder.setPseudonym(guildOrderDto.getPseudonym());
+        guildOrder.setHeader(guildOrderRequestDto.getHeader());
+        guildOrder.setMessage(guildOrderRequestDto.getMessage());
+        guildOrder.setPseudonym(guildOrderRequestDto.getPseudonym());
         return guildOrderRepository.save(guildOrder);
     }
 
-    public GuildOrder changeOrder(GuildOrderDto guildOrderDto, int id) {
+    public GuildOrder changeOrder(GuildOrderRequestDto guildOrderRequestDto, int id) {
         GuildOrder guildOrder = guildOrderRepository.findById(id).orElseThrow(OrderNotFoundException::new);
-        guildOrder.setHeader(guildOrderDto.getHeader());
-        guildOrder.setMessage(guildOrderDto.getMessage());
-        guildOrder.setPseudonym(guildOrderDto.getPseudonym());
+        guildOrder.setHeader(guildOrderRequestDto.getHeader());
+        guildOrder.setMessage(guildOrderRequestDto.getMessage());
+        guildOrder.setPseudonym(guildOrderRequestDto.getPseudonym());
         guildOrderRepository.save(guildOrder);
         return guildOrder;
     }
@@ -36,16 +43,16 @@ public class GuildOrderService {
     public ResponseDto deleteOrder(int id) {
         GuildOrder guildOrder = guildOrderRepository.findById(id).orElseThrow(OrderNotFoundException::new);
         guildOrderRepository.delete(guildOrder);
-        return new ResponseDto("Заказ удален");
+        return new ResponseDto(orderDeletedMessage);
     }
 
-    public GuildOrderGroupDto getOrders(int page) {
-        GuildOrderGroupDto guildOrderGroupDto = new GuildOrderGroupDto();
-        PageRequest pageRequest = PageRequest.of(page-1, 6);
+    public GuildOrderGroupResponseDto getOrders(int page) {
+        GuildOrderGroupResponseDto guildOrderGroupResponseDto = new GuildOrderGroupResponseDto();
+        PageRequest pageRequest = PageRequest.of(page-1, pageSize);
         Page<GuildOrder> ordersPage = guildOrderRepository.findAll(pageRequest);
         int totalPages = ordersPage.getTotalPages();
-        guildOrderGroupDto.setGuildOrders(ordersPage.getContent());
-        guildOrderGroupDto.setCountPage(totalPages);
-        return guildOrderGroupDto;
+        guildOrderGroupResponseDto.setGuildOrders(ordersPage.getContent());
+        guildOrderGroupResponseDto.setCountPage(totalPages);
+        return guildOrderGroupResponseDto;
     }
 }

@@ -1,9 +1,9 @@
 package com.example.kptc_smp.controller;
 
-import com.example.kptc_smp.dto.ActionTicketDto;
+import com.example.kptc_smp.dto.ActionTicketResponseDto;
 import com.example.kptc_smp.dto.ResponseDto;
-import com.example.kptc_smp.dto.email.CodeDto;
-import com.example.kptc_smp.dto.email.EmailDto;
+import com.example.kptc_smp.dto.email.CodeRequestDto;
+import com.example.kptc_smp.dto.email.EmailRequestDto;
 import com.example.kptc_smp.service.main.email.EmailService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -31,8 +31,8 @@ public class EmailController {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
             @ApiResponse(responseCode = "404", description = "Пользователь не найден | Время истекло", content = {@Content(mediaType = "application/json")})
     })
-    public ResponseDto sendCode(@Valid @RequestBody EmailDto emailDto) {
-        return emailService.sendEmailCode(emailDto);
+    public ResponseDto sendCode(@Valid @RequestBody EmailRequestDto emailRequestDto) {
+        return emailService.sendEmailCode(emailRequestDto);
     }
 
     @PostMapping("/confirmation-code/current")
@@ -51,7 +51,7 @@ public class EmailController {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
             @ApiResponse(responseCode = "400", description = "Неверно заполнены данные | поля", content = {@Content(mediaType = "application/json")}),
     })
-    public ActionTicketDto verifyCurrentEmailCode(@Valid @RequestBody CodeDto codeDto) {
-        return emailService.verifyCurrentEmailCode(codeDto);
+    public ActionTicketResponseDto verifyCurrentEmailCode(@Valid @RequestBody CodeRequestDto codeRequestDto) {
+        return emailService.verifyCurrentEmailCode(codeRequestDto);
     }
 }

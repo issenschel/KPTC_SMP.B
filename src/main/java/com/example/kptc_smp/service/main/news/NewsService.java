@@ -1,19 +1,20 @@
 package com.example.kptc_smp.service.main.news;
 
 import com.example.kptc_smp.dto.ResponseDto;
-import com.example.kptc_smp.dto.news.HeadlineNewsGroupDto;
+import com.example.kptc_smp.dto.news.HeadlineNewsGroupResponseDto;
 import com.example.kptc_smp.dto.news.NewsRequestDto;
 import com.example.kptc_smp.dto.news.NewsResponseDto;
-import com.example.kptc_smp.entity.main.ImageRegistry;
-import com.example.kptc_smp.entity.main.News;
-import com.example.kptc_smp.entity.main.NewsImage;
+import com.example.kptc_smp.model.main.ImageRegistry;
+import com.example.kptc_smp.model.main.News;
+import com.example.kptc_smp.model.main.NewsImage;
 import com.example.kptc_smp.enums.ImageCategory;
 import com.example.kptc_smp.enums.NewsImageRole;
 import com.example.kptc_smp.exception.news.NewsNotFoundException;
 import com.example.kptc_smp.repository.main.NewsRepository;
 import com.example.kptc_smp.service.main.image.ImageStorageService;
-import com.example.kptc_smp.service.main.image.ImageValidator;
+import com.example.kptc_smp.service.main.validator.ImageValidatorService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -29,14 +30,23 @@ import java.util.List;
 @RequiredArgsConstructor
 public class NewsService {
     private final NewsRepository newsRepository;
-    private final NewsMapper newsMapper;
+    private final NewsMapperService newsMapperService;
     private final NewsImageService newsImageService;
     private final ImageStorageService imageStorageService;
-    private final ImageValidator imageValidator;
+    private final ImageValidatorService imageValidatorService;
+
+    @Value("${message.news.deleted}")
+    private String newsDeletedMessage;
+
+    @Value("${page.news.headline.size}")
+    private int headlinePageSize;
+
+    @Value("${page.news.headline.sort.field}")
+    private String headlineSortField;
 
     @Transactional(rollbackFor = IOException.class)
     public NewsResponseDto createNews(NewsRequestDto newsRequestDto, MultipartFile image) {
-        imageValidator.validateImage(image);
+        imageValidatorService.validateImage(image);
 
         News news = new News();
         news.setTitle(newsRequestDto.getTitle());
@@ -48,7 +58,7 @@ public class NewsService {
         NewsImage newsImage = newsImageService.createNewsImage(news, imageRegistry, NewsImageRole.PREVIEW);
         news.getImages().add(newsImage);
 
-        return newsMapper.toNewsResponseDto(news);
+        return newsMapperService.toNewsResponseDto(news);
     }
 
     @Transactional
@@ -56,12 +66,12 @@ public class NewsService {
         News news = newsRepository.findById(id).orElseThrow(NewsNotFoundException::new);
         news.setTitle(newsRequestDto.getTitle());
         news.setContent(newsRequestDto.getContent());
-        return newsMapper.toNewsResponseDto(news);
+        return newsMapperService.toNewsResponseDto(news);
     }
 
     @Transactional
     public NewsResponseDto updateNewsPreview(MultipartFile image, int id) {
-        imageValidator.validateImage(image);
+        imageValidatorService.validateImage(image);
 
         News news = newsRepository.findWithImagesAndRegistryById(id).orElseThrow(NewsNotFoundException::new);
         NewsImage newsImage = news.getImages().stream()
@@ -78,12 +88,12 @@ public class NewsService {
             newsImageService.createNewsImage(news, newImageRegistry, NewsImageRole.PREVIEW);
         }
 
-        return newsMapper.toNewsResponseDto(news);
+        return newsMapperService.toNewsResponseDto(news);
     }
 
     public NewsResponseDto getNews(int newsId) {
         News news = newsRepository.findWithImagesById(newsId).orElseThrow(NewsNotFoundException::new);
-        return newsMapper.toNewsResponseDto(news);
+        return newsMapperService.toNewsResponseDto(news);
     }
 
     @Transactional
@@ -91,16 +101,16 @@ public class NewsService {
         News news = newsRepository.findById(id).orElseThrow(NewsNotFoundException::new);
         newsRepository.delete(news);
         imageStorageService.deleteFolder(news.getImages().stream().map(NewsImage::getImageRegistry).toList());
-        return new ResponseDto("Новость удалена");
+        return new ResponseDto(newsDeletedMessage);
     }
 
     @Transactional
-    public HeadlineNewsGroupDto getHeadlineNews(int page) {
-        PageRequest pageRequest = PageRequest.of(page - 1, 9, Sort.by(Sort.Direction.DESC, "id"));
+    public HeadlineNewsGroupResponseDto getHeadlineNews(int page) {
+        PageRequest pageRequest = PageRequest.of(page - 1, headlinePageSize, Sort.by(Sort.Direction.DESC, headlineSortField));
         Page<Integer> idsPage = newsRepository.findNewsIds(pageRequest);
         List<News> newsList = newsRepository.findFullNewsByIds(idsPage.getContent());
-        return HeadlineNewsGroupDto.builder()
-                .news(newsMapper.toHeadlineNewsDtoList(newsList))
+        return HeadlineNewsGroupResponseDto.builder()
+                .news(newsMapperService.toHeadlineNewsDtoList(newsList))
                 .countPage(idsPage.getTotalPages())
                 .build();
     }

@@ -5,6 +5,7 @@ import com.example.kptc_smp.exception.auth.PasswordResetDateExpiredException;
 import com.example.kptc_smp.exception.auth.PasswordResetUUIDNotFoundException;
 import com.example.kptc_smp.exception.auth.RegistrationValidationException;
 import com.example.kptc_smp.exception.user.UserNotFoundException;
+import io.jsonwebtoken.JwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -38,6 +39,11 @@ public class AuthAdviceController {
 
     @ExceptionHandler(PasswordResetUUIDNotFoundException.class)
     public ResponseEntity<ResponseDto> passwordResetUUIDNotFoundException(PasswordResetUUIDNotFoundException e) {
+        return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
+    }
+
+    @ExceptionHandler(JwtException.class)
+    public ResponseEntity<ResponseDto> jwtException(JwtException e) {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
     }
 }

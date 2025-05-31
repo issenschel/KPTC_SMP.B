@@ -1,11 +1,9 @@
 package com.example.kptc_smp.controller;
 
-import com.example.kptc_smp.dto.auth.JwtTokenPairDto;
+import com.example.kptc_smp.dto.auth.JwtTokenPairResponseDto;
 import com.example.kptc_smp.dto.ResponseDto;
-import com.example.kptc_smp.dto.profile.EmailChangeDto;
-import com.example.kptc_smp.dto.profile.PasswordChangeDto;
-import com.example.kptc_smp.dto.profile.UserAccountDetailsDto;
-import com.example.kptc_smp.dto.profile.UserProfileDto;
+import com.example.kptc_smp.dto.image.ImageResponseDto;
+import com.example.kptc_smp.dto.profile.*;
 import com.example.kptc_smp.service.main.user.ProfileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -15,9 +13,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,8 +35,8 @@ public class ProfileController {
     @Operation(summary = "Получение данных об аккаунте пользователя в профиле")
     @SecurityRequirement(name = "bearerAuth")
     @ApiResponse(responseCode = "200", description = "Данные получены", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = UserAccountDetailsDto.class))})
-    public UserAccountDetailsDto getUserAccountDetails() {
+            @Content(mediaType = "application/json", schema = @Schema(implementation = UserAccountDetailsResponseDto.class))})
+    public UserAccountDetailsResponseDto getUserAccountDetails() {
         return profileService.getUserAccountDetails();
     }
 
@@ -43,9 +44,36 @@ public class ProfileController {
     @Operation(summary = "Получение логина и ссылки на аватарку для профиля")
     @SecurityRequirement(name = "bearerAuth")
     @ApiResponse(responseCode = "200", description = "Данные получены", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = UserProfileDto.class))})
-    public UserProfileDto getUserProfileInfo() {
+            @Content(mediaType = "application/json", schema = @Schema(implementation = UserProfileResponseDto.class))})
+    public UserProfileResponseDto getUserProfileInfo() {
         return profileService.getUserProfileInfo();
+    }
+
+    @GetMapping("/user-sessions")
+    @Operation(summary = "Получение всех сессий пользователя")
+    @SecurityRequirement(name = "bearerAuth")
+    @ApiResponse(responseCode = "200", description = "Данные получены", content = {
+            @Content(mediaType = "application/json", schema = @Schema(implementation = SessionDataResponseDto.class))})
+    public List<SessionDataResponseDto> getUserSessions() {
+        return profileService.getAllSession();
+    }
+
+    @DeleteMapping("/user-session/{userSessionId}")
+    @Operation(summary = "Удаление всех сессий пользователя кроме текущей")
+    @SecurityRequirement(name = "bearerAuth")
+    @ApiResponse(responseCode = "200", description = "Данные получены", content = {
+            @Content(mediaType = "application/json", schema = @Schema(implementation = UserProfileResponseDto.class))})
+    public ResponseDto deleteSession(@PathVariable @Min(1) int userSessionId) {
+        return profileService.deleteSession(userSessionId);
+    }
+
+    @DeleteMapping("/user-sessions")
+    @Operation(summary = "Удаление всех сессий пользователя кроме текущей")
+    @SecurityRequirement(name = "bearerAuth")
+    @ApiResponse(responseCode = "200", description = "Данные получены", content = {
+            @Content(mediaType = "application/json", schema = @Schema(implementation = UserProfileResponseDto.class))})
+    public ResponseDto deleteAllSessionsExceptCurrentByUser() {
+        return profileService.deleteAllSessionsExceptCurrentByUser();
     }
 
     @PutMapping("/password")
@@ -56,8 +84,8 @@ public class ProfileController {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
             @ApiResponse(responseCode = "400", description = "Неверно заполнены данные | поля", content = {@Content(mediaType = "application/json")}),
     })
-    public JwtTokenPairDto changePassword(@Valid @RequestBody PasswordChangeDto passwordChangeDto) {
-        return profileService.changePassword(passwordChangeDto);
+    public JwtTokenPairResponseDto changePassword(@Valid @RequestBody PasswordChangeRequestDto passwordChangeRequestDto) {
+        return profileService.changePassword(passwordChangeRequestDto);
     }
 
     @PutMapping("/email")
@@ -69,8 +97,8 @@ public class ProfileController {
             @ApiResponse(responseCode = "400", description = "Неверно заполнены данные | поля", content = {@Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "409", description = "Почта занята", content = {@Content(mediaType = "application/json")}),
     })
-    public JwtTokenPairDto changeEmail(@Valid @RequestBody EmailChangeDto emailChangeDto) {
-        return profileService.changeEmail(emailChangeDto);
+    public JwtTokenPairResponseDto changeEmail(@Valid @RequestBody EmailChangeRequestDto emailChangeRequestDto) {
+        return profileService.changeEmail(emailChangeRequestDto);
     }
 
     @PutMapping(path = "/image", consumes = "multipart/*")
@@ -81,7 +109,7 @@ public class ProfileController {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
             @ApiResponse(responseCode = "400", description = "С фото что-то не так", content = {@Content(mediaType = "application/json")}),
     })
-    public UserProfileDto changeImage(@RequestParam("image") MultipartFile image) {
+    public ImageResponseDto changeImage(@RequestParam("image") MultipartFile image) {
         return profileService.changeImage(image);
     }
 }

@@ -1,6 +1,6 @@
 package com.example.kptc_smp.repository.minecraft;
 
-import com.example.kptc_smp.entity.minecraft.AuthMe;
+import com.example.kptc_smp.model.minecraft.AuthMe;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.Optional;

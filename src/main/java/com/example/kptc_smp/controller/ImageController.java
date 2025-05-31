@@ -1,6 +1,6 @@
 package com.example.kptc_smp.controller;
 
-import com.example.kptc_smp.dto.image.ImageResponse;
+import com.example.kptc_smp.dto.image.ImageResponseDto;
 import com.example.kptc_smp.service.main.image.ImageStorageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -28,11 +28,11 @@ public class ImageController {
     @SecurityRequirement(name = "bearerAuth")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Фото изменено", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = ImageResponse.class))}),
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ImageResponseDto.class))}),
             @ApiResponse(responseCode = "400", description = "С фото что-то не так", content = {@Content(mediaType = "application/json")}),
     })
-    public ResponseEntity<ImageResponse> uploadTempImage(@RequestParam("image") MultipartFile file) {
-        return ResponseEntity.ok(imageStorageService.uploadTempImage(file));
+    public ImageResponseDto uploadTempImage(@RequestParam("image") MultipartFile file) {
+        return imageStorageService.uploadTempImage(file);
     }
 
     @GetMapping("/{imageId}")
@@ -41,8 +41,8 @@ public class ImageController {
             @ApiResponse(responseCode = "200", description = "Фото отправлено"),
             @ApiResponse(responseCode = "404", description = "Фото не найдено")
     })
-    public ResponseEntity<Resource> getImage(@PathVariable UUID imageId) {
-        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(imageStorageService.getFileAsResource(imageId));
+    public Resource getImage(@PathVariable UUID imageId) {
+        return imageStorageService.getFileAsResource(imageId);
     }
 
 }

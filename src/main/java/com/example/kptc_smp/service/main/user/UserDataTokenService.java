@@ -1,7 +1,7 @@
 package com.example.kptc_smp.service.main.user;
 
-import com.example.kptc_smp.entity.main.User;
-import com.example.kptc_smp.entity.main.UserDataToken;
+import com.example.kptc_smp.model.main.User;
+import com.example.kptc_smp.model.main.UserDataToken;
 import com.example.kptc_smp.repository.main.UserDataTokenRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

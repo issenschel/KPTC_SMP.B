@@ -39,6 +39,7 @@ public class SecurityConfig {
                         .requestMatchers("/backup/**").hasRole("ADMIN")
                         .requestMatchers("/guild/order/**").hasRole("ADMIN")
                         .requestMatchers("/news/**").hasRole("ADMIN")
+
                         .anyRequest().permitAll()).sessionManagement(sessionManagementCustomizer -> sessionManagementCustomizer
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)).exceptionHandling(exceptionHandlingCustomizer ->
                         exceptionHandlingCustomizer.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)

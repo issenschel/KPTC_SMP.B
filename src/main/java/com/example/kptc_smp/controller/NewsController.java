@@ -1,7 +1,7 @@
 package com.example.kptc_smp.controller;
 
 import com.example.kptc_smp.dto.ResponseDto;
-import com.example.kptc_smp.dto.news.HeadlineNewsGroupDto;
+import com.example.kptc_smp.dto.news.HeadlineNewsGroupResponseDto;
 import com.example.kptc_smp.dto.news.NewsRequestDto;
 import com.example.kptc_smp.dto.news.NewsResponseDto;
 import com.example.kptc_smp.service.main.news.NewsService;
@@ -87,8 +87,8 @@ public class NewsController {
     @GetMapping()
     @Operation(summary = "Получение списка новостей")
     @ApiResponse(responseCode = "200", description = "Список новостей получен", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = HeadlineNewsGroupDto.class))})
-    public HeadlineNewsGroupDto getHeadlineNews(@RequestParam(name = "page", defaultValue = "1") @Min(1) int page) {
+            @Content(mediaType = "application/json", schema = @Schema(implementation = HeadlineNewsGroupResponseDto.class))})
+    public HeadlineNewsGroupResponseDto getHeadlineNews(@RequestParam(name = "page", defaultValue = "1") @Min(1) int page) {
         return newsService.getHeadlineNews(page);
     }
 

@@ -1,10 +1,215 @@
+#Мейн
+spring:
+  profiles:
+    active: test
+  application:
+    name: KPTC_SMP
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: test@gmail.com
+    password: password
+    encoding: UTF-8
+    sender:
+      name: KPTC-SMP
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 2MB
+
+jwt:
+  secret: secret
+  access:
+    expiration: 15m
+  refresh:
+    expiration: 60d
+
+s3:
+  key:
+    id: id
+  secret:
+    key: key
+  endpoint: https://s3.cloud.ru
+aws:
+  region: ru-central-1
+
+file:
+  storage:
+    temp-expiration-hours: 24
+
+default:
+  user:
+    role:
+      name: ROLE_USER
+
 server:
+  forward-headers-strategy: native
   port: 5174
   servlet:
     context-path:
-jwt:
-  secret: JQ852
-  access:
-    expiration: 48h
-  refresh:
-    expiration: 60d
+  tomcat:
+    remoteip:
+      remote-ip-header: X-Forwarded-For
+      protocol-header: X-Forwarded-Proto
+      internal-proxies: 10\\.128\\.0\\.(0|[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-5])
+
+action:
+  ticket:
+    expiration:
+      time: 10
+email:
+  verification:
+    template: email/verification_template
+    expiration:
+      time: 10
+  password:
+    reset:
+      template: email/password_reset_template
+
+image:
+  endpoint: /image/
+  path:
+    permanent: permanent/
+    temp: temp/
+  allowed:
+    mime:
+      types: image/jpeg,image/png
+
+page:
+  guild:
+    order:
+      size: 6
+  news:
+    headline:
+      size: 9
+      sort:
+        field: id
+
+
+
+scheduled:
+  session:
+    cleanup:
+      cron: 0 0 3 * * ?
+  image:
+    cleanup:
+      cron: 0 0 3 * * ?
+
+
+message:
+  code:
+    sent: Код отправлен
+    invalid: Неверный код
+    expired: Код истёк
+  email:
+    sent: Письмо отправлено
+    taken: Почта уже занята
+    password:
+      reset:
+        subject: Восстановление пароля
+  password:
+    changed: Пароль успешно изменён
+    mismatch: Пароли не совпадают
+  news:
+    deleted: Новость удалена
+  username:
+    taken: Имя пользователя занято
+  order:
+    deleted: Заказ удален
+  session:
+        deleted:
+          all: Все сессии удалены
+          current: Сессия удалена
+---
+# Тест
+spring:
+  config:
+    activate:
+      on-profile: test
+
+password:
+  reset:
+    base:
+      url: http://localhost:5173/password-reset?uuid=
+
+server:
+  url: http://localhost:5174
+
+front:
+  server:
+    url: "*"
+
+aws:
+  s3:
+    bucket:
+      name: kptc-smp-test
+
+mySQL:
+  datasource:
+    url: jdbc:mysql://s321960_TestSQL
+    username: username
+    password: password
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+postgreSQL:
+  datasource:
+    url: jdbc:postgresql://kptc_test34
+    username: username
+    password: password
+    driver-class-name: org.postgresql.Driver
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
+---
+# Прод
+spring:
+  config:
+    activate:
+      on-profile: production
+
+password:
+  reset:
+    base:
+      url: url
+
+server:
+  url: url
+
+front:
+  server:
+    url: url
+
+aws:
+  s3:
+    bucket:
+      name: kptc-smp
+
+mySQL:
+  datasource:
+    url: jdbc:mysql://s10748_kptc_smp
+    username: username
+    password: password
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+postgreSQL:
+  datasource:
+    url: jdbc:postgresql://kptc_smp
+    username: username
+    password: password
+    driver-class-name: org.postgresql.Driver
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false

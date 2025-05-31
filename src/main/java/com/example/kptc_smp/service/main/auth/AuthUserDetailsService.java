@@ -1,6 +1,6 @@
 package com.example.kptc_smp.service.main.auth;
 
-import com.example.kptc_smp.entity.main.User;
+import com.example.kptc_smp.model.main.User;
 import com.example.kptc_smp.exception.user.UserNotFoundException;
 import com.example.kptc_smp.repository.main.UserRepository;
 import lombok.RequiredArgsConstructor;

@@ -1,6 +1,6 @@
 package com.example.kptc_smp.service.main.user;
 
-import com.example.kptc_smp.entity.main.User;
+import com.example.kptc_smp.model.main.User;
 import com.example.kptc_smp.repository.main.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,6 +36,10 @@ public class UserService {
 
     public Optional<User> findWithInfoAndTokenAndTicketByUsername(String username) {
         return userRepository.findWithInfoAndTokenAndTicketByUsername(username);
+    }
+
+    public Optional<User> findWithUserSessionsByUsername(String username) {
+        return userRepository.findWithUserSessionsByUsername(username);
     }
 
     public Optional<User> findWithSessionsAndTokenByUsername(String username) {

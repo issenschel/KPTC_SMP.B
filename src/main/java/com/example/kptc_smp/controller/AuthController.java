@@ -1,11 +1,11 @@
 package com.example.kptc_smp.controller;
 
-import com.example.kptc_smp.dto.auth.JwtTokenPairDto;
+import com.example.kptc_smp.dto.auth.JwtTokenPairResponseDto;
 import com.example.kptc_smp.dto.auth.RefreshTokenRequestDto;
 import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.dto.auth.*;
-import com.example.kptc_smp.dto.email.EmailDto;
-import com.example.kptc_smp.dto.profile.UserAccountDetailsDto;
+import com.example.kptc_smp.dto.email.EmailRequestDto;
+import com.example.kptc_smp.dto.profile.UserAccountDetailsResponseDto;
 import com.example.kptc_smp.service.main.auth.AuthService;
 import com.example.kptc_smp.service.main.auth.PasswordResetService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -43,21 +43,21 @@ public class AuthController {
     @Operation(summary = "Регистрация")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Пользователь создан", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = UserAccountDetailsDto.class))}),
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = UserAccountDetailsResponseDto.class))}),
             @ApiResponse(responseCode = "409", description = "Данные уже заняты", content = {@Content(mediaType = "application/json")})
     })
-    public UserAccountDetailsDto registrationUser(@Valid @RequestBody RegistrationUserDto registrationUserDto) {
-        return authService.registrationUser(registrationUserDto);
+    public UserAccountDetailsResponseDto registrationUser(@Valid @RequestBody RegistrationUserRequestDto registrationUserRequestDto) {
+        return authService.registrationUser(registrationUserRequestDto);
     }
 
     @PostMapping("/refresh-token")
     @Operation(summary = "Обновление токена")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Токены обновлены", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = JwtTokenPairDto.class))}),
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = JwtTokenPairResponseDto.class))}),
             @ApiResponse(responseCode = "401", description = "Недействительный refresh-токен", content = {@Content(mediaType = "application/json")})
     })
-    public JwtTokenPairDto refreshToken(@Valid @RequestBody RefreshTokenRequestDto refreshTokenRequest) {
+    public JwtTokenPairResponseDto refreshToken(@Valid @RequestBody RefreshTokenRequestDto refreshTokenRequest) {
         return authService.refreshToken(refreshTokenRequest.getRefreshToken());
     }
 
@@ -68,19 +68,19 @@ public class AuthController {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
             @ApiResponse(responseCode = "404", description = "Пользователь не найден", content = {@Content(mediaType = "application/json")})
     })
-    public ResponseDto createPasswordResetLink(@Valid @RequestBody EmailDto emailDto) {
-        return passwordResetService.createPasswordResetLink(emailDto);
+    public ResponseDto createPasswordResetLink(@Valid @RequestBody EmailRequestDto emailRequestDto) {
+        return passwordResetService.createPasswordResetLink(emailRequestDto);
     }
 
-    @PostMapping("/password-reset")
+    @PutMapping("/password-reset")
     @Operation(summary = "Смена пароля")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Пароль изменён", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
             @ApiResponse(responseCode = "404", description = "Неверный UUID | Время истекло", content = {@Content(mediaType = "application/json")})
     })
-    public ResponseDto resetPassword(@RequestParam("uuid") String linkToken, @Valid @RequestBody PasswordResetDto passwordResetDto) {
-        return passwordResetService.resetPassword(linkToken, passwordResetDto);
+    public ResponseDto resetPassword(@RequestParam("uuid") String linkToken, @Valid @RequestBody PasswordResetRequestDto passwordResetRequestDto) {
+        return passwordResetService.resetPassword(linkToken, passwordResetRequestDto);
     }
 
 

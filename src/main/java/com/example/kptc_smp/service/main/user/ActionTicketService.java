@@ -1,12 +1,13 @@
 package com.example.kptc_smp.service.main.user;
 
-import com.example.kptc_smp.entity.main.ActionTicket;
-import com.example.kptc_smp.entity.main.User;
+import com.example.kptc_smp.model.main.ActionTicket;
+import com.example.kptc_smp.model.main.User;
 import com.example.kptc_smp.enums.ActionType;
-import com.example.kptc_smp.exception.actionticket.ActionTicketExpireException;
 import com.example.kptc_smp.exception.actionticket.ActionTicketNotFoundException;
 import com.example.kptc_smp.repository.main.ActionTicketRepository;
+import com.example.kptc_smp.service.main.validator.ActionTickerValidatorService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -17,19 +18,23 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ActionTicketService {
     private final ActionTicketRepository actionTicketRepository;
+    private final ActionTickerValidatorService actionTickerValidatorService;
+
+    @Value("${action.ticket.expiration.time}")
+    private int actionTicketExpirationTime;
 
     public ActionTicket createActionTicket(User user, ActionType actionType) {
         ActionTicket actionTicket = new ActionTicket();
         actionTicket.setUser(user);
         actionTicket.setTicket(generateTicket());
         actionTicket.setActionType(actionType);
-        actionTicket.setExpiresAt(LocalDateTime.now().plusMinutes(10));
+        actionTicket.setExpiresAt(LocalDateTime.now().plusMinutes(actionTicketExpirationTime));
         return actionTicketRepository.save(actionTicket);
     }
 
     public ActionTicket updateActionTicket(ActionTicket actionTicket) {
         actionTicket.setTicket(generateTicket());
-        actionTicket.setExpiresAt(LocalDateTime.now().plusMinutes(10));
+        actionTicket.setExpiresAt(LocalDateTime.now().plusMinutes(actionTicketExpirationTime));
 
         return actionTicket;
     }
@@ -56,26 +61,9 @@ public class ActionTicketService {
                 .findFirst()
                 .orElseThrow(ActionTicketNotFoundException::new);
 
-        validateActionTicket(actionTicket, expectedType);
+        actionTickerValidatorService.validateActionTicket(actionTicket, expectedType);
 
         return actionTicket;
-    }
-
-    public void validateActionTicket(ActionTicket actionTicket, ActionType expectedType) {
-        if (!isActionTicketOfType(actionTicket, expectedType)) {
-            throw new ActionTicketNotFoundException();
-        }
-        if (isActionTicketExpired(actionTicket)) {
-            throw new ActionTicketExpireException();
-        }
-    }
-
-    public boolean isActionTicketOfType(ActionTicket actionTicket, ActionType expectedType) {
-        return actionTicket.getActionType().equals(expectedType);
-    }
-
-    public boolean isActionTicketExpired(ActionTicket actionTicket) {
-        return actionTicket.getExpiresAt().isBefore(LocalDateTime.now());
     }
 
     public void delete(ActionTicket actionTicket) {

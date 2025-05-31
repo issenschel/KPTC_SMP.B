@@ -2,7 +2,8 @@ package com.example.kptc_smp.controller.advice;
 
 import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.exception.email.CodeValidationException;
-import com.example.kptc_smp.exception.profile.PasswordValidationException;
+import com.example.kptc_smp.exception.password.IncorrectCurrentPasswordException;
+import com.example.kptc_smp.exception.password.PasswordMismatchException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -32,8 +33,13 @@ public class ValidationExceptionAdvice {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
     }
 
-    @ExceptionHandler(PasswordValidationException.class)
-    public ResponseEntity<ResponseDto> passwordValidationException(PasswordValidationException e) {
+    @ExceptionHandler(PasswordMismatchException.class)
+    public ResponseEntity<ResponseDto> passwordMismatchException(PasswordMismatchException e) {
+        return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
+    }
+
+    @ExceptionHandler(IncorrectCurrentPasswordException.class)
+    public ResponseEntity<ResponseDto> incorrectCurrentPasswordException(IncorrectCurrentPasswordException e) {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
     }
 }

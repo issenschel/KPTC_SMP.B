@@ -1,6 +1,6 @@
 package com.example.kptc_smp.repository.main;
 
-import com.example.kptc_smp.entity.main.News;
+import com.example.kptc_smp.model.main.News;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;

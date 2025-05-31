@@ -1,6 +1,6 @@
 package com.example.kptc_smp.repository.main;
 
-import com.example.kptc_smp.entity.main.UserInformation;
+import com.example.kptc_smp.model.main.UserInformation;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;

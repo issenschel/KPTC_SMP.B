@@ -1,6 +1,6 @@
 package com.example.kptc_smp.repository.main;
 
-import com.example.kptc_smp.entity.main.User;
+import com.example.kptc_smp.model.main.User;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
@@ -21,6 +21,9 @@ public interface UserRepository extends CrudRepository<User, Integer> {
 
     @EntityGraph(attributePaths = {"userSessions", "userDataToken"})
     Optional<User> findWithSessionsAndTokenByUsername(String username);
+
+    @EntityGraph(attributePaths = {"userSessions"})
+    Optional<User> findWithUserSessionsByUsername(String username);
 
     @EntityGraph(attributePaths = {"roles"})
     Optional<User> findWithRolesByUsername(String username);

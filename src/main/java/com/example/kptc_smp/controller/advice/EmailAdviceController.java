@@ -3,7 +3,7 @@ package com.example.kptc_smp.controller.advice;
 import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.exception.email.CodeExpireException;
 import com.example.kptc_smp.exception.email.EmailFoundException;
-import com.example.kptc_smp.exception.email.EmailNotFoundException;
+import com.example.kptc_smp.exception.email.EmailVerificationNotFoundException;
 import com.example.kptc_smp.exception.email.EmailSendException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,8 +18,8 @@ public class EmailAdviceController {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ResponseDto(e.getMessage()));
     }
 
-    @ExceptionHandler(EmailNotFoundException.class)
-    public ResponseEntity<ResponseDto> emailNotFoundException(EmailNotFoundException e) {
+    @ExceptionHandler(EmailVerificationNotFoundException.class)
+    public ResponseEntity<ResponseDto> emailNotFoundException(EmailVerificationNotFoundException e) {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
     }
 

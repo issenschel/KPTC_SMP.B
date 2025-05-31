@@ -1,6 +1,6 @@
 package com.example.kptc_smp.repository.main;
 
-import com.example.kptc_smp.entity.main.ActionTicket;
+import com.example.kptc_smp.model.main.ActionTicket;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 

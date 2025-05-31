@@ -1,6 +1,7 @@
 package com.example.kptc_smp.service.main.auth;
 
-import com.example.kptc_smp.exception.profile.PasswordValidationException;
+import com.example.kptc_smp.exception.password.IncorrectCurrentPasswordException;
+import com.example.kptc_smp.exception.password.PasswordMismatchException;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -12,13 +13,13 @@ public class PasswordService {
 
     public void validateEncodedPasswordMatch(String currentPassword, String inputAtPassword) {
         if (!passwordEncoder.matches(currentPassword, inputAtPassword)) {
-            throw new PasswordValidationException();
+            throw new IncorrectCurrentPasswordException();
         }
     }
 
-    public void validatePasswordEquals(String currentPassword, String inputAtPassword){
+    public void validatePasswordEquals(String currentPassword, String inputAtPassword) {
         if (!currentPassword.equals(inputAtPassword)) {
-            throw new PasswordValidationException("Новый пароль и подтверждение пароля не совпадают");
+            throw new PasswordMismatchException();
         }
     }
 

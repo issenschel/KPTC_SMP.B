@@ -1,11 +1,11 @@
 package com.example.kptc_smp.service.main.email;
 
-import com.example.kptc_smp.entity.main.EmailVerification;
-import com.example.kptc_smp.exception.email.CodeExpireException;
-import com.example.kptc_smp.exception.email.CodeValidationException;
-import com.example.kptc_smp.exception.email.EmailNotFoundException;
+import com.example.kptc_smp.model.main.EmailVerification;
+import com.example.kptc_smp.exception.email.EmailVerificationNotFoundException;
 import com.example.kptc_smp.repository.main.EmailVerificationRepository;
+import com.example.kptc_smp.service.main.validator.CodeValidatorService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +16,10 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class EmailVerificationService {
     private final EmailVerificationRepository emailVerificationRepository;
+    private final CodeValidatorService codeValidatorService;
+
+    @Value("${email.verification.expiration.time}")
+    private int emailVerificationExpirationTime;
 
     @Transactional
     public void createOrUpdate(String email, String code){
@@ -31,39 +35,22 @@ public class EmailVerificationService {
         EmailVerification emailVerification = new EmailVerification();
         emailVerification.setEmail(email);
         emailVerification.setCode(code);
-        emailVerification.setExpiresAt(LocalDateTime.now().plusMinutes(10));
+        emailVerification.setExpiresAt(LocalDateTime.now().plusMinutes(emailVerificationExpirationTime));
         emailVerificationRepository.save(emailVerification);
     }
 
     public void changeEmailVerification(EmailVerification emailVerification, String code) {
         emailVerification.setCode(code);
-        emailVerification.setExpiresAt(LocalDateTime.now().plusMinutes(10));
+        emailVerification.setExpiresAt(LocalDateTime.now().plusMinutes(emailVerificationExpirationTime));
         emailVerificationRepository.save(emailVerification);
     }
 
     public EmailVerification findValidEmailVerification(String email, String code) {
-        EmailVerification emailVerification = findByEmail(email).orElseThrow(EmailNotFoundException::new);
+        EmailVerification emailVerification = findByEmail(email).orElseThrow(EmailVerificationNotFoundException::new);
 
-        validateCode(emailVerification, code);
+        codeValidatorService.validateCode(emailVerification, code);
 
         return emailVerification;
-    }
-
-    public void validateCode(EmailVerification emailVerification, String code) {
-        if (!isCodeValid(emailVerification, code)) {
-            throw new CodeValidationException();
-        } else if (isVerificationExpired(emailVerification)) {
-            throw new CodeExpireException();
-        }
-    }
-
-    public boolean isCodeValid(EmailVerification emailVerification, String code) {
-        return emailVerification.getCode().equals(code);
-    }
-
-    public boolean isVerificationExpired(EmailVerification emailVerification) {
-        LocalDateTime now = LocalDateTime.now();
-        return emailVerification.getExpiresAt().isBefore(now);
     }
 
     public void delete(EmailVerification emailVerification){
