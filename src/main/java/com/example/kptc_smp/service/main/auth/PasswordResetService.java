@@ -27,7 +27,6 @@ public class PasswordResetService {
     private final PasswordService passwordService;
     private final AuthMeService authMeService;
     private final UserSessionService userSessionService;
-    private final UserDataTokenService userDataTokenService;
     private final ActionTickerValidatorService actionTickerValidatorService;
 
     @Value("${password.reset.base.url}")
@@ -66,7 +65,6 @@ public class PasswordResetService {
 
         user.setPassword(password);
         authMeService.updatePassword(user.getUsername(), password);
-        userDataTokenService.updateUserDataToken(user);
 
         userSessionService.deleteAllSessionsByUser(user);
     }

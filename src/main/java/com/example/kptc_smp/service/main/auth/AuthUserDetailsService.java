@@ -4,6 +4,7 @@ import com.example.kptc_smp.model.main.User;
 import com.example.kptc_smp.exception.user.UserNotFoundException;
 import com.example.kptc_smp.repository.main.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -20,7 +21,7 @@ public class AuthUserDetailsService implements UserDetailsService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) {
-        User user = userRepository.findWithRolesByUsername(username).orElseThrow(UserNotFoundException::new);
+        User user = userRepository.findWithRolesByUsername(username).orElseThrow(() -> new BadCredentialsException(""));
 
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),

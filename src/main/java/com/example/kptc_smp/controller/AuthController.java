@@ -73,7 +73,7 @@ public class AuthController {
     }
 
     @PutMapping("/password-reset")
-    @Operation(summary = "Смена пароля")
+    @Operation(summary = "Смена пароля при восстановлении")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Пароль изменён", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),

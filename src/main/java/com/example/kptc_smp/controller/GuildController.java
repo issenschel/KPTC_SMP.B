@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -50,7 +51,9 @@ public class GuildController {
             @ApiResponse(responseCode = "403", description = "Недостаточно прав", content = {@Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "404", description = "Заказ не найден", content = {@Content(mediaType = "application/json")})
     })
-    public GuildOrder changeOrder(@Valid @RequestBody GuildOrderRequestDto guildOrderRequestDto, @PathVariable @Min(1) int id ) {
+    public GuildOrder changeOrder(@Valid @RequestBody GuildOrderRequestDto guildOrderRequestDto,
+                                  @PathVariable @Min(value = 1, message = "Номер заказа должен быть не меньше 1")
+                                  @Max(value = 1000000, message = "Номер заказа должен быть не больше 1000000") int id ) {
         return guildOrderService.changeOrder(guildOrderRequestDto, id);
     }
 
@@ -64,7 +67,8 @@ public class GuildController {
             @ApiResponse(responseCode = "403", description = "Недостаточно прав", content = {@Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "404", description = "Заказ не найден", content = {@Content(mediaType = "application/json")})
     })
-    public ResponseDto deleteOrder(@PathVariable @Min(1) int id) {
+    public ResponseDto deleteOrder(@PathVariable @Min(value = 1, message = "Номер заказа должен быть не меньше 1")
+                                       @Max(value = 1000000, message = "Номер заказа должен быть не больше 1000000") int id) {
         return guildOrderService.deleteOrder(id);
     }
 
@@ -72,7 +76,9 @@ public class GuildController {
     @Operation(summary = "Получение заказов")
     @ApiResponse(responseCode = "200", description = "Список заказов получен", content = {
             @Content(mediaType = "application/json", schema = @Schema(implementation = GuildOrderGroupResponseDto.class))})
-    public GuildOrderGroupResponseDto getOrders(@RequestParam(name = "page", defaultValue = "1") @Min(1) int page) {
+    public GuildOrderGroupResponseDto getOrders(@RequestParam(name = "page", defaultValue = "1")
+                                                    @Min(value = 1, message = "Номер страницы заказов должен быть не меньше 1")
+                                                    @Max(value = 1000000, message = "Номер страницы заказов должен быть не больше 1000000") int page) {
         return guildOrderService.getOrders(page);
     }
 }

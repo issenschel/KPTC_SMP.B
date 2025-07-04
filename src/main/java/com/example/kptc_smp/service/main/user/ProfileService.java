@@ -35,7 +35,6 @@ public class ProfileService {
     private final UserService userService;
     private final UserInformationService userInformationService;
     private final EmailVerificationService emailVerificationService;
-    private final UserDataTokenService userDataTokenService;
     private final AuthMeService authMeService;
     private final ImageStorageService imageStorageService;
     private final ImageValidatorService imageValidatorService;
@@ -78,7 +77,7 @@ public class ProfileService {
 
     @Transactional(transactionManager = "chainedTransactionManager")
     public JwtTokenPairResponseDto changePassword(PasswordChangeRequestDto passwordChangeRequestDto) {
-        return userService.findWithUserDataTokenByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
+        return userService.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
                 user -> {
                     passwordService.validatePasswordEquals(passwordChangeRequestDto.getPassword(), passwordChangeRequestDto.getConfirmPassword());
                     passwordService.validateEncodedPasswordMatch(passwordChangeRequestDto.getOldPassword(), user.getPassword());
@@ -94,7 +93,7 @@ public class ProfileService {
 
     @Transactional
     public JwtTokenPairResponseDto changeEmail(EmailChangeRequestDto emailChangeRequestDto) {
-        return userService.findWithInfoAndTokenAndTicketByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
+        return userService.findWithInfoAndTicketByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
                 user -> {
                     ActionTicket actionTicket = actionTicketService.findValidActionTicketByType
                             (user, emailChangeRequestDto.getActionTicket(), ActionType.EMAIL_CHANGE);
@@ -112,12 +111,10 @@ public class ProfileService {
     }
 
     private JwtTokenPairResponseDto getJwtTokenPairDto(User user) {
-        UserDataToken userDataToken = userDataTokenService.updateUserDataToken(user);
-
         userSessionService.deleteAllSessionsByUser(user);
         UserSession userSession = userSessionService.createSession(user);
 
-        String accessToken = jwtTokenUtils.generateAccessToken(user.getUsername(),userDataToken.getTokenUUID());
+        String accessToken = jwtTokenUtils.generateAccessToken(user.getUsername(),userSession.getId());
 
         return new JwtTokenPairResponseDto(userSession.getRefreshToken(),accessToken);
     }
@@ -144,7 +141,7 @@ public class ProfileService {
     }
 
     @Transactional
-    public ResponseDto deleteSession(int userSessionId){
+    public ResponseDto deleteSession(UUID userSessionId){
         User user = userService.findWithUserSessionsByUsername(SecurityContextHolder.getContext().getAuthentication().getName())
                 .orElseThrow(UserNotFoundException::new);
         userSessionService.deleteSessionById(user,userSessionId);

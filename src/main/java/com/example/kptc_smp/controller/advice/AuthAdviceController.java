@@ -4,6 +4,8 @@ import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.exception.auth.PasswordResetDateExpiredException;
 import com.example.kptc_smp.exception.auth.PasswordResetUUIDNotFoundException;
 import com.example.kptc_smp.exception.auth.RegistrationValidationException;
+import com.example.kptc_smp.exception.jwt.JwtExpiredException;
+import com.example.kptc_smp.exception.jwt.JwtNotFoundException;
 import com.example.kptc_smp.exception.user.UserNotFoundException;
 import io.jsonwebtoken.JwtException;
 import org.springframework.http.HttpStatus;
@@ -19,7 +21,7 @@ public class AuthAdviceController {
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ResponseDto> authException() {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ResponseDto("Неверный логин или пароль"));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ResponseDto("Неверные учётные данные"));
     }
 
     @ExceptionHandler(RegistrationValidationException.class)
@@ -44,6 +46,16 @@ public class AuthAdviceController {
 
     @ExceptionHandler(JwtException.class)
     public ResponseEntity<ResponseDto> jwtException(JwtException e) {
+        return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
+    }
+
+    @ExceptionHandler(JwtExpiredException.class)
+    public ResponseEntity<ResponseDto> jwtExpiredException(JwtExpiredException e) {
+        return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
+    }
+
+    @ExceptionHandler(JwtNotFoundException.class)
+    public ResponseEntity<ResponseDto> jwtNotFoundException(JwtNotFoundException e) {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
     }
 }

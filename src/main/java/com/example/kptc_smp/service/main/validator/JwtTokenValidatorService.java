@@ -2,7 +2,6 @@ package com.example.kptc_smp.service.main.validator;
 
 import com.example.kptc_smp.exception.jwt.JwtExpiredException;
 import com.example.kptc_smp.utility.JwtTokenUtils;
-import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

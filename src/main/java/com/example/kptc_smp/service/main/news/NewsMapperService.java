@@ -22,7 +22,7 @@ public class NewsMapperService {
                 .title(news.getTitle())
                 .content(news.getContent())
                 .datePublication(news.getDatePublication())
-                .imageUrl(news.getImages().stream()
+                .previewUrl(news.getImages().stream()
                         .filter(t -> NewsImageRole.PREVIEW.equals(t.getNewsImageRole()))
                         .findFirst()
                         .map(img -> imageStorageService.getImageUrl(img.getImageRegistry().getId()))

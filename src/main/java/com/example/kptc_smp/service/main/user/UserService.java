@@ -26,24 +26,16 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public Optional<User> findWithUserDataTokenByUsername(String username) {
-        return userRepository.findWithUserDataTokenByUsername(username);
-    }
-
     public Optional<User> findWithUserInformationByUsername(String username) {
         return userRepository.findWithUserInformationByUsername(username);
     }
 
-    public Optional<User> findWithInfoAndTokenAndTicketByUsername(String username) {
-        return userRepository.findWithInfoAndTokenAndTicketByUsername(username);
+    public Optional<User> findWithInfoAndTicketByUsername(String username) {
+        return userRepository.findWithInfoAndTicketByUsername(username);
     }
 
     public Optional<User> findWithUserSessionsByUsername(String username) {
         return userRepository.findWithUserSessionsByUsername(username);
-    }
-
-    public Optional<User> findWithSessionsAndTokenByUsername(String username) {
-        return userRepository.findWithSessionsAndTokenByUsername(username);
     }
 
     public Optional<User> findByUsername(String username) {

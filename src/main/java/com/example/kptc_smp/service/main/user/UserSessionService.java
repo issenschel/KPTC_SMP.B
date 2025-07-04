@@ -1,18 +1,22 @@
 package com.example.kptc_smp.service.main.user;
 
+import com.example.kptc_smp.exception.user.ActiveSessionDeletionException;
+import com.example.kptc_smp.exception.user.UserSessionNotFound;
 import com.example.kptc_smp.model.main.User;
 import com.example.kptc_smp.model.main.UserSession;
-import com.example.kptc_smp.exception.user.UserNotFoundException;
 import com.example.kptc_smp.repository.main.UserSessionRepository;
 import com.example.kptc_smp.utility.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +30,7 @@ public class UserSessionService {
         String userAgent = clientInfoService.getClientUserAgent();
         String ipAddress = clientInfoService.getClientIp();
 
-        userSessionRepository.findByUserAndUserAgentAndIpAddress(user, userAgent, ipAddress).ifPresent(userSessionRepository::delete);
+        userSessionRepository.findByUserAndUserAgent(user, userAgent).ifPresent(userSessionRepository::delete);
 
         return userSessionRepository.save(createNewSession(user, userAgent, ipAddress));
     }
@@ -45,32 +49,37 @@ public class UserSessionService {
     }
 
 
-    public List<UserSession> getAllSessionsByUser(User user){
-       return userSessionRepository.findAllByUser(user);
+    public List<UserSession> getAllSessionsByUser(User user) {
+        return userSessionRepository.findAllByUser(user);
     }
 
     public void deleteAllSessionsExceptCurrentByUser(User user) {
-        String userAgent = clientInfoService.getClientUserAgent();
-        String ipAddress = clientInfoService.getClientIp();
+        UUID currentSessionId = (UUID) SecurityContextHolder.getContext().getAuthentication().getDetails();
 
-        user.getUserSessions().stream()
-                .filter(userSession -> userSession.getUserAgent().equals(userAgent) && userSession.getIpAddress().equals(ipAddress)).findFirst()
-                .ifPresentOrElse(
-                        userSession -> userSessionRepository.deleteAllByUserExceptSession(user, userSession.getId()),
-                        () -> userSessionRepository.deleteAllByUser(user)
-                );
+        userSessionRepository.deleteAllByUserExceptSession(user, currentSessionId);
     }
 
-    public void deleteSessionById(User user, int userSessionId) {
+    public void deleteSessionById(User user, UUID userSessionId) {
+        UUID currentSessionId = (UUID) SecurityContextHolder.getContext().getAuthentication().getDetails();
+
+        if (userSessionId.equals(currentSessionId)) {
+            throw new ActiveSessionDeletionException();
+        }
+
         user.getUserSessions().stream().filter(userSession -> userSession.getId() == userSessionId).findFirst()
                 .ifPresentOrElse(
-                        userSession -> userSessionRepository.deleteById((long) userSessionId),
-                        () -> { throw new UserNotFoundException();});
+                        userSession -> userSessionRepository.deleteById(userSessionId),
+                        () -> {
+                            throw new UserSessionNotFound();
+                        });
     }
 
-    @Transactional
     public void deleteAllSessionsByUser(User user) {
         userSessionRepository.deleteAllByUser(user);
+    }
+
+    public Optional<UserSession> findByUUID(UUID id) {
+        return userSessionRepository.findById(id);
     }
 
     @Scheduled(cron = "${scheduled.session.cleanup.cron}")

@@ -3,7 +3,6 @@ package com.example.kptc_smp.service.main.email;
 import com.example.kptc_smp.enums.EmailTemplateType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;

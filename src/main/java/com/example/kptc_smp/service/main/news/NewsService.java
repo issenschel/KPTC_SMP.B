@@ -1,6 +1,7 @@
 package com.example.kptc_smp.service.main.news;
 
 import com.example.kptc_smp.dto.ResponseDto;
+import com.example.kptc_smp.dto.image.ImageResponseDto;
 import com.example.kptc_smp.dto.news.HeadlineNewsGroupResponseDto;
 import com.example.kptc_smp.dto.news.NewsRequestDto;
 import com.example.kptc_smp.dto.news.NewsResponseDto;
@@ -11,6 +12,7 @@ import com.example.kptc_smp.enums.ImageCategory;
 import com.example.kptc_smp.enums.NewsImageRole;
 import com.example.kptc_smp.exception.news.NewsNotFoundException;
 import com.example.kptc_smp.repository.main.NewsRepository;
+import com.example.kptc_smp.service.main.image.ImageMapperService;
 import com.example.kptc_smp.service.main.image.ImageStorageService;
 import com.example.kptc_smp.service.main.validator.ImageValidatorService;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +36,7 @@ public class NewsService {
     private final NewsImageService newsImageService;
     private final ImageStorageService imageStorageService;
     private final ImageValidatorService imageValidatorService;
+    private final ImageMapperService imageMapperService;
 
     @Value("${message.news.deleted}")
     private String newsDeletedMessage;
@@ -70,7 +73,7 @@ public class NewsService {
     }
 
     @Transactional
-    public NewsResponseDto updateNewsPreview(MultipartFile image, int id) {
+    public ImageResponseDto updateNewsPreview(MultipartFile image, int id) {
         imageValidatorService.validateImage(image);
 
         News news = newsRepository.findWithImagesAndRegistryById(id).orElseThrow(NewsNotFoundException::new);
@@ -88,7 +91,7 @@ public class NewsService {
             newsImageService.createNewsImage(news, newImageRegistry, NewsImageRole.PREVIEW);
         }
 
-        return newsMapperService.toNewsResponseDto(news);
+        return imageMapperService.toImageResponse(newImageRegistry);
     }
 
     public NewsResponseDto getNews(int newsId) {

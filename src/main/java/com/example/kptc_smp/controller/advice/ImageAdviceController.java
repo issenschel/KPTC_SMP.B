@@ -3,8 +3,10 @@ package com.example.kptc_smp.controller.advice;
 import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.exception.image.ImageException;
 import com.example.kptc_smp.exception.image.ImageInvalidFormatException;
+import com.example.kptc_smp.exception.image.ImageNotFoundException;
 import com.example.kptc_smp.exception.image.ImageSendException;
 import com.example.kptc_smp.exception.image.ImageUploadException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -30,5 +32,10 @@ public class ImageAdviceController {
     @ExceptionHandler(ImageUploadException.class)
     public ResponseEntity<ResponseDto> imageUploadException(ImageUploadException e) {
         return ResponseEntity.badRequest().body(new ResponseDto(e.getMessage()));
+    }
+
+    @ExceptionHandler(ImageNotFoundException.class)
+    public ResponseEntity<ResponseDto> imageNotFoundException(ImageNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDto(e.getMessage()));
     }
 }

@@ -13,12 +13,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -41,7 +45,7 @@ public class ProfileController {
     }
 
     @GetMapping("/user-profile")
-    @Operation(summary = "Получение логина и ссылки на аватарку для профиля")
+    @Operation(summary = "Получение данных об аккаунте пользователя для главной")
     @SecurityRequirement(name = "bearerAuth")
     @ApiResponse(responseCode = "200", description = "Данные получены", content = {
             @Content(mediaType = "application/json", schema = @Schema(implementation = UserProfileResponseDto.class))})
@@ -59,11 +63,11 @@ public class ProfileController {
     }
 
     @DeleteMapping("/user-session/{userSessionId}")
-    @Operation(summary = "Удаление всех сессий пользователя кроме текущей")
+    @Operation(summary = "Удаление конкретной сессии пользователя")
     @SecurityRequirement(name = "bearerAuth")
     @ApiResponse(responseCode = "200", description = "Данные получены", content = {
             @Content(mediaType = "application/json", schema = @Schema(implementation = UserProfileResponseDto.class))})
-    public ResponseDto deleteSession(@PathVariable @Min(1) int userSessionId) {
+    public ResponseDto deleteSession(@PathVariable UUID userSessionId) {
         return profileService.deleteSession(userSessionId);
     }
 
@@ -101,7 +105,7 @@ public class ProfileController {
         return profileService.changeEmail(emailChangeRequestDto);
     }
 
-    @PutMapping(path = "/image", consumes = "multipart/*")
+    @PutMapping(path = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Смена фотографии пользователя")
     @SecurityRequirement(name = "bearerAuth")
     @ApiResponses({

@@ -10,7 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -20,9 +22,13 @@ public class GuildOrderService {
     @Value("${message.order.deleted}")
     private String orderDeletedMessage;
 
+    @Value("${page.guild.order.sort.field}")
+    private String headlineSortField;
+
     @Value("${page.guild.order.size}")
     private int pageSize;
 
+    @Transactional
     public GuildOrder createNewOrder(GuildOrderRequestDto guildOrderRequestDto) {
         GuildOrder guildOrder = new GuildOrder();
         guildOrder.setHeader(guildOrderRequestDto.getHeader());
@@ -31,15 +37,16 @@ public class GuildOrderService {
         return guildOrderRepository.save(guildOrder);
     }
 
+    @Transactional
     public GuildOrder changeOrder(GuildOrderRequestDto guildOrderRequestDto, int id) {
         GuildOrder guildOrder = guildOrderRepository.findById(id).orElseThrow(OrderNotFoundException::new);
         guildOrder.setHeader(guildOrderRequestDto.getHeader());
         guildOrder.setMessage(guildOrderRequestDto.getMessage());
         guildOrder.setPseudonym(guildOrderRequestDto.getPseudonym());
-        guildOrderRepository.save(guildOrder);
         return guildOrder;
     }
 
+    @Transactional
     public ResponseDto deleteOrder(int id) {
         GuildOrder guildOrder = guildOrderRepository.findById(id).orElseThrow(OrderNotFoundException::new);
         guildOrderRepository.delete(guildOrder);
@@ -48,7 +55,7 @@ public class GuildOrderService {
 
     public GuildOrderGroupResponseDto getOrders(int page) {
         GuildOrderGroupResponseDto guildOrderGroupResponseDto = new GuildOrderGroupResponseDto();
-        PageRequest pageRequest = PageRequest.of(page-1, pageSize);
+        PageRequest pageRequest = PageRequest.of(page-1, pageSize, Sort.by(Sort.Direction.ASC, headlineSortField));
         Page<GuildOrder> ordersPage = guildOrderRepository.findAll(pageRequest);
         int totalPages = ordersPage.getTotalPages();
         guildOrderGroupResponseDto.setGuildOrders(ordersPage.getContent());

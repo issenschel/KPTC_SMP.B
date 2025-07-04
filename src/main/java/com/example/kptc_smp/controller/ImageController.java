@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
@@ -20,6 +21,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/image")
 @RequiredArgsConstructor
+@Tag(name = "Image")
 public class ImageController {
     private final ImageStorageService imageStorageService;
 
@@ -41,8 +43,8 @@ public class ImageController {
             @ApiResponse(responseCode = "200", description = "Фото отправлено"),
             @ApiResponse(responseCode = "404", description = "Фото не найдено")
     })
-    public Resource getImage(@PathVariable UUID imageId) {
-        return imageStorageService.getFileAsResource(imageId);
+    public ResponseEntity<Resource> getImage(@PathVariable UUID imageId) {
+        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(imageStorageService.getFileAsResource(imageId));
     }
 
 }
