@@ -1,0 +1,12 @@
+services:
+  app:
+    image: issenschel/spring-test-kptc:latest
+    ports:
+      - "5174:5174"
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    pull_policy: always
+    deploy:
+      update_config:
+        order: start-first

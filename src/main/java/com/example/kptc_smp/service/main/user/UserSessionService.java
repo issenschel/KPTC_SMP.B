@@ -8,7 +8,6 @@ import com.example.kptc_smp.repository.main.UserSessionRepository;
 import com.example.kptc_smp.utility.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,9 +65,9 @@ public class UserSessionService {
             throw new ActiveSessionDeletionException();
         }
 
-        user.getUserSessions().stream().filter(userSession -> userSession.getId() == userSessionId).findFirst()
+        user.getUserSessions().stream().filter(userSession -> userSession.getId().equals(userSessionId)).findFirst()
                 .ifPresentOrElse(
-                        userSession -> userSessionRepository.deleteById(userSessionId),
+                        userSession -> user.getUserSessions().remove(userSession),
                         () -> {
                             throw new UserSessionNotFound();
                         });

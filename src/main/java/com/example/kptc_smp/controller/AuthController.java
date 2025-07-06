@@ -43,10 +43,10 @@ public class AuthController {
     @Operation(summary = "Регистрация")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Пользователь создан", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = UserAccountDetailsResponseDto.class))}),
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))}),
             @ApiResponse(responseCode = "409", description = "Данные уже заняты", content = {@Content(mediaType = "application/json")})
     })
-    public UserAccountDetailsResponseDto registrationUser(@Valid @RequestBody RegistrationUserRequestDto registrationUserRequestDto) {
+    public ResponseDto registrationUser(@Valid @RequestBody RegistrationUserRequestDto registrationUserRequestDto) {
         return authService.registrationUser(registrationUserRequestDto);
     }
 

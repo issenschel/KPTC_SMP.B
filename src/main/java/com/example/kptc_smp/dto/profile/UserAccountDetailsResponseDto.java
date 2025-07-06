@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
@@ -20,5 +21,7 @@ public class UserAccountDetailsResponseDto {
     @Schema(description = "Дата регистрации", example = "01.01.2025")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd.MM.yyyy")
     private LocalDate registrationDate;
+    @Schema(description = "Id сессии", example = "5254-5235")
+    private UUID sessionId;
 
 }

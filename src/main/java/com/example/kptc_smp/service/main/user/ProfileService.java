@@ -54,9 +54,10 @@ public class ProfileService {
 
 
     public UserAccountDetailsResponseDto getUserAccountDetails() {
+        UUID currentSessionId = (UUID) SecurityContextHolder.getContext().getAuthentication().getDetails();
         return userService.findWithUserInformationByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
                 user -> new UserAccountDetailsResponseDto(user.getId(), user.getUsername(),
-                        user.getUserInformation().getEmail(), user.getUserInformation().getRegistrationDate())
+                        user.getUserInformation().getEmail(), user.getUserInformation().getRegistrationDate(),currentSessionId)
         ).orElseThrow(UserNotFoundException::new);
     }
 
@@ -136,7 +137,7 @@ public class ProfileService {
         return userService.findWithUserSessionsByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).map(
                 user -> userSessionService.getAllSessionsByUser(user).stream().map(
                         sessions -> new SessionDataResponseDto(sessions.getId(),sessions.getIpAddress(),
-                                clientInfoService.parseUserAgent(sessions.getUserAgent()))).toList()
+                                clientInfoService.parseUserAgent(sessions.getUserAgent()),sessions.getCreatedAt())).toList()
                 ).orElseThrow(UserNotFoundException::new);
     }
 

@@ -66,7 +66,7 @@ public class ProfileController {
     @Operation(summary = "Удаление конкретной сессии пользователя")
     @SecurityRequirement(name = "bearerAuth")
     @ApiResponse(responseCode = "200", description = "Данные получены", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = UserProfileResponseDto.class))})
+            @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))})
     public ResponseDto deleteSession(@PathVariable UUID userSessionId) {
         return profileService.deleteSession(userSessionId);
     }
@@ -75,7 +75,7 @@ public class ProfileController {
     @Operation(summary = "Удаление всех сессий пользователя кроме текущей")
     @SecurityRequirement(name = "bearerAuth")
     @ApiResponse(responseCode = "200", description = "Данные получены", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = UserProfileResponseDto.class))})
+            @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))})
     public ResponseDto deleteAllSessionsExceptCurrentByUser() {
         return profileService.deleteAllSessionsExceptCurrentByUser();
     }

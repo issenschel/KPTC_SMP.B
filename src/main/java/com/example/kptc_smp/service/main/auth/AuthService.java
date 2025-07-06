@@ -1,5 +1,6 @@
 package com.example.kptc_smp.service.main.auth;
 
+import com.example.kptc_smp.dto.ResponseDto;
 import com.example.kptc_smp.dto.auth.JwtTokenPairResponseDto;
 import com.example.kptc_smp.dto.auth.AuthResponseDto;
 import com.example.kptc_smp.dto.auth.AuthRequestDto;
@@ -79,16 +80,15 @@ public class AuthService {
     }
 
     @Transactional(transactionManager = "chainedTransactionManager")
-    public UserAccountDetailsResponseDto registrationUser(@RequestBody RegistrationUserRequestDto registrationUserRequestDto) {
+    public ResponseDto registrationUser(@RequestBody RegistrationUserRequestDto registrationUserRequestDto) {
         validateRegistration(registrationUserRequestDto);
 
         User user = userService.createUser(registrationUserRequestDto.getUsername(), registrationUserRequestDto.getPassword());
-        UserInformation userInformation = userInformationService.createNewUserInformation(registrationUserRequestDto, user);
+        userInformationService.createNewUserInformation(registrationUserRequestDto, user);
         emailVerificationService.deleteByEmail(registrationUserRequestDto.getEmail());
         registrationMinecraftUser(user);
 
-        return new UserAccountDetailsResponseDto(userInformation.getId(), userInformation.getUser().getUsername(),
-                userInformation.getEmail(), userInformation.getRegistrationDate());
+        return new ResponseDto("Регистрация успешна");
     }
 
     private void validateRegistration(RegistrationUserRequestDto registrationUserRequestDto) {
